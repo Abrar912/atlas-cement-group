@@ -1,0 +1,131 @@
+<%- include('../partials/header') %>
+<%
+var ACT_T = {
+    act_CREATE: 'hr.payws.act_CREATE', act_DRAFT_EDIT: 'hr.payws.act_DRAFT_EDIT', act_FINALIZE: 'hr.payws.act_FINALIZE',
+    act_CORRECT: 'hr.payws.act_CORRECT', act_REALLOC_SALARY: 'hr.payws.act_REALLOC_SALARY', act_REALLOC_OT: 'hr.payws.act_REALLOC_OT',
+    act_REALLOC_ADV: 'hr.payws.act_REALLOC_ADV', act_OBLIGATION_CREATED: 'hr.payws.act_OBLIGATION_CREATED',
+    act_OBLIGATION_CORRECTED: 'hr.payws.act_OBLIGATION_CORRECTED', act_BLOCKED: 'hr.payws.act_BLOCKED',
+    act_DUPLICATE_SUBMIT: 'hr.payws.act_DUPLICATE_SUBMIT', act_ZERO_PAID: 'hr.payws.act_ZERO_PAID',
+    act_DRAFT_DELETE: 'hr.payws.act_DRAFT_DELETE', act_DATA_WARNING: 'hr.payws.act_DATA_WARNING',
+    act_LEGACY_FENCE: 'hr.payws.act_LEGACY_FENCE', act_OVERPAYMENT_CREATED: 'hr.payws.act_OVERPAYMENT_CREATED',
+    act_ADV_REPAY_MANUAL: 'hr.payws.act_ADV_REPAY_MANUAL', act_DISPUTE_OPENED: 'hr.payws.act_DISPUTE_OPENED',
+    act_DISPUTE_RESOLVED: 'hr.payws.act_DISPUTE_RESOLVED'
+};
+function actLabel(a) { var k = a ? 'act_' + a : ''; return (k && ACT_T[k]) ? t(ACT_T[k]) : t('hr.payws.act_generic'); }
+%>
+
+<style>
+/* =============================================================
+   Payment Correction History — read-only audit surface (pcr-* namespace)
+   ============================================================= */
+.pcr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-color,#d1d5db)}
+.pcr-head-main{min-width:0}
+.pcr-title{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:800;letter-spacing:-.3px;margin:0}
+.pcr-title::before{content:"";flex:none;width:5px;height:24px;border-radius:3px;background:var(--accent-blue,#2563eb)}
+.pcr-sub{font-size:12.5px;color:var(--text-muted,#6b7280);margin:6px 0 0}
+.pcr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pcr-tablewrap{overflow-x:auto;border:1px solid var(--border-color,#d1d5db);border-radius:12px}
+.pcr-table{width:100%;border-collapse:collapse;font-size:12px}
+.pcr-table th,.pcr-table td{border-bottom:1px solid var(--border-color,#d1d5db);padding:6px 9px;text-align:start;vertical-align:top}
+.pcr-table th{background:rgba(107,114,128,.08);font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted,#6b7280);white-space:nowrap}
+.pcr-table tbody tr:nth-child(even) td{background:rgba(107,114,128,.04)}
+.pcr-table tbody tr:hover td{background:rgba(59,130,246,.05)}
+.pcr-table tbody tr:last-child td{border-bottom:none}
+.pcr-chip{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;padding:2px 8px;border-radius:7px;background:rgba(107,114,128,.12);color:inherit;white-space:nowrap}
+.pcr-chip[dir="ltr"]{direction:ltr}
+.pcr-edit{display:inline-flex;align-items:center;gap:4px;margin-top:4px;font-size:11px;font-weight:800;color:var(--primary,#FF6F00);text-decoration:none;white-space:nowrap}
+.pcr-edit:hover{text-decoration:underline}
+.pcr-key{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;font-weight:800;letter-spacing:.3px;padding:2px 8px;border-radius:7px;background:rgba(59,130,246,.12);color:#1d4ed8;white-space:nowrap;margin-inline-end:6px}
+.pcr-reason{font-size:11.5px;max-width:340px;word-break:break-word}
+.pcr-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:44px 20px;border:1px dashed var(--border-color,#d1d5db);border-radius:14px;background:var(--bg-color,#fafafa);text-align:center;color:var(--text-muted,#6b7280);font-size:14px;font-weight:600;margin:14px 0}
+.pcr-empty::before{content:"\1F4DC";font-size:28px}
+.pcr-generated{font-size:11px;color:var(--text-muted,#6b7280);margin-top:16px;text-align:center}
+[data-theme="dark"] .pcr-title::before{background:#60a5fa}
+[data-theme="dark"] .pcr-table tbody tr:nth-child(even) td{background:rgba(163,173,188,.05)}
+[data-theme="dark"] .pcr-table tbody tr:hover td{background:rgba(96,165,250,.08)}
+[data-theme="dark"] .pcr-key{background:rgba(96,165,250,.16);color:#79b8ff}
+[data-theme="dark"] .pcr-empty{background:rgba(163,173,188,.05)}
+.pay-tech{margin-top:4px}
+.pay-tech summary{cursor:pointer;font-size:11px;font-weight:700;color:var(--text-muted,#6b7280);letter-spacing:.2px}
+.pay-tech[open] summary{margin-bottom:3px}
+.pay-tech .pay-key{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;padding:2px 6px;border-radius:6px;background:rgba(107,114,128,.12);margin:2px 4px 2px 0}
+@media (max-width:640px){
+    .pcr-head{flex-direction:column;align-items:stretch}
+    .pcr-actions{width:100%}
+    .pcr-title{font-size:18px}
+}
+@media print {
+    @page { size: A4; margin: 12mm; }
+    .sidebar, .top-navbar, .no-print, .pcr-actions { display: none !important; }
+    .main-viewport > div:first-child { display: none !important; }
+    .main-viewport { overflow: visible !important; height: auto !important; }
+    .content-scrollable { padding: 0 !important; overflow: visible !important; }
+    .card { box-shadow: none !important; border: none !important; padding: 0 !important; overflow: visible !important; }
+    body { background: #fff !important; color: #000 !important; }
+    .pcr-head { margin-bottom: 8px; padding-bottom: 8px; }
+    .pcr-sub, .pcr-generated { color: #333 !important; }
+    .pcr-table { font-size: 9.5px; }
+    .pcr-table th, .pcr-table td { border-color: #999 !important; color: #000 !important; background: #fff !important; padding: 3px 5px !important; }
+    .pcr-table th { background: #eee !important; white-space: normal !important; }
+    .pcr-key { background: #eee !important; color: #000 !important; border: 1px solid #999; }
+    .pcr-chip { background: #eee !important; }
+    .pcr-table thead { display: table-header-group; }
+    .pcr-table tr { page-break-inside: avoid; break-inside: avoid; }
+}
+</style>
+
+<div class="card">
+    <div class="pcr-head">
+        <div class="pcr-head-main">
+            <h2 class="pcr-title"><%= t('hr.correction.history_title') %></h2>
+            <p class="pcr-sub no-print"><%= t('hr.correction.history_hint') %></p>
+        </div>
+        <div class="pcr-actions no-print">
+            <a href="/admin/hr/payroll/salary-history" class="btn btn-secondary"><%= t('hr.correction.payments_link') %></a>
+        </div>
+    </div>
+
+    <% if (!rows || rows.length === 0) { %>
+        <div class="pcr-empty"><%= t('hr.payments.audit_empty') %></div>
+    <% } else { %>
+        <div class="pcr-tablewrap">
+            <table class="pcr-table">
+                <thead>
+                    <tr>
+                        <th><%= t('hr.payments.audit_time') %></th>
+                        <th><%= t('hr.payments.col_serial') %></th>
+                        <th><%= t('hr.payments.col_employee') %></th>
+                        <th><%= t('hr.payments.col_period') %></th>
+                        <th><%= t('hr.payments.audit_action') %></th>
+                        <th><%= t('hr.payments.audit_field') %></th>
+                        <th><%= t('hr.payments.audit_change') %></th>
+                        <th><%= t('hr.payments.audit_reason') %></th>
+                        <th><%= t('hr.payments.audit_actor') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% rows.forEach(function (a) { %>
+                        <tr>
+                            <td dir="ltr"><%= a.created_at || '—' %></td>
+                            <td dir="ltr"><% if (a.payment_id !== null && a.payment_id !== undefined) { %><span class="pcr-chip"><%= a.payment_serial || ('#' + a.payment_id) %></span><% if (a.payment_serial) { %><br><a class="pcr-edit" href="/admin/hr/payroll/salary-history?edit=<%= a.payment_id %>">✏️ <%= t('hr.correction.btn_correct') %></a><% } %><% } else { %>—<% } %></td>
+                            <td><%= a.employee_name || '—' %></td>
+                            <td dir="ltr"><%= a.period_month || '—' %></td>
+                            <td>
+                                <details class="pay-tech"><summary><strong><%= actLabel(a.action) %></strong></summary><span class="pcr-key" dir="ltr"><%= a.action %></span></details>
+                                <span class="pcr-chip" dir="ltr"><%= a.entity %><%= (a.entity_id !== null && a.entity_id !== undefined) ? ' #' + a.entity_id : '' %></span>
+                            </td>
+                            <td><%= a.field_name || '—' %></td>
+                            <td dir="ltr"><%= (a.old_value || '—') + ' → ' + (a.new_value || '—') %></td>
+                            <td class="pcr-reason"><%= a.reason || '—' %></td>
+                            <td dir="ltr"><%= (a.actor_id !== null && a.actor_id !== undefined) ? a.actor_id : '—' %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+
+    <div class="pcr-generated"><%= t('hr.contract.footer_generated').replace('{date}', generated) %></div>
+</div>
+
+<%- include('../partials/footer') %>

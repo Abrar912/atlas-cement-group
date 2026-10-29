@@ -1,0 +1,82 @@
+<%- include('../partials/header') %>
+
+<div class="card">
+    <% if (contextEmployee) { %>
+        <div style="background: var(--primary); color: white; padding: 16px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; overflow: hidden;">
+                    <% if (contextEmployee.photo_path) { %><img src="/<%= contextEmployee.photo_path %>" alt="<%= contextEmployee.full_name %>" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"><% } else { %><%= contextEmployee.full_name.charAt(0).toUpperCase() %><% } %>
+                </div>
+                <div>
+                    <div style="font-size: 14px; opacity: 0.9;"><%= t('hr.employees.full_name') %></div>
+                    <div style="font-size: 16px; font-weight: 600;"><%= contextEmployee.full_name %></div>
+                    <div style="font-size: 12px; opacity: 0.8; font-family: monospace;"><%= contextEmployee.employee_id || 'N/A' %></div>
+                </div>
+            </div>
+            <a href="/admin/hr/employees/<%= contextEmployee.id %>" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                ← <%= t('hr.employees.back_to_list') %>
+            </a>
+        </div>
+    <% } %>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 24px;">💰 <%= t('hr.payroll.title') %></h2>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <a href="/admin/hr/payroll/salary-history" class="btn btn-secondary" style="font-size: 14px;">📜 <%= t('hr.salaryHistory.title') %></a>
+            <a href="/admin/hr/payroll/add-salary" class="btn btn-primary" style="font-size: 14px;">➕ <%= t('hr.addSalary.title') %></a>
+        </div>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <form method="GET" action="/admin/hr/payroll" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <select name="employee_id" class="form-control" style="width: 200px;" onchange="this.form.submit()">
+                    <option value=""><%= t('hr.salaryHistory.all_employees') %></option>
+                    <% var empList = (typeof employeeList !== 'undefined' && employeeList) ? employeeList : []; %>
+                    <% empList.forEach(function(emp) { %>
+                    <option value="<%= emp.id %>" <%= String(filters.employee_id) === String(emp.id) ? 'selected' : '' %>><%= emp.full_name %></option>
+                    <% }); %>
+                </select>
+                <button type="submit" name="status" value="all" class="btn <%= !['paid', 'unpaid'].includes(String(filters.status || '').toLowerCase()) ? 'btn-primary' : 'btn-secondary' %>" style="font-size: 14px;"><%= t('hr.payroll.all_statuses') %></button>
+                <button type="submit" name="status" value="paid" class="btn <%= String(filters.status || '').toLowerCase() === 'paid' ? 'btn-primary' : 'btn-secondary' %>" style="font-size: 14px;"><%= t('hr.payroll.paid') %></button>
+                <button type="submit" name="status" value="unpaid" class="btn <%= String(filters.status || '').toLowerCase() === 'unpaid' ? 'btn-primary' : 'btn-secondary' %>" style="font-size: 14px;"><%= t('hr.payroll.unpaid') %></button>
+            </form>
+        </div>
+    </div>
+<% if (typeof center !== "undefined" && center) { %>
+    <div style="margin-bottom: 10px; padding: 8px 14px; border-left: 4px solid var(--safety-orange, #f59e0b); background: rgba(245,158,11,.10); border-radius: 6px; font-size: 12.5px; font-weight: 700; color: var(--text-muted, #6b7280);"><%= t('hr.payrollCenter.legacy_archive_label') %></div>
+<% } %>
+    
+    <div class="table-responsive">
+        <table class="table" style="font-size: 14px;">
+            <thead>
+                <tr>
+                    <th><%= t('hr.salaryHistory.lbl_employee') %></th>
+                    <th><%= t('hr.salaryHistory.lbl_period') %></th>
+                    <th><%= t('hr.payrollCenter.obligation_paid') %></th>
+                    <th><%= t('hr.salaryHistory.lbl_remaining_after') %></th>
+                    <th><%= t('hr.payroll.status') %></th>
+                    <th><%= t('hr.salaryHistory.lbl_payment_date') %></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% var listRows = (typeof monthRows !== 'undefined' && monthRows) ? monthRows : []; %>
+                <% if (!listRows.length) { %>
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted, #6b7280);"><%= t('hr.payrollCenter.no_rows') %></td>
+                </tr>
+                <% } %>
+                <% listRows.forEach(function(r) { %>
+                <tr>
+                    <td><%= r.name || ('#' + r.employee_id) %></td>
+                    <td dir="ltr"><%= r.month %></td>
+                    <td dir="ltr"><%= ((Number(r.paid) || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %> <%= t('hr.dashboard.afghani') %></td>
+                    <td dir="ltr"><%= r.owed > 0 ? (((Number(r.owed) || 0) / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + t('hr.dashboard.afghani')) : '—' %></td>
+                    <td><span style="display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 12px; font-weight: 600; background: <%= r.status === 'PAID' ? 'rgba(16,185,129,.15)' : (r.status === 'PARTIAL' ? 'rgba(245,158,11,.15)' : 'rgba(107,114,128,.15)') %>; color: <%= r.status === 'PAID' ? '#059669' : (r.status === 'PARTIAL' ? '#d97706' : '#6b7280') %>;"><%= r.status === 'PAID' ? t('hr.payroll.paid') : (r.status === 'PARTIAL' ? t('hr.payments.st_partial') : t('hr.payroll.unpaid')) %></span></td>
+                    <td dir="ltr"><%= r.date || '—' %></td>
+                </tr>
+                <% }); %>
+            </tbody>
+        </table>
+    </div>
+</div>

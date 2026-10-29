@@ -1,0 +1,101 @@
+<%- include('partials/header') %>
+
+<style>
+    .dashboard-container {
+        direction: ltr;
+        padding: 20px;
+    }
+
+    .stock-form-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 25px;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+
+    .stock-form-card label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 5px;
+    }
+
+    .stock-form-card .form-control-custom {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid var(--input-border);
+        border-radius: 6px;
+        font-size: 14px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        box-sizing: border-box;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="dashboard-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 15px; margin-bottom: 25px;">
+        <h2 style="margin: 0; color: var(--text-main); font-size: 22px; font-weight: 800;"><%= t('stock.add_title') %></h2>
+        <a href="/admin/stock" style="color: var(--accent-blue, #0969da); font-weight: 600; text-decoration: none;">← <%= t('stock.back') %></a>
+    </div>
+
+    <div class="stock-form-card">
+        <% if (error) { %>
+            <div style="background-color: rgba(207, 34, 46, 0.12); border: 1px solid var(--status-error, #cf222e); color: var(--status-error, #cf222e); border-radius: 6px; padding: 10px 14px; margin-bottom: 18px; font-size: 13px; font-weight: 600;">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <form method="POST" action="/admin/stock/add">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+            <label for="cement_type"><%= t('stock.form_type') %></label>
+            <select id="cement_type" name="cement_type" class="form-control-custom" required>
+                <option value="" disabled <%= !form.cement_type ? 'selected' : '' %>><%= t('stock.form_type_placeholder') %></option>
+                <% cementTypes.forEach(function (ct) { %>
+                    <option value="<%= ct.cement_name %>" <%= form.cement_type === ct.cement_name ? 'selected' : '' %>><%= ct.cement_name %></option>
+                <% }); %>
+            </select>
+
+            <label for="bags"><%= t('stock.form_bags') %></label>
+            <input type="number" id="bags" name="bags" class="form-control-custom" min="0" step="any" placeholder="<%= t('stock.form_bags_placeholder') %>" value="<%= form.bags || '' %>" oninput="bagsChanged()">
+
+            <label for="tonnage"><%= t('stock.form_tonnage') %></label>
+            <input type="number" id="tonnage" name="tonnage" class="form-control-custom" min="0" step="any" placeholder="<%= t('stock.form_tonnage_placeholder') %>" value="<%= form.tonnage || '' %>" oninput="tonnageChanged()">
+
+            <label for="price_per_bag"><%= t('stock.form_price_per_bag') %></label>
+            <input type="number" id="price_per_bag" name="price_per_bag" class="form-control-custom" min="0" step="any" placeholder="<%= t('stock.form_price_placeholder') %>" value="<%= form.price_per_bag || '' %>" required>
+
+            <label for="stock_date"><%= t('stock.form_date') %></label>
+            <input type="text" id="stock_date" name="stock_date" class="form-control-custom" data-datepicker="jalali" placeholder="1405/01/01" value="<%= form.stock_date || '' %>" readonly required>
+
+            <button type="submit" style="width: 100%; background-color: var(--accent-blue, #0969da); color: #fff; border: none; border-radius: 8px; padding: 11px 18px; font-size: 15px; font-weight: 700; cursor: pointer;">
+                💾 <%= t('stock.save') %>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // 20 bags = 1 ton (same convention as waybills). Whichever field was typed last drives the other.
+    function bagsChanged() {
+        const bags = document.getElementById('bags').value;
+        const tonnageInput = document.getElementById('tonnage');
+        if (bags !== '' && !isNaN(parseFloat(bags))) {
+            tonnageInput.value = parseFloat(bags) / 20;
+        }
+    }
+
+    function tonnageChanged() {
+        const tonnage = document.getElementById('tonnage').value;
+        const bagsInput = document.getElementById('bags');
+        if (tonnage !== '' && !isNaN(parseFloat(tonnage))) {
+            bagsInput.value = parseFloat(tonnage) * 20;
+        }
+    }
+</script>
+
+<%- include('partials/footer') %>

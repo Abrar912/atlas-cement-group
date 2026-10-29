@@ -1,0 +1,451 @@
+        </div>
+    </div>
+
+<!-- ========== SHARED CUSTOM SOLAR HIJRI DATEPICKER ========== -->
+<script>
+(function() {
+    // Solar Hijri month names
+    const jalaliMonths = [
+        'حمل', 'ثور', 'جوزا', 'سرطان', 'اسد', 'سنبله',
+        'میزان', 'عقرب', 'قوس', 'جدی', 'دلو', 'حوت'
+    ];
+
+    // Weekday headers (Solar Hijri week starts on Saturday)
+    const weekdayHeaders = ['ش', 'ی', 'د', 'س', 'چ', 'پ', 'ج'];
+
+    // Datepicker state
+    let datepickerState = {
+        currentYear: 1405,
+        currentMonth: 5,
+        selectedDay: null,
+        activeInput: null,
+        isOpen: false
+    };
+
+    // Create datepicker HTML structure
+    function createDatepicker() {
+        const datepicker = document.createElement('div');
+        datepicker.id = 'custom-jalali-datepicker';
+        datepicker.className = 'custom-jalali-datepicker';
+        datepicker.style.cssText = `
+            position: fixed;
+            display: none;
+            width: 320px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            z-index: 10000;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 13px;
+            color: var(--text-main);
+        `;
+        
+        datepicker.innerHTML = `
+            <div style="padding: 12px; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; gap: 8px; align-items: center; justify-content: space-between;">
+                    <button type="button" id="dp-prev-month" style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px 8px;">◀</button>
+                    <div style="display: flex; gap: 8px; flex: 1;">
+                        <select id="dp-month-select" style="flex: 1; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px;"></select>
+                        <select id="dp-year-select" style="width: 80px; padding: 4px 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 12px;"></select>
+                    </div>
+                    <button type="button" id="dp-next-month" style="background: none; border: none; cursor: pointer; font-size: 16px; padding: 4px 8px;">▶</button>
+                </div>
+            </div>
+            <div style="padding: 12px;">
+                <div id="dp-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 8px; font-size: 11px; font-weight: 600; color: var(--text-muted); text-align: center;"></div>
+                <div id="dp-days" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;"></div>
+            </div>
+            <div style="padding: 8px 12px; border-top: 1px solid var(--border-color); text-align: center;">
+                <button type="button" id="dp-today-btn" style="background: var(--accent-blue); color: var(--card-bg); border: none; padding: 6px 16px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 600;"><%= t('datepicker.today') %></button>
+            </div>
+        `;
+        
+        document.body.appendChild(datepicker);
+        
+        // Populate month dropdown
+        const monthSelect = document.getElementById('dp-month-select');
+        jalaliMonths.forEach((month, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = month;
+            monthSelect.appendChild(option);
+        });
+        
+        // Populate year dropdown (1300-1500)
+        const yearSelect = document.getElementById('dp-year-select');
+        for (let year = 1300; year <= 1500; year++) {
+            const option = document.createElement('option');
+            option.value = year;
+            option.textContent = year;
+            yearSelect.appendChild(option);
+        }
+        
+        // Add event listeners
+        document.getElementById('dp-prev-month').addEventListener('click', () => navigateMonth(-1));
+        document.getElementById('dp-next-month').addEventListener('click', () => navigateMonth(1));
+        document.getElementById('dp-month-select').addEventListener('change', (e) => {
+            datepickerState.currentMonth = parseInt(e.target.value);
+            renderCalendar();
+        });
+        document.getElementById('dp-year-select').addEventListener('change', (e) => {
+            datepickerState.currentYear = parseInt(e.target.value);
+            renderCalendar();
+        });
+        document.getElementById('dp-today-btn').addEventListener('click', selectToday);
+        
+        return datepicker;
+    }
+
+    // Get days in Jalali month
+    function getDaysInJalaliMonth(year, month) {
+        if (month < 6) return 31;
+        if (month < 11) return 30;
+        return isJalaliLeapYear(year) ? 30 : 29;
+    }
+
+    // Check if Jalali year is leap year
+    function isJalaliLeapYear(year) {
+        return (year * 31) % 128 < 31;
+    }
+
+    // Get first day of week for Jalali month (0 = Saturday, 6 = Friday)
+    function getFirstDayOfJalaliMonth(year, month) {
+        const gregorian = jalaliToGregorian(year, month + 1, 1);
+        const date = new Date(gregorian.year, gregorian.month - 1, gregorian.day);
+        const jsDay = date.getDay();
+        return (jsDay + 1) % 7;
+    }
+
+    // Jalali to Gregorian conversion
+    function jalaliToGregorian(jy, jm, jd) {
+        const gy = jy + 621;
+        const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        let j_day_no = (jy - 1) * 365 + Math.floor((jy - 1) / 4);
+        for (let i = 0; i < jm - 1; i++) {
+            j_day_no += getDaysInJalaliMonth(jy, i);
+        }
+        j_day_no += jd - 1;
+        
+        let g_day_no = j_day_no + 79;
+        let gy2 = 1600 + Math.floor(g_day_no / 36524.25);
+        g_day_no = g_day_no % 36524.25;
+        g_day_no = Math.floor(g_day_no);
+        let g_day_no2 = g_day_no + Math.floor(gy2 / 100);
+        const days = g_day_no2 % 36524.25;
+        const gm = Math.floor(days / 30.44);
+        const gd = days - Math.floor(gm * 30.44) + 1;
+        
+        return { year: gy, month: gm, day: gd };
+    }
+
+    // Format Jalali date as YYYY/MM/DD
+    function formatJalaliDate(year, month, day) {
+        const monthStr = String(month + 1).padStart(2, '0');
+        const dayStr = String(day).padStart(2, '0');
+        return `${year}/${monthStr}/${dayStr}`;
+    }
+
+    // Parse Jalali date string
+    function parseJalaliDate(dateStr) {
+        if (!dateStr || !dateStr.match(/^\d{4}\/\d{2}\/\d{2}$/)) return null;
+        const parts = dateStr.split('/');
+        return {
+            year: parseInt(parts[0]),
+            month: parseInt(parts[1]) - 1,
+            day: parseInt(parts[2])
+        };
+    }
+
+    // Get today's Jalali date
+    function getTodayJalali() {
+        const today = new Date();
+        return gregorianToJalali(today.getFullYear(), today.getMonth() + 1, today.getDate());
+    }
+
+    // Gregorian to Jalali conversion
+    function gregorianToJalali(gy, gm, gd) {
+        const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+        let jy = (gy <= 1600) ? 0 : 979;
+        gy -= (gy <= 1600) ? 621 : 1600;
+        const gy2 = (gm > 2) ? (gy + 1) : gy;
+        let days = (365 * gy) + (Math.floor((gy2 + 3) / 4)) - (Math.floor((gy2 + 99) / 100)) + (Math.floor((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+        jy += 33 * Math.floor(days / 12053);
+        days %= 12053;
+        jy += 4 * Math.floor(days / 1461);
+        days %= 1461;
+        jy += Math.floor((days - 1) / 365);
+        if (days > 365) days = (days - 1) % 365;
+        const jm = (days < 186) ? 1 + Math.floor(days / 31) : 7 + Math.floor((days - 186) / 30);
+        const jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+        return { year: jy, month: jm - 1, day: jd };
+    }
+
+    // Render calendar grid
+    function renderCalendar() {
+        const daysContainer = document.getElementById('dp-days');
+        const weekdaysContainer = document.getElementById('dp-weekdays');
+        const monthSelect = document.getElementById('dp-month-select');
+        const yearSelect = document.getElementById('dp-year-select');
+        
+        monthSelect.value = datepickerState.currentMonth;
+        yearSelect.value = datepickerState.currentYear;
+        
+        weekdaysContainer.innerHTML = weekdayHeaders.map(day => `<div>${day}</div>`).join('');
+        
+        const daysInMonth = getDaysInJalaliMonth(datepickerState.currentYear, datepickerState.currentMonth);
+        const firstDayOfWeek = getFirstDayOfJalaliMonth(datepickerState.currentYear, datepickerState.currentMonth);
+        
+        let html = '';
+        
+        for (let i = 0; i < firstDayOfWeek; i++) {
+            html += '<div></div>';
+        }
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const isSelected = day === datepickerState.selectedDay;
+            const selectedStyle = isSelected ? 'background: var(--accent-blue); color: var(--card-bg);' : 'background: var(--card-bg); color: var(--text-main);';
+            const hoverStyle = isSelected ? '' : 'cursor: pointer;';
+            
+            html += `
+                <button type="button" 
+                    data-year="${datepickerState.currentYear}"
+                    data-month="${datepickerState.currentMonth}"
+                    data-day="${day}" 
+                    class="dp-day-btn"
+                    style="padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; ${selectedStyle} ${hoverStyle} font-size: 12px;">
+                    ${day}
+                </button>
+            `;
+        }
+        
+        daysContainer.innerHTML = html;
+        
+        // Add event delegation for day buttons
+        const dayButtons = daysContainer.querySelectorAll('.dp-day-btn');
+        dayButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const year = parseInt(e.target.dataset.year);
+                const month = parseInt(e.target.dataset.month);
+                const day = parseInt(e.target.dataset.day);
+                selectDay(year, month, day);
+            });
+        });
+    }
+
+    // Navigate to previous/next month
+    function navigateMonth(direction) {
+        datepickerState.currentMonth += direction;
+        
+        if (datepickerState.currentMonth < 0) {
+            datepickerState.currentMonth = 11;
+            datepickerState.currentYear--;
+        } else if (datepickerState.currentMonth > 11) {
+            datepickerState.currentMonth = 0;
+            datepickerState.currentYear++;
+        }
+        
+        renderCalendar();
+    }
+
+    // Select a day
+    function selectDay(year, month, day) {
+        datepickerState.currentYear = year;
+        datepickerState.currentMonth = month;
+        datepickerState.selectedDay = day;
+        
+        if (datepickerState.activeInput) {
+            const dateStr = formatJalaliDate(year, month, day);
+            datepickerState.activeInput.value = dateStr;
+            datepickerState.activeInput.dispatchEvent(new Event('change'));
+            datepickerState.activeInput.dispatchEvent(new Event('input'));
+        }
+        
+        closeDatepicker();
+    }
+
+    // Select today
+    function selectToday() {
+        const today = getTodayJalali();
+        datepickerState.currentYear = today.year;
+        datepickerState.currentMonth = today.month;
+        datepickerState.selectedDay = today.day;
+        
+        renderCalendar();
+        selectDay(today.year, today.month, today.day);
+    }
+
+    // Open datepicker
+    function openDatepicker(inputElement) {
+        const datepicker = document.getElementById('custom-jalali-datepicker');
+        if (!datepicker) {
+            createDatepicker();
+        }
+        
+        datepickerState.activeInput = inputElement;
+        datepickerState.isOpen = true;
+        
+        const existingValue = inputElement.value;
+        const parsedDate = parseJalaliDate(existingValue);
+        
+        if (parsedDate) {
+            datepickerState.currentYear = parsedDate.year;
+            datepickerState.currentMonth = parsedDate.month;
+            datepickerState.selectedDay = parsedDate.day;
+        } else {
+            const today = getTodayJalali();
+            datepickerState.currentYear = today.year;
+            datepickerState.currentMonth = today.month;
+            datepickerState.selectedDay = null;
+        }
+        
+        renderCalendar();
+        positionDatepicker(inputElement);
+        datepicker.style.display = 'block';
+    }
+
+    // Close datepicker
+    function closeDatepicker() {
+        const datepicker = document.getElementById('custom-jalali-datepicker');
+        if (datepicker) {
+            datepicker.style.display = 'none';
+        }
+        datepickerState.isOpen = false;
+        datepickerState.activeInput = null;
+    }
+
+    // Expose datepicker functions globally for manual trigger
+    window.openJalaliDatepickerForInput = function(inputElement) {
+        if (typeof inputElement === 'string') {
+            inputElement = document.getElementById(inputElement);
+        }
+        if (!inputElement) return;
+        openDatepicker(inputElement);
+    };
+
+    // Position datepicker
+    function positionDatepicker(inputElement) {
+        const datepicker = document.getElementById('custom-jalali-datepicker');
+        if (!datepicker || !inputElement) return;
+        
+        const inputRect = inputElement.getBoundingClientRect();
+        const datepickerRect = datepicker.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        const safeMargin = 15;
+        
+        let leftPos = inputRect.left;
+        
+        if (leftPos + datepickerRect.width > viewportWidth - scrollbarWidth - safeMargin) {
+            leftPos = viewportWidth - scrollbarWidth - datepickerRect.width - safeMargin;
+        }
+        
+        if (leftPos < safeMargin) {
+            leftPos = safeMargin;
+        }
+        
+        let topPos = inputRect.bottom + 4;
+        
+        if (topPos + datepickerRect.height > viewportHeight - safeMargin) {
+            topPos = inputRect.top - datepickerRect.height - 4;
+        }
+        
+        if (topPos < safeMargin) {
+            topPos = safeMargin;
+        }
+        
+        datepicker.style.left = `${leftPos}px`;
+        datepicker.style.top = `${topPos}px`;
+    }
+
+    // Initialize datepicker on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        createDatepicker();
+        
+        // Auto-detect all inputs with data-datepicker="jalali"
+        const dateInputs = document.querySelectorAll('input[data-datepicker="jalali"]');
+        
+        dateInputs.forEach(input => {
+            // Allow manual entry if data-datepicker-allow-manual is true
+            const allowManual = input.getAttribute('data-datepicker-allow-manual') === 'true';
+            if (!allowManual) {
+                input.readOnly = true;
+            }
+            
+            input.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openDatepicker(input);
+            });
+            
+            // Only auto-open on focus if manual entry is not allowed
+            if (!allowManual) {
+                input.addEventListener('focus', (e) => {
+                    e.stopPropagation();
+                    openDatepicker(input);
+                });
+            }
+        });
+        
+        // Close on click outside
+        document.addEventListener('click', (e) => {
+            const datepicker = document.getElementById('custom-jalali-datepicker');
+            if (datepicker && datepickerState.isOpen) {
+                if (!datepicker.contains(e.target) && !e.target.closest('[data-datepicker="jalali"]')) {
+                    closeDatepicker();
+                }
+            }
+        });
+        
+        // Close on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && datepickerState.isOpen) {
+                closeDatepicker();
+            }
+        });
+        
+        // Reposition on window resize
+        window.addEventListener('resize', () => {
+            if (datepickerState.isOpen && datepickerState.activeInput) {
+                positionDatepicker(datepickerState.activeInput);
+            }
+        });
+    });
+    
+    // Handle dynamically added inputs
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            mutation.addedNodes.forEach(function(node) {
+                if (node.nodeType === 1) {
+                    const inputs = node.querySelectorAll ? node.querySelectorAll('[data-datepicker="jalali"]') : [];
+                    inputs.forEach(function(input) {
+                        // Allow manual entry if data-datepicker-allow-manual is true
+                        const allowManual = input.getAttribute('data-datepicker-allow-manual') === 'true';
+                        if (!allowManual) {
+                            input.readOnly = true;
+                        }
+                        
+                        input.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            openDatepicker(input);
+                        });
+                        
+                        // Only auto-open on focus if manual entry is not allowed
+                        if (!allowManual) {
+                            input.addEventListener('focus', (e) => {
+                                e.stopPropagation();
+                                openDatepicker(input);
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,389 @@
+<%- include('../partials/header') %>
+
+<style>
+    .att-sc-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--accent-blue);
+        text-decoration: none;
+        padding: 5px 12px;
+        border-radius: 6px;
+        background: rgba(9, 105, 218, 0.08);
+        border: 1px solid rgba(9, 105, 218, 0.15);
+        transition: background 0.15s, border-color 0.15s;
+    }
+    .att-sc-link:hover {
+        background: rgba(9, 105, 218, 0.15);
+        border-color: rgba(9, 105, 218, 0.25);
+    }
+    [data-theme="dark"] .att-sc-link {
+        background: rgba(9, 105, 218, 0.15);
+        border-color: rgba(9, 105, 218, 0.25);
+    }
+    [data-theme="dark"] .att-sc-link:hover {
+        background: rgba(9, 105, 218, 0.25);
+        border-color: rgba(9, 105, 218, 0.35);
+    }
+    .emp-avatar { overflow: hidden; }
+    .emp-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+</style>
+
+<div class="card">
+    <!-- Title + Date Navigator -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+        <h2 style="font-size: 22px; font-weight: 700; margin: 0;">📊 <%= t('hr.attendance.title') %></h2>
+        <div class="date-nav">
+            <a href="/admin/hr/attendance?date=<%= encodeURIComponent(prevDate) %>&search=<%= encodeURIComponent(filters.search) %>&department_id=<%= encodeURIComponent(filters.department_id) %>&status=<%= encodeURIComponent(filters.status) %>" class="date-nav-btn">
+                ← <%= t('hr.attendance.previous') %>
+            </a>
+            <div class="date-nav-current"><%= selectedDate %></div>
+            <a href="/admin/hr/attendance?date=<%= encodeURIComponent(nextDate) %>&search=<%= encodeURIComponent(filters.search) %>&department_id=<%= encodeURIComponent(filters.department_id) %>&status=<%= encodeURIComponent(filters.status) %>" class="date-nav-btn">
+                <%= t('hr.attendance.next') %> →
+            </a>
+            <a href="/admin/hr/attendance?search=<%= encodeURIComponent(filters.search) %>&department_id=<%= encodeURIComponent(filters.department_id) %>&status=<%= encodeURIComponent(filters.status) %>" class="date-nav-today">
+                <%= t('hr.attendance.today') %>
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Stat Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; margin-bottom: 20px;">
+        <div class="stat-card stat-card-total stat-card-accent-top">
+            <span class="stat-icon">👥</span>
+            <div class="stat-value"><%= summary.total %></div>
+            <div class="stat-label"><%= t('hr.attendance.total') %></div>
+        </div>
+        <div class="stat-card stat-card-recorded">
+            <span class="stat-icon">📋</span>
+            <div class="stat-value"><%= summary.recorded %></div>
+            <div class="stat-label"><%= t('hr.attendance.recorded') %></div>
+        </div>
+        <div class="stat-card stat-card-missing">
+            <span class="stat-icon">⚠️</span>
+            <div class="stat-value"><%= summary.missing %></div>
+            <div class="stat-label"><%= t('hr.attendance.missing') %></div>
+        </div>
+        <div class="stat-card stat-card-present">
+            <span class="stat-icon">✅</span>
+            <div class="stat-value"><%= summary.present %></div>
+            <div class="stat-label"><%= t('hr.attendance.present') %></div>
+        </div>
+        <div class="stat-card stat-card-absent">
+            <span class="stat-icon">❌</span>
+            <div class="stat-value"><%= summary.absent %></div>
+            <div class="stat-label"><%= t('hr.attendance.absent') %></div>
+        </div>
+        <div class="stat-card stat-card-late">
+            <span class="stat-icon">⏰</span>
+            <div class="stat-value"><%= summary.late %></div>
+            <div class="stat-label"><%= t('hr.attendance.late') %></div>
+        </div>
+        <div class="stat-card stat-card-leave">
+            <span class="stat-icon">🏖️</span>
+            <div class="stat-value"><%= summary.leave %></div>
+            <div class="stat-label"><%= t('hr.attendance.leave') %></div>
+        </div>
+        <div class="stat-card stat-card-early">
+            <span class="stat-icon">🏃</span>
+            <div class="stat-value"><%= summary.early %></div>
+            <div class="stat-label"><%= t('hr.attendance.early') %></div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div style="margin-bottom: 16px;">
+        <form method="GET" action="/admin/hr/attendance" class="hr-toolbar">
+            <input type="hidden" name="date" value="<%= selectedDate %>">
+            <input type="text" name="search" class="form-control" placeholder="<%= t('hr.attendance.search_employee') %>" value="<%= filters.search %>" style="width: 200px; flex: 1; min-width: 150px;">
+            <select name="department_id" class="form-control" style="width: 160px;">
+                <option value=""><%= t('hr.attendance.all_departments') %></option>
+                <% if (departments && departments.length > 0) { %>
+                    <% departments.forEach(function(dept) { %>
+                        <option value="<%= dept.id %>" <%= filters.department_id == dept.id ? 'selected' : '' %>><%= dept.name %></option>
+                    <% }); %>
+                <% } %>
+            </select>
+            <select name="status" class="form-control" style="width: 140px;">
+                <option value=""><%= t('hr.attendance.all_statuses') %></option>
+                <option value="missing" <%= filters.status === 'missing' ? 'selected' : '' %>><%= t('hr.attendance.missing_status') %></option>
+                <option value="Present" <%= filters.status === 'Present' ? 'selected' : '' %>><%= t('hr.attendance.present') %></option>
+                <option value="Absent" <%= filters.status === 'Absent' ? 'selected' : '' %>><%= t('hr.attendance.absent') %></option>
+                <option value="Late" <%= filters.status === 'Late' ? 'selected' : '' %>><%= t('hr.attendance.late') %></option>
+                <option value="Half Day" <%= filters.status === 'Half Day' ? 'selected' : '' %>><%= t('hr.attendance.half_day') %></option>
+                <option value="Holiday" <%= filters.status === 'Holiday' ? 'selected' : '' %>><%= t('hr.attendance.holiday') %></option>
+                <option value="Leave" <%= filters.status === 'Leave' ? 'selected' : '' %>><%= t('hr.attendance.leave') %></option>
+            </select>
+            <button type="submit" class="btn btn-primary"><%= t('hr.payroll.filter') %></button>
+        </form>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="hr-toolbar" style="margin-bottom: 16px;">
+        <form method="POST" action="/admin/hr/attendance/bulk-status" id="bulkStatusForm" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <input type="hidden" name="date" value="<%= selectedDate %>">
+            <select name="status" class="form-control" style="width: 140px; height: 36px;" id="bulkStatusSelect">
+                <option value=""><%= t('hr.attendance.apply_status') %></option>
+                <option value="Present"><%= t('hr.attendance.present') %></option>
+                <option value="Absent"><%= t('hr.attendance.absent') %></option>
+                <option value="Late"><%= t('hr.attendance.late') %></option>
+                <option value="Half Day"><%= t('hr.attendance.half_day') %></option>
+                <option value="Holiday"><%= t('hr.attendance.holiday') %></option>
+                <option value="Leave"><%= t('hr.attendance.leave') %></option>
+            </select>
+            <button type="submit" class="btn btn-primary" onclick="return handleBulkStatus();"><%= t('hr.attendance.apply_status') %></button>
+        </form>
+
+        <div style="margin-inline-start: auto; display: flex; gap: 12px; flex-wrap: wrap;">
+            <a href="/admin/hr/attendance/monthly-summary" class="att-sc-link">📊 <%= t('hr.attendance.monthly_summary') %></a>
+            <a href="/admin/hr/schedules" class="att-sc-link">⚙ <%= t('hr.attendance.work_schedules') %></a>
+        </div>
+    </div>
+
+    <!-- DESKTOP TABLE -->
+    <div class="table-responsive hr-desktop-table">
+        <table id="attendanceTable">
+            <thead>
+                <tr>
+                    <th style="width: 36px;"><input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"></th>
+                    <th><%= t('hr.attendance.employee') %></th>
+                    <th><%= t('hr.attendance.department') %></th>
+                    <th><%= t('hr.attendance.schedule') %></th>
+                    <th><%= t('hr.attendance.status') %></th>
+                    <th><%= t('hr.attendance.check_in') %></th>
+                    <th><%= t('hr.attendance.check_out') %></th>
+                    <th><%= t('hr.attendance.late_minutes') %></th>
+                    <th><%= t('hr.attendance.early') %></th>
+                    <th><%= t('hr.attendance.actions') %></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (employees && employees.length > 0) { %>
+                    <% employees.forEach(function(emp) { %>
+                        <%
+                            var initials = '?';
+                            if (emp.full_name) {
+                                var parts = emp.full_name.trim().split(/\s+/);
+                                initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]) : parts[0].substring(0, 2);
+                            }
+                            var avatarColors = ['#10b981','#3b82f6','#8b5cf6','#f97316','#ec4899','#06b6d4','#f59e0b','#ef4444'];
+                            var colorIdx = emp.id % avatarColors.length;
+                            var avatarBg = avatarColors[colorIdx];
+                        %>
+                        <tr>
+                            <td><input type="checkbox" name="employee_ids" value="<%= emp.id %>" class="emp-checkbox"></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="emp-avatar" style="background: <%= avatarBg %>;"><% if (emp.photo_path) { %><img src="/<%= emp.photo_path %>" alt="<%= emp.full_name %>"><% } else { %><%= initials %><% } %></div>
+                                    <div>
+                                        <strong style="font-size: 13px;"><%= emp.full_name %></strong>
+                                        <% if (emp.employee_id) { %>
+                                            <div style="font-size: 11px; color: var(--text-muted);"><%= emp.employee_id %></div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-size: 12px; color: var(--text-muted);"><%= emp.department_name || '—' %></td>
+                            <td>
+                                <% if (emp.schedule_name) { %>
+                                    <span style="font-size: 12px; font-weight: 600;"><%= emp.schedule_name %></span><br>
+                                    <span class="time-range" style="font-size: 11px; color: var(--text-muted);">
+                                        <%= emp.expected_check_in || '' %> <span class="time-range-arrow">→</span> <%= emp.expected_check_out || '' %>
+                                    </span>
+                                <% } else { %>
+                                    <span class="att-badge att-badge-missing" style="font-size: 11px;"><%= t('hr.attendance.no_schedule') %></span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (!emp.att_id) { %>
+                                    <span class="att-badge att-badge-present"><%= t('hr.attendance.present') %></span>
+                                <% } else if (emp.att_status === 'Present') { %>
+                                    <span class="att-badge att-badge-present"><%= t('hr.attendance.present') %></span>
+                                <% } else if (emp.att_status === 'Absent') { %>
+                                    <span class="att-badge att-badge-absent"><%= t('hr.attendance.absent') %></span>
+                                <% } else if (emp.att_status === 'Late') { %>
+                                    <span class="att-badge att-badge-late"><%= t('hr.attendance.late') %></span>
+                                <% } else if (emp.att_status === 'Half Day') { %>
+                                    <span class="att-badge att-badge-half"><%= t('hr.attendance.half_day') %></span>
+                                <% } else if (emp.att_status === 'Holiday') { %>
+                                    <span class="att-badge att-badge-holiday"><%= t('hr.attendance.holiday') %></span>
+                                <% } else if (emp.att_status === 'Leave') { %>
+                                    <span class="att-badge att-badge-leave"><%= t('hr.attendance.leave') %></span>
+                                <% } %>
+                            </td>
+                            <td style="font-size: 13px; font-variant-numeric: tabular-nums;"><%= emp.check_in || '—' %></td>
+                            <td style="font-size: 13px; font-variant-numeric: tabular-nums;"><%= emp.check_out || '—' %></td>
+                            <td>
+                                <% if (emp.late_minutes > 0) { %>
+                                    <span class="indicator-chip indicator-late">⏰ <%= emp.late_minutes %>m</span>
+                                <% } else { %>
+                                    <span class="indicator-ok">0</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (emp.early_departure_minutes > 0) { %>
+                                    <span class="indicator-chip indicator-early">🏃 <%= emp.early_departure_minutes %>m</span>
+                                <% } else { %>
+                                    <span class="indicator-ok">0</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (!emp.att_id) { %>
+                                    <form method="POST" action="/admin/hr/attendance" style="display: inline;">
+                                        <input type="hidden" name="employee_id" value="<%= emp.id %>">
+                                        <input type="hidden" name="attendance_date" value="<%= selectedDate %>">
+                                        <input type="hidden" name="status" value="Present">
+                                        <input type="time" name="check_in" class="form-control" style="width: 90px; display: inline-block; height: 28px; font-size: 11px;">
+                                        <button type="submit" class="btn" style="font-size: 11px; padding: 3px 8px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;"><%= t('hr.attendance.check_in') %></button>
+                                    </form>
+                                    <form method="POST" action="/admin/hr/attendance" style="display: inline;">
+                                        <input type="hidden" name="employee_id" value="<%= emp.id %>">
+                                        <input type="hidden" name="attendance_date" value="<%= selectedDate %>">
+                                        <input type="hidden" name="status" value="Absent">
+                                        <button type="submit" class="btn" style="font-size: 11px; padding: 3px 8px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 4px;"><%= t('hr.attendance.mark_absent') %></button>
+                                    </form>
+                                <% } else { %>
+                                    <a href="/admin/hr/attendance/<%= emp.att_id %>/edit" style="font-size: 12px; color: var(--accent-blue); text-decoration: none; font-weight: 500;"><%= t('hr.attendance.edit') || 'Edit' %></a>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="10" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <%= t('hr.attendance.no_records_found') %>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MOBILE CARDS -->
+    <div class="hr-mobile-cards">
+        <% if (employees && employees.length > 0) { %>
+            <% employees.forEach(function(emp) { %>
+                <%
+                    var initials = '?';
+                    if (emp.full_name) {
+                        var parts = emp.full_name.trim().split(/\s+/);
+                        initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]) : parts[0].substring(0, 2);
+                    }
+                    var avatarColors = ['#10b981','#3b82f6','#8b5cf6','#f97316','#ec4899','#06b6d4','#f59e0b','#ef4444'];
+                    var colorIdx = emp.id % avatarColors.length;
+                    var avatarBg = avatarColors[colorIdx];
+                %>
+                <div class="att-emp-card">
+                    <div class="att-emp-card-header">
+                        <div class="emp-avatar" style="background: <%= avatarBg %>;"><% if (emp.photo_path) { %><img src="/<%= emp.photo_path %>" alt="<%= emp.full_name %>"><% } else { %><%= initials %><% } %></div>
+                        <div style="flex: 1;">
+                            <div class="att-emp-card-name"><%= emp.full_name %></div>
+                            <div class="att-emp-card-id"><%= emp.employee_id || '' %> · <%= emp.department_name || '—' %></div>
+                        </div>
+                        <% if (!emp.att_id) { %>
+                            <span class="att-badge att-badge-present"><%= t('hr.attendance.present') %></span>
+                        <% } else if (emp.att_status === 'Present') { %>
+                            <span class="att-badge att-badge-present"><%= t('hr.attendance.present') %></span>
+                        <% } else if (emp.att_status === 'Absent') { %>
+                            <span class="att-badge att-badge-absent"><%= t('hr.attendance.absent') %></span>
+                        <% } else if (emp.att_status === 'Late') { %>
+                            <span class="att-badge att-badge-late"><%= t('hr.attendance.late') %></span>
+                        <% } else if (emp.att_status === 'Half Day') { %>
+                            <span class="att-badge att-badge-half"><%= t('hr.attendance.half_day') %></span>
+                        <% } else if (emp.att_status === 'Holiday') { %>
+                            <span class="att-badge att-badge-holiday"><%= t('hr.attendance.holiday') %></span>
+                        <% } else if (emp.att_status === 'Leave') { %>
+                            <span class="att-badge att-badge-leave"><%= t('hr.attendance.leave') %></span>
+                        <% } %>
+                    </div>
+                    <% if (emp.schedule_name) { %>
+                        <div class="att-emp-card-detail">
+                            <span>📅 <%= emp.schedule_name %></span>
+                            <span class="time-range"><%= emp.expected_check_in %> <span class="time-range-arrow">→</span> <%= emp.expected_check_out %></span>
+                        </div>
+                    <% } %>
+                    <div class="att-emp-card-detail">
+                        <span>In: <strong><%= emp.check_in || '—' %></strong></span>
+                        <span>Out: <strong><%= emp.check_out || '—' %></strong></span>
+                        <% if (emp.late_minutes > 0) { %>
+                            <span class="indicator-chip indicator-late">⏰ <%= emp.late_minutes %>m</span>
+                        <% } %>
+                        <% if (emp.early_departure_minutes > 0) { %>
+                            <span class="indicator-chip indicator-early">🏃 <%= emp.early_departure_minutes %>m</span>
+                        <% } %>
+                    </div>
+                    <div class="att-emp-card-actions">
+                        <input type="checkbox" name="employee_ids" value="<%= emp.id %>" class="emp-checkbox" style="margin: 0;">
+                        <% if (!emp.att_id) { %>
+                            <form method="POST" action="/admin/hr/attendance" style="display: inline;">
+                                <input type="hidden" name="employee_id" value="<%= emp.id %>">
+                                <input type="hidden" name="attendance_date" value="<%= selectedDate %>">
+                                <input type="hidden" name="status" value="Present">
+                                <input type="time" name="check_in" class="form-control" style="width: 90px; display: inline-block; height: 28px; font-size: 11px;">
+                                <button type="submit" class="btn" style="font-size: 11px; padding: 4px 10px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer;"><%= t('hr.attendance.check_in') %></button>
+                            </form>
+                            <form method="POST" action="/admin/hr/attendance" style="display: inline;">
+                                <input type="hidden" name="employee_id" value="<%= emp.id %>">
+                                <input type="hidden" name="attendance_date" value="<%= selectedDate %>">
+                                <input type="hidden" name="status" value="Absent">
+                                <button type="submit" class="btn" style="font-size: 11px; padding: 4px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer;"><%= t('hr.attendance.mark_absent') %></button>
+                            </form>
+                        <% } else { %>
+                            <a href="/admin/hr/attendance/<%= emp.att_id %>/edit" style="font-size: 12px; color: var(--accent-blue); text-decoration: none; font-weight: 500; padding: 4px 10px;"><%= t('hr.attendance.edit') || 'Edit' %></a>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <%= t('hr.attendance.no_records_found') %>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+function toggleSelectAll(master) {
+    var boxes = document.querySelectorAll('.emp-checkbox');
+    for (var i = 0; i < boxes.length; i++) {
+        boxes[i].checked = master.checked;
+    }
+}
+
+var NO_STATUS_MSG = '<%= t("hr.attendance.no_status_selected") %>';
+var NO_EMP_MSG = '<%= t("hr.attendance.no_employees_selected") %>';
+var CONFIRM_STATUS_MSG = '<%= t("hr.attendance.confirm_mark_status") %>';
+
+function handleBulkStatus() {
+    var status = document.getElementById('bulkStatusSelect').value;
+    if (!status) {
+        alert(NO_STATUS_MSG);
+        return false;
+    }
+    var boxes = document.querySelectorAll('.emp-checkbox:checked');
+    if (boxes.length === 0) {
+        alert(NO_EMP_MSG);
+        return false;
+    }
+    if (!confirm(CONFIRM_STATUS_MSG)) {
+        return false;
+    }
+    var form = document.getElementById('bulkStatusForm');
+    var existingHidden = form.querySelectorAll('input[name="employee_ids"]');
+    for (var j = 0; j < existingHidden.length; j++) {
+        existingHidden[j].remove();
+    }
+    for (var i = 0; i < boxes.length; i++) {
+        var hid = document.createElement('input');
+        hid.type = 'hidden';
+        hid.name = 'employee_ids';
+        hid.value = boxes[i].value;
+        form.appendChild(hid);
+    }
+    return true;
+}
+</script>
+
+<%- include('../partials/footer') %>

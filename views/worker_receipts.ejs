@@ -1,0 +1,336 @@
+<%- include('partials/header') %>
+
+<div style="border-bottom: 2px solid #eaeef2; padding-bottom: 10px; margin-bottom: 20px;">
+    <h2><%= t('worker_receipts.title') %></h2>
+    <p style="font-size: 14px; color: #57606a;"><%= t('worker_receipts.description') %></p>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr;">
+    <div class="card">
+        <h3><%= t('worker_receipts.new_form') %></h3>
+        <p style="font-size: 13px; color: #57606a; margin-bottom: 15px;"><%= t('worker_receipts.form_description') %></p>
+        
+        <form id="receipt-draft-form" onsubmit="addReceiptToDraft(event)" data-no-receipts="<%= t('worker_receipts.no_receipts_alert') %>" data-confirm-send="<%= t('worker_receipts.confirm_send') %>" data-success="<%= t('worker_receipts.success') %>" data-error="<%= t('worker_receipts.error') %>">
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                <div class="form-group">
+                    <label><%= t('worker_receipts.receipt_date') %></label>
+                    <input type="text" id="receipt_date" class="form-control" data-datepicker="jalali" placeholder="1405/03/25" required>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_receipts.select_customer') %></label>
+                    <select id="receipt_customer_id" class="form-control" required>
+                        <option value=""><%= t('worker_receipts.choose_account') %></option>
+                        <% if (typeof customers !== 'undefined' && customers.length > 0) { %>
+                            <% customers.forEach(function(cust) { %>
+                                <option value="<%= cust.id %>">
+                                    <%= cust.customer_id || ('#CUST-' + cust.id) %> - <%= cust.name %> (<%= cust.province %>)
+                                </option>
+                            <% }); %>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_receipts.sender_name') %></label>
+                    <input type="text" id="sender_name" class="form-control" placeholder="<%= t('worker_receipts.sender_name_placeholder') %>" required>
+                </div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-top: 10px;">
+                <div class="form-group">
+                    <label><%= t('worker_receipts.source_type') %></label>
+                    <select id="origin_source_type" class="form-control" onchange="handleSourceTypeChange()" required>
+                        <option value=""><%= t('worker_receipts.choose_source') %></option>
+                        <option value="Bank"><%= t('worker_receipts.source_bank') %></option>
+                        <option value="Sarafi"><%= t('worker_receipts.source_sarafi') %></option>
+                        <option value="Other"><%= t('worker_receipts.source_other') %></option>
+                    </select>
+                </div>
+                <div class="form-group" id="origin_source_name_container" style="display: none;">
+                    <label><%= t('worker_receipts.source_name') %></label>
+                    <input type="text" id="origin_source_name" class="form-control" placeholder="<%= t('worker_receipts.source_name_placeholder') %>">
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_receipts.remittance_number') %></label>
+                    <input type="text" id="remittance_number" class="form-control" placeholder="<%= t('worker_receipts.remittance_number_placeholder') %>" required>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_receipts.amount_received') %></label>
+                    <input type="number" step="0.1" id="amount_received" class="form-control" placeholder="<%= t('worker_receipts.amount_placeholder') %>" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="background-color: #0969da; width: 100%; margin-top: 10px; padding: 10px;">
+                <%= t('worker_receipts.add_receipt') %>
+            </button>
+        </form>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div>
+                <h3><%= t('worker_receipts.batch_queue') %></h3>
+                <p style="font-size: 13px; color: #57606a;"><%= t('worker_receipts.batch_description') %></p>
+            </div>
+            <button onclick="commitReceiptBatch()" class="btn btn-primary" style="background-color: #2ea44f; padding: 10px 20px;">
+                <%= t('worker_receipts.send_report') %>
+            </button>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th><%= t('worker_receipts.th_date') %></th>
+                        <th><%= t('worker_receipts.th_customer') %></th>
+                        <th><%= t('worker_receipts.th_sender') %></th>
+                        <th><%= t('worker_receipts.th_source') %></th>
+                        <th><%= t('worker_receipts.th_hawala') %></th>
+                        <th><%= t('worker_receipts.th_amount') %></th>
+                        <th style="text-align: center;"><%= t('worker_receipts.th_action') %></th>
+                    </tr>
+                </thead>
+                <tbody id="receipt-draft-rows">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Receipt Draft Modal -->
+<div id="editReceiptModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: #fff; padding: 25px; border-radius: 8px; max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+        <h3 style="margin-bottom: 20px; color: #24292f;"><%= t('worker_receipts.edit_entry') %></h3>
+        <form id="edit-receipt-form" onsubmit="saveReceiptEdit(event)">
+            <input type="hidden" id="edit_receipt_index">
+            <div class="form-group">
+                <label><%= t('worker_receipts.receipt_date') %></label>
+                <input type="text" id="edit_receipt_date" class="form-control" data-datepicker="jalali" required>
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_receipts.sender_name') %></label>
+                <input type="text" id="edit_sender_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_receipts.source_type') %></label>
+                <select id="edit_origin_source_type" class="form-control" onchange="handleEditSourceTypeChange()" required>
+                    <option value=""><%= t('worker_receipts.choose_source') %></option>
+                    <option value="Bank"><%= t('worker_receipts.source_bank') %></option>
+                    <option value="Sarafi"><%= t('worker_receipts.source_sarafi') %></option>
+                    <option value="Other"><%= t('worker_receipts.source_other') %></option>
+                </select>
+            </div>
+            <div class="form-group" id="edit_origin_source_name_container" style="display: none;">
+                <label><%= t('worker_receipts.source_name') %></label>
+                <input type="text" id="edit_origin_source_name" class="form-control" placeholder="<%= t('worker_receipts.source_name_placeholder') %>">
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_receipts.remittance_number') %></label>
+                <input type="text" id="edit_remittance_number" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_receipts.amount_received') %></label>
+                <input type="number" step="0.1" id="edit_amount_received" class="form-control" required>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1; background-color: #2ea44f;"><%= t('worker_receipts.save_changes') %></button>
+                <button type="button" onclick="closeReceiptEditModal()" class="btn btn-danger" style="flex: 1;"><%= t('worker_receipts.cancel') %></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let receiptBatchDraft = [];
+
+document.getElementById('nav-worker-receipts').classList.add('active');
+
+// Load customers dynamically from API
+function loadCustomersDropdown() {
+    fetch('/api/agency/customers')
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('receipt_customer_id');
+            select.innerHTML = `<option value=""><%= t('worker_receipts.choose_account') %></option>`;
+            
+            if (data.customers && data.customers.length > 0) {
+                data.customers.forEach(cust => {
+                    select.innerHTML += `<option value="${esc(cust.id)}">${esc(cust.customer_id || ('#CUST-' + cust.id))} - ${esc(cust.name)} (${esc(cust.province)})</option>`;
+                });
+            }
+        })
+        .catch(err => {
+            console.error('Error loading customers dropdown:', err);
+        });
+}
+
+// Load customers on page load
+loadCustomersDropdown();
+
+// Handle source type change - show/hide name input
+function handleSourceTypeChange() {
+    const sourceType = document.getElementById('origin_source_type').value;
+    const nameContainer = document.getElementById('origin_source_name_container');
+    
+    if (sourceType === 'Bank' || sourceType === 'Sarafi' || sourceType === 'Other') {
+        nameContainer.style.display = 'block';
+        document.getElementById('origin_source_name').setAttribute('required', 'required');
+    } else {
+        nameContainer.style.display = 'none';
+        document.getElementById('origin_source_name').removeAttribute('required');
+        document.getElementById('origin_source_name').value = '';
+    }
+}
+
+// Handle edit source type change
+function handleEditSourceTypeChange() {
+    const sourceType = document.getElementById('edit_origin_source_type').value;
+    const nameContainer = document.getElementById('edit_origin_source_name_container');
+    
+    if (sourceType === 'Bank' || sourceType === 'Sarafi' || sourceType === 'Other') {
+        nameContainer.style.display = 'block';
+        document.getElementById('edit_origin_source_name').setAttribute('required', 'required');
+    } else {
+        nameContainer.style.display = 'none';
+        document.getElementById('edit_origin_source_name').removeAttribute('required');
+        document.getElementById('edit_origin_source_name').value = '';
+    }
+}
+
+function addReceiptToDraft(event) {
+    event.preventDefault();
+    const custSelect = document.getElementById('receipt_customer_id');
+    
+    const receiptData = {
+        receipt_date: document.getElementById('receipt_date').value,
+        customer_id: parseInt(custSelect.value),
+        customer_name: custSelect.options[custSelect.selectedIndex].text,
+        sender_name: document.getElementById('sender_name').value,
+        origin_source_type: document.getElementById('origin_source_type').value,
+        origin_source_name: document.getElementById('origin_source_name').value,
+        remittance_number: document.getElementById('remittance_number').value,
+        amount_received: parseFloat(document.getElementById('amount_received').value)
+    };
+    
+    receiptBatchDraft.push(receiptData);
+    renderReceiptDraftTable();
+    
+    // Clear fields
+    document.getElementById('sender_name').value = '';
+    document.getElementById('remittance_number').value = '';
+    document.getElementById('amount_received').value = '';
+    document.getElementById('origin_source_type').value = '';
+    document.getElementById('origin_source_name').value = '';
+    handleSourceTypeChange();
+}
+
+function deleteReceiptRow(index) {
+    receiptBatchDraft.splice(index, 1);
+    renderReceiptDraftTable();
+}
+
+function editReceiptRow(index) {
+    const row = receiptBatchDraft[index];
+    document.getElementById('edit_receipt_index').value = index;
+    document.getElementById('edit_receipt_date').value = row.receipt_date;
+    document.getElementById('edit_sender_name').value = row.sender_name;
+    document.getElementById('edit_origin_source_type').value = row.origin_source_type || '';
+    document.getElementById('edit_origin_source_name').value = row.origin_source_name || '';
+    handleEditSourceTypeChange();
+    document.getElementById('edit_remittance_number').value = row.remittance_number;
+    document.getElementById('edit_amount_received').value = row.amount_received;
+    
+    document.getElementById('editReceiptModal').style.display = 'flex';
+}
+
+function closeReceiptEditModal() {
+    document.getElementById('editReceiptModal').style.display = 'none';
+}
+
+function saveReceiptEdit(event) {
+    event.preventDefault();
+    
+    const index = parseInt(document.getElementById('edit_receipt_index').value);
+    
+    receiptBatchDraft[index] = {
+        receipt_date: document.getElementById('edit_receipt_date').value,
+        customer_id: receiptBatchDraft[index].customer_id,
+        customer_name: receiptBatchDraft[index].customer_name,
+        sender_name: document.getElementById('edit_sender_name').value,
+        origin_source_type: document.getElementById('edit_origin_source_type').value,
+        origin_source_name: document.getElementById('edit_origin_source_name').value,
+        remittance_number: document.getElementById('edit_remittance_number').value,
+        amount_received: parseFloat(document.getElementById('edit_amount_received').value)
+    };
+    
+    renderReceiptDraftTable();
+    closeReceiptEditModal();
+}
+
+function renderReceiptDraftTable() {
+    const container = document.getElementById('receipt-draft-rows');
+    if (receiptBatchDraft.length === 0) {
+        container.innerHTML = `<tr><td colspan="7" style="text-align: center; color:#57606a; padding:20px;"><%= t('worker_receipts.no_receipts') %></td></tr>`;
+        return;
+    }
+    
+    let html = '';
+    receiptBatchDraft.forEach((row, idx) => {
+        const sourceDisplay = row.origin_source_type && row.origin_source_name 
+            ? `${esc(row.origin_source_type)} - ${esc(row.origin_source_name)}` 
+            : (row.origin_source_type || row.origin_source_name || '-');
+        
+        html += `
+            <tr>
+                <td>${esc(row.receipt_date)}</td>
+                <td style="font-weight:600;"><code class="customer-id-hover" onclick="openCustomerModal(${esc(row.customer_id)})">${esc(row.customer_name)}</code></td>
+                <td>${esc(row.sender_name)}</td>
+                <td>${esc(sourceDisplay)}</td>
+                <td>${esc(row.remittance_number)}</td>
+                <td style="color:#2ea44f; font-weight:700;">${esc(row.amount_received.toLocaleString())} Afs</td>
+                <td style="text-align:center;">
+                    <button onclick="editReceiptRow(${esc(idx)})" class="btn btn-primary" style="padding: 4px 8px; font-size:11px; margin-right: 4px;"><%= t('worker_receipts.edit') %></button>
+                    <button onclick="deleteReceiptRow(${esc(idx)})" class="btn btn-danger" style="padding: 4px 8px; font-size:11px;"><%= t('worker_receipts.discard') %></button>
+                </td>
+            </tr>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+function commitReceiptBatch() {
+    const form = document.getElementById('receipt-draft-form');
+    const noReceiptsMsg = form.getAttribute('data-no-receipts');
+    const confirmSendMsg = form.getAttribute('data-confirm-send');
+    const successMsg = form.getAttribute('data-success');
+    const errorMsg = form.getAttribute('data-error');
+    
+    if (receiptBatchDraft.length === 0) {
+        alert(noReceiptsMsg);
+        return;
+    }
+    
+    if(!confirm(confirmSendMsg.replace('{count}', receiptBatchDraft.length))) return;
+    
+    fetch('/worker/add-receipts-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ batch: receiptBatchDraft })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.success) {
+            alert(successMsg);
+            receiptBatchDraft = [];
+            renderReceiptDraftTable();
+        } else {
+            alert(errorMsg + data.message);
+        }
+    });
+}
+
+renderReceiptDraftTable();
+</script>
+
+<%- include('partials/customer_modal') %>
+
+<%- include('partials/footer') %>

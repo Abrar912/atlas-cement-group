@@ -1,0 +1,2342 @@
+<%- include('partials/header') %>
+
+<style>
+    :root {
+        --accent-blue: #2563eb;
+        --success-green: #059669;
+        --danger-red: #dc2626;
+        --warning-amber: #d97706;
+    }
+
+    /* Customer Summary Print Button - Always visible in Light Mode */
+    .customer-summary-print-btn {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border-color: #000000 !important;
+    }
+
+    .customer-summary-print-btn:hover:not(:disabled) {
+        background-color: #333333 !important;
+        color: #ffffff !important;
+        border-color: #333333 !important;
+    }
+
+    .customer-summary-print-btn:focus {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border-color: #000000 !important;
+        outline: 2px solid #000000 !important;
+        outline-offset: 2px !important;
+    }
+
+    .customer-summary-print-btn:active:not(:disabled) {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border-color: #000000 !important;
+    }
+
+    .customer-summary-print-btn svg {
+        stroke: #ffffff !important;
+    }
+
+    .page-wrapper {
+        /* Direction is inherited from <html dir="..."> so Dari/Pashto render RTL
+           and English renders LTR — no more forced ltr/rtl overrides here. */
+        padding: 24px;
+        background-color: var(--bg-color);
+        min-height: 100vh;
+        box-sizing: border-box;
+    }
+
+    /* Premium Page Header */
+    .page-header {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+        flex-wrap: wrap;
+    }
+
+    .header-content {
+        flex: 1;
+    }
+
+    .header-content h1 {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 6px 0;
+        letter-spacing: -0.02em;
+        line-height: 1.3;
+    }
+
+    .header-content p {
+        font-size: 14px;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary {
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.15s ease;
+    }
+
+    .btn-primary:hover {
+        background-color: #334155;
+    }
+
+    .btn-secondary {
+        background-color: var(--text-muted);
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 10px 16px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: background-color 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+        background-color: #4b5563;
+    }
+
+    /* Unified Filter Panel */
+    .filter-panel {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        margin-bottom: 24px;
+    }
+
+    .filter-panel-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border-color);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+    }
+
+    .filter-panel-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
+
+    .filter-panel-title svg {
+        flex-shrink: 0;
+    }
+
+    .filter-panel-header .btn-secondary {
+        white-space: nowrap;
+    }
+
+    .filter-panel-body {
+        padding: 20px;
+    }
+
+    .filter-section {
+        margin-bottom: 20px;
+    }
+
+    .filter-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .filter-section-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 12px 0;
+    }
+
+    .filter-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        align-items: flex-end;
+    }
+
+    .primary-filter-row,
+    .search-filter-row {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        width: 100%;
+    }
+
+    .filter-field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .filter-field label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .form-input {
+        padding: 8px 10px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        background-color: var(--card-bg);
+        color: var(--text-main);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        min-height: 38px;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .form-input:focus {
+        border-color: var(--accent-blue);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .date-range-group {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 6px;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .date-range-group .form-input {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .date-range-separator {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+    
+    @media (max-width: 1100px) {
+        .primary-filter-row,
+        .search-filter-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .date-range-group {
+            grid-template-columns: 1fr;
+            gap: 6px;
+        }
+        
+        .date-range-separator {
+            text-align: center;
+            grid-row: 1;
+        }
+    }
+    
+    @media (max-width: 650px) {
+        .primary-filter-row,
+        .search-filter-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Main Content Area */
+    .content-area {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    /* Enterprise Table */
+    .table-wrapper {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    .data-table thead {
+        background-color: var(--bg-color);
+        border-bottom: 2px solid var(--border-color);
+    }
+
+    .data-table th {
+        color: var(--text-main);
+        font-weight: 600;
+        padding: 14px 16px;
+        text-align: center;
+        white-space: nowrap;
+        font-size: 12px;
+        letter-spacing: -0.01em;
+        text-transform: uppercase;
+    }
+
+    .data-table td {
+        padding: 14px 16px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-muted);
+        white-space: nowrap;
+    }
+
+    .data-table tbody tr:hover {
+        background-color: var(--bg-color);
+    }
+
+    .data-table .col-index {
+        background-color: var(--bg-color);
+        font-weight: 500;
+        color: var(--text-muted);
+        font-size: 12px;
+    }
+
+    .data-table .col-amount {
+        font-weight: 600;
+        color: var(--success-green);
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    }
+
+    .customer-link {
+        color: var(--accent-blue);
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.15s ease;
+    }
+
+    .customer-link:hover {
+        color: #1d4ed8;
+        text-decoration: underline;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .status-badge.bank {
+        background-color: #eff6ff;
+        color: var(--accent-blue);
+    }
+
+    .status-badge.sarafi {
+        background-color: #fef3c7;
+        color: var(--warning-amber);
+    }
+
+    /* Summary Footer */
+    .summary-footer {
+        background-color: var(--bg-color);
+        border-top: 2px solid var(--border-color);
+        padding: 16px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .summary-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+    }
+
+    .summary-value {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--success-green);
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    }
+
+    /* Pagination Bar */
+    .pagination-bar {
+        background-color: var(--surface-elevated);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px 24px;
+        margin-top: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .pagination-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        color: var(--text-muted);
+    }
+
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pagination-btn {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+        background-color: var(--border-color);
+    }
+
+    .pagination-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .page-indicator {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    /* Empty State */
+    .empty-state {
+        padding: 60px 20px;
+        text-align: center;
+        background-color: var(--bg-color);
+    }
+
+    .empty-state-icon {
+        width: 48px;
+        height: 48px;
+        stroke: var(--text-muted);
+        stroke-width: 1.5;
+        fill: none;
+        margin-bottom: 16px;
+    }
+
+    .empty-state-text {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .empty-state-sub {
+        font-size: 13px;
+        font-weight: 400;
+        color: var(--text-muted);
+        margin: 6px 0 0;
+        line-height: 1.5;
+    }
+
+    .empty-state .btn-secondary,
+    .error-state .btn-secondary {
+        margin-top: 16px;
+    }
+
+    /* Loading State */
+    .loading-state {
+        padding: 60px 20px;
+        text-align: center;
+    }
+
+    .loading-spinner {
+        width: 40px;
+        height: 40px;
+        stroke: var(--text-muted);
+        stroke-width: 1.5;
+        fill: none;
+        margin-bottom: 16px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Error State */
+    .error-state {
+        padding: 60px 20px;
+        text-align: center;
+        background-color: rgba(220, 38, 38, 0.07);
+    }
+
+    .error-icon {
+        width: 48px;
+        height: 48px;
+        stroke: var(--danger-red);
+        stroke-width: 1.5;
+        fill: none;
+        margin-bottom: 16px;
+    }
+
+    .error-text {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--danger-red);
+        margin: 0;
+    }
+
+    /* Report Close Button - Red X Icon */
+    .report-close-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #dc2626;
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 0;
+        transition: background-color 0.2s ease;
+    }
+    .report-close-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: #ffffff;
+        stroke-width: 2.5;
+        fill: none;
+        stroke-linecap: round;
+    }
+    .report-close-btn:hover {
+        background: #b91c1c;
+    }
+
+    /* Unified Filter Grid - Compact responsive grid holding all 10 filters */
+    .unified-filter-grid {
+        display: grid;
+        /* 5 columns keeps the two-row rhythm on wide laptop screens. */
+        grid-template-columns: repeat(5, minmax(140px, 1fr));
+        gap: 14px 10px;
+        align-items: start;
+    }
+
+    .unified-filter-grid .filter-field {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .unified-filter-grid .filter-field label {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 4px;
+        color: var(--text-muted);
+        line-height: 1.35;
+    }
+
+    .unified-filter-grid .filter-field .form-input {
+        font-size: 13px;
+        padding: 6px 8px;
+        min-height: 38px;
+    }
+
+    .unified-filter-grid .date-range-group {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        min-width: 0;
+    }
+
+    .unified-filter-grid .date-range-group .form-input {
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto;
+    }
+
+    .unified-filter-grid .date-range-separator {
+        font-size: 11px;
+        color: var(--text-muted);
+        flex-shrink: 0;
+    }
+
+    /* Laptop / small desktop: keep every filter visible in fewer, wider columns. */
+    @media (max-width: 1200px) {
+        .unified-filter-grid {
+            grid-template-columns: repeat(4, minmax(140px, 1fr));
+        }
+    }
+
+    @media (max-width: 980px) {
+        .unified-filter-grid {
+            grid-template-columns: repeat(3, minmax(140px, 1fr));
+        }
+    }
+
+    @media (max-width: 720px) {
+        .unified-filter-grid {
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
+        }
+    }
+
+    /* Phone: one filter per row so every control stays full width and thumb-sized. */
+    @media (max-width: 560px) {
+        .unified-filter-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .unified-filter-grid .date-range-group {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 6px;
+        }
+
+        .unified-filter-grid .date-range-separator {
+            text-align: center;
+            font-size: 12px;
+        }
+    }
+
+    /* NOTE: the mobile input font-size override lives at the end of this
+       stylesheet block so it can win over the base .rem-filter-* rules
+       that are declared later in this file. */
+
+    /* Customer Financial Summary Compact Table */
+    .customer-accounts-summary-table {
+        width: 100%;
+        table-layout: auto;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .customer-accounts-summary-table th,
+    .customer-accounts-summary-table td {
+        padding: 7px 8px;
+        white-space: normal;
+        vertical-align: middle;
+    }
+
+    .customer-accounts-summary-table th {
+        white-space: nowrap;
+        font-size: 12px;
+    }
+
+    .customer-accounts-summary-table .col-id {
+        min-width: 80px;
+        max-width: 100px;
+    }
+
+    .customer-accounts-summary-table .col-name {
+        min-width: 120px;
+        max-width: 180px;
+    }
+
+    .customer-accounts-summary-table .col-amount {
+        min-width: 90px;
+        max-width: 120px;
+        font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+        font-weight: 600;
+    }
+
+    .customer-accounts-summary-table .col-count {
+        min-width: 70px;
+        max-width: 90px;
+        text-align: center;
+    }
+
+    .customer-accounts-summary-table .col-province {
+        min-width: 90px;
+        max-width: 120px;
+    }
+
+    .customer-accounts-summary-table .col-registered {
+        min-width: 100px;
+        max-width: 140px;
+    }
+
+    @media print {
+        .sidebar, .top-navbar, .filter-panel, .header-actions, .pagination-bar, .no-print, select, input, button {
+            display: none !important;
+        }
+        .page-wrapper { padding: 0; background: #fff; }
+        .page-header, .content-area { border: none; border-radius: 0; }
+        body { background: #ffffff !important; color: #000000 !important; }
+        .table-wrapper { overflow: visible !important; }
+        .data-table { width: 100% !important; border: 1px solid #000 !important; }
+        .data-table th, .data-table td { border: 1px solid #000 !important; }
+    }
+
+    /* Customer Financial Summary Modal - Modern Compact Scrollbars */
+    #customer-financial-summary-modal-content::-webkit-scrollbar,
+    #customer-financial-summary-modal-content .table-wrapper::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    #customer-financial-summary-modal-content::-webkit-scrollbar-track,
+    #customer-financial-summary-modal-content .table-wrapper::-webkit-scrollbar-track {
+        background: #e5e7eb;
+        border-radius: 4px;
+    }
+
+    #customer-financial-summary-modal-content::-webkit-scrollbar-thumb,
+    #customer-financial-summary-modal-content .table-wrapper::-webkit-scrollbar-thumb {
+        background: #4b5563;
+        border-radius: 4px;
+    }
+
+    #customer-financial-summary-modal-content::-webkit-scrollbar-thumb:hover,
+    #customer-financial-summary-modal-content .table-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #374151;
+    }
+
+    [data-theme="dark"] #customer-financial-summary-modal-content::-webkit-scrollbar-track,
+    [data-theme="dark"] #customer-financial-summary-modal-content .table-wrapper::-webkit-scrollbar-track {
+        background: #161b22;
+    }
+
+    [data-theme="dark"] #customer-financial-summary-modal-content::-webkit-scrollbar-thumb,
+    [data-theme="dark"] #customer-financial-summary-modal-content .table-wrapper::-webkit-scrollbar-thumb {
+        background: #4b5563;
+    }
+
+    [data-theme="dark"] #customer-financial-summary-modal-content::-webkit-scrollbar-thumb:hover,
+    [data-theme="dark"] #customer-financial-summary-modal-content .table-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+    }
+
+    #customer-financial-summary-modal-content,
+    #customer-financial-summary-modal-content .table-wrapper {
+        scrollbar-width: thin;
+        scrollbar-color: #4b5563 #e5e7eb;
+    }
+
+    [data-theme="dark"] #customer-financial-summary-modal-content,
+    [data-theme="dark"] #customer-financial-summary-modal-content .table-wrapper {
+        scrollbar-color: #4b5563 #161b22;
+    }
+
+    /* Custom dropdown controls - Filters section only */
+    .rem-filter-dropdown {
+        display: inline-flex;
+        flex-direction: column;
+        width: 100%;
+        font-family: inherit;
+    }
+
+    .rem-filter-trigger {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-main);
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        cursor: pointer;
+        outline: none;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        gap: 8px;
+    }
+
+    html[dir="rtl"] .rem-filter-trigger {
+        direction: rtl;
+        text-align: right;
+    }
+
+    .rem-filter-trigger:hover {
+        border-color: var(--text-muted);
+        background-color: var(--table-header-bg);
+    }
+
+    .rem-filter-trigger:focus-visible {
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    [data-theme="dark"] .rem-filter-trigger:focus-visible {
+        box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+    }
+
+    .rem-filter-trigger[aria-expanded="true"] {
+        border-color: var(--accent-blue);
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+        background-color: var(--dropdown-bg);
+    }
+
+    html[dir="rtl"] .rem-filter-trigger[aria-expanded="true"] {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    .rem-filter-selected {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        text-align: left;
+    }
+
+    html[dir="rtl"] .rem-filter-selected {
+        text-align: right;
+    }
+
+    .rem-filter-arrow {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        stroke: var(--text-muted);
+        transition: transform 0.2s ease;
+    }
+
+    .rem-filter-trigger[aria-expanded="true"] .rem-filter-arrow {
+        transform: rotate(180deg);
+    }
+
+    .rem-filter-options {
+        position: absolute;
+        z-index: 50;
+        width: 100%;
+        max-height: 260px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        background-color: var(--dropdown-bg);
+        border: 1px solid var(--border-color);
+        border-top: none;
+        border-radius: 0 0 6px 6px;
+        box-shadow: var(--shadow);
+        margin-top: -1px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    }
+
+    html[dir="rtl"] .rem-filter-options {
+        border-radius: 0 0 6px 6px;
+    }
+
+    .rem-filter-options::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .rem-filter-options::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+    }
+
+    .rem-filter-options::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 4px;
+    }
+
+    .rem-filter-options::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+
+    .rem-filter-option {
+        display: flex;
+        align-items: center;
+        padding: 8px 10px;
+        font-size: 13px;
+        color: var(--text-main);
+        cursor: pointer;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        text-align: left;
+    }
+
+    html[dir="rtl"] .rem-filter-option {
+        text-align: right;
+    }
+
+    .rem-filter-option:hover {
+        background-color: var(--table-row-hover);
+        color: var(--text-main);
+    }
+
+    .rem-filter-option[aria-selected="true"] {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+        font-weight: 600;
+    }
+
+    [data-theme="dark"] .rem-filter-option[aria-selected="true"] {
+        background-color: rgba(88, 166, 255, 0.15);
+        color: var(--accent-blue);
+    }
+
+    .rem-filter-option[data-disabled="true"] {
+        color: var(--text-muted);
+        cursor: not-allowed;
+    }
+
+    .rem-filter-option[data-disabled="true"]:hover {
+        background-color: transparent;
+    }
+
+    /* Hide the original native select but keep it in the DOM for value access.
+       This class is only added by FilterDropdown.build(), so if the script ever
+       fails the native selects remain visible and every filter stays usable. */
+    .rem-filter-native-select {
+        display: none !important;
+    }
+
+    /* Visible ring for the keyboard-highlighted option. */
+    .rem-filter-option-focused {
+        background-color: var(--table-row-hover);
+        color: var(--text-main);
+        box-shadow: inset 0 0 0 1px var(--accent-blue);
+    }
+
+    /* Panel flipped above its trigger when the viewport has no room below. */
+    .rem-filter-options--up {
+        border-top: 1px solid var(--border-color);
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+        margin-top: 0;
+        margin-bottom: -1px;
+    }
+
+    /* Comfortable control heights (mouse + touch). */
+    .rem-filter-trigger {
+        min-height: 38px;
+    }
+
+    .rem-filter-option {
+        min-height: 40px;
+    }
+
+    /* ============ Laptop / tablet / phone refinements ============ */
+
+    /* Give the table a readable floor so it scrolls sideways instead of
+       crushing ten columns into slivers next to the sidebar. */
+    @media (max-width: 1180px) {
+        .data-table {
+            min-width: 900px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-wrapper {
+            padding: 16px;
+        }
+
+        .page-header {
+            padding: 16px;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .header-content h1 {
+            font-size: 20px;
+        }
+
+        .header-actions {
+            width: 100%;
+        }
+
+        .header-actions .btn-primary {
+            flex: 1 1 180px;
+            justify-content: center;
+        }
+
+        .filter-panel {
+            margin-bottom: 16px;
+        }
+
+        .filter-panel-header {
+            padding: 14px 16px;
+        }
+
+        .filter-panel-body {
+            padding: 16px;
+        }
+
+        .pagination-bar {
+            padding: 14px 16px;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .pagination-info {
+            justify-content: center;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .pagination-controls {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .pagination-btn {
+            min-height: 40px;
+            flex: 1 1 auto;
+            max-width: 150px;
+        }
+
+        .empty-state,
+        .error-state,
+        .loading-state {
+            padding: 40px 16px;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .page-wrapper {
+            padding: 12px;
+        }
+
+        .page-header {
+            padding: 14px;
+        }
+
+        .header-content h1 {
+            font-size: 19px;
+        }
+
+        /* 16px inputs stop iOS/Android auto-zooming the page on focus. */
+        .unified-filter-grid .filter-field .form-input,
+        .rem-filter-trigger,
+        .rem-filter-option {
+            font-size: 16px;
+        }
+
+        .unified-filter-grid .filter-field label,
+        .filter-panel-title,
+        .filter-panel-header .btn-secondary {
+            font-size: 14px;
+        }
+
+        .header-actions .btn-primary {
+            flex: 1 1 100%;
+        }
+
+        .data-table {
+            min-width: 860px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+        }
+
+        .summary-label {
+            font-size: 13px;
+        }
+
+        .summary-value {
+            font-size: 16px;
+        }
+    }
+
+    /* Print must never inherit the horizontal-scroll min-width. */
+    @media print {
+        .data-table {
+            min-width: 0 !important;
+        }
+
+        .empty-state .btn-secondary,
+        .error-state .btn-secondary {
+            display: none !important;
+        }
+    }
+
+    /* ============ Customer Financial Summary modal ============ */
+
+    /* The modal chrome uses inline styles, so mobile tweaks need !important. */
+    #customer-financial-summary-modal-content {
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 640px) {
+        #customer-financial-summary-modal {
+            align-items: stretch !important;
+            padding: 8px;
+        }
+
+        #customer-financial-summary-modal-content {
+            width: 100% !important;
+            max-width: none !important;
+            max-height: calc(100vh - 16px) !important;
+        }
+
+        #customer-financial-summary-modal-content > div:first-child {
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 14px !important;
+        }
+
+        #customer-financial-summary-modal-content > div:first-child h3 {
+            font-size: 16px !important;
+            flex: 1 1 100%;
+        }
+
+        #customer-financial-summary-modal-content > div:first-child > div {
+            flex-wrap: wrap;
+            width: 100%;
+            justify-content: flex-end;
+        }
+
+        #customer-financial-summary-modal-content > div:nth-child(2) {
+            padding: 14px !important;
+        }
+
+        #customer-financial-summary-modal-content > div:nth-child(2) > div:first-child {
+            padding: 14px !important;
+        }
+
+        #customer-financial-summary-modal-content > div:nth-child(2) > div:first-child > div {
+            grid-template-columns: 1fr !important;
+            gap: 12px !important;
+        }
+
+        .customer-accounts-summary-table {
+            font-size: 12px;
+        }
+    }
+</style>
+
+<div class="page-wrapper">
+    <!-- Premium Page Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1><%= t('remittance_ledger.title') %></h1>
+            <p><%= t('remittance_ledger.description') %></p>
+        </div>
+        <div class="header-actions no-print">
+            <button onclick="openCustomerFinancialSummaryModal()" class="btn-primary customer-accounts-summary-btn" style="background-color: #000000 !important; color: #ffffff !important; border-color: #000000 !important; border: none !important; opacity: 1 !important; visibility: visible !important;">
+                <svg style="width: 18px; height: 18px; stroke: #ffffff !important; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                <%= t('remittance_ledger.customer_summary_report') %>
+            </button>
+            <button onclick="window.print()" class="btn-primary print-generate-report-btn" style="background-color: #000000 !important; color: #ffffff !important; border-color: #000000 !important; border: none !important; opacity: 1 !important; visibility: visible !important;">
+                <svg style="width: 18px; height: 18px; stroke: #ffffff !important; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v-5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                <%= t('remittance_ledger.print_report') %>
+            </button>
+        </div>
+    </div>
+
+    <!-- Unified Filter Panel -->
+    <div class="filter-panel no-print">
+        <div class="filter-panel-header">
+            <h3 class="filter-panel-title">
+                <svg style="width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polygon points="22 3 2 3 10 12.46 10 19 14 16 14 12.46 22 3"/></svg>
+                <%= t('remittance_ledger.filters') %>
+            </h3>
+            <button onclick="resetRemittanceFilters()" class="btn-secondary">
+                <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/></svg>
+                <%= t('remittance_ledger.clear_filters') %>
+            </button>
+        </div>
+        <div class="filter-panel-body">
+            <!-- Unified Filter Grid - Two Compact Rows -->
+            <div class="unified-filter-grid">
+                <!-- Row 1: Primary Filters -->
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.province_label') %></label>
+                    <select id="rem_filter_province" class="form-input" onchange="applyRemittanceFilters()">
+                        <option value="All"><%= t('remittance_ledger.all_provinces') %></option>
+                        <option value="Kabul">کابل (Kabul)</option>
+                        <option value="Herat">هرات (Herat)</option>
+                        <option value="Balkh">بلخ (Balkh)</option>
+                        <option value="Kandahar">قندهار (Kandahar)</option>
+                        <option value="Nangarhar">ننگرهار (Nangarhar)</option>
+                        <option value="Khost">خوست (Khost)</option>
+                        <option value="Paktia">پکتیا (Paktia)</option>
+                        <option value="Paktika">پکتیکا (Paktika)</option>
+                        <option value="Ghazni">غزنی (Ghazni)</option>
+                        <option value="Logar">لوگر (Logar)</option>
+                        <option value="Laghman">لغمان (Laghman)</option>
+                        <option value="Wardak"> میدان وردک (Wardak)</option>
+                        <option value="Parwan">پروان (Parwan)</option>
+                        <option value="Kapisa">کاپیسا (Kapisa)</option>
+                        <option value="Panjshir">پنجشیر (Panjshir)</option>
+                        <option value="Kunar">کونر (Kunar)</option>
+                        <option value="Nuristan">نورستان (Nuristan)</option>
+                        <option value="Badakhshan">بدخشان (Badakhshan)</option>
+                        <option value="Takhar">تخار (Takhar)</option>
+                        <option value="Baghlan">بغلان (Baghlan)</option>
+                        <option value="Kunduz">قندوز (Kunduz)</option>
+                        <option value="Samangan">سمنگان (Samangan)</option>
+                        <option value="Jowzjan">جوزجان (Jowzjan)</option>
+                        <option value="Sar-e Pol">سرپل (Sar-e Pol)</option>
+                        <option value="Faryab">فاریاب (Faryab)</option>
+                        <option value="Badghis">بادغیس (Badghis)</option>
+                        <option value="Ghor">غور (Ghor)</option>
+                        <option value="Bamyan">بامیان (Bamyan)</option>
+                        <option value="Daikundi">دایکندی (Daikundi)</option>
+                        <option value="Farah">فراه (Farah)</option>
+                        <option value="Nimruz">نیمروز (Nimruz)</option>
+                        <option value="Helmand">هلمند (Helmand)</option>
+                        <option value="Zabul">زابل (Zabul)</option>
+                        <option value="Uruzgan">ارزگان (Uruzgan)</option>
+                    </select>
+                    <div class="rem-filter-dropdown" id="dd_rem_filter_province"></div>
+                </div>
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.customer_account_label') %></label>
+                    <select id="rem_filter_customer" class="form-input" onchange="applyRemittanceFilters()">
+                        <option value="All"><%= t('remittance_ledger.all_accounts') %></option>
+                        <% if (typeof customers !== 'undefined' && customers.length > 0) { %>
+                            <% customers.forEach(function(customer) { %>
+                                <% 
+                                    let displayLabel = customer.customer_id || ('#CUST-' + customer.id);
+                                    const cleanName = (customer.name || '').trim();
+                                    if (cleanName && !displayLabel.includes(cleanName)) {
+                                        displayLabel += ' - ' + cleanName;
+                                    }
+                                    if (customer.province) {
+                                        displayLabel += ' (' + customer.province + ')';
+                                    }
+                                %>
+                                <option value="<%= customer.id %>" data-province="<%= customer.province %>"><%= displayLabel %></option>
+                            <% }); %>
+                        <% } %>
+                    </select>
+                    <div class="rem-filter-dropdown" id="dd_rem_filter_customer"></div>
+                </div>
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.source_label') %></label>
+                    <select id="rem_filter_source" class="form-input" onchange="applyRemittanceFilters()">
+                        <option value="All"><%= t('remittance_ledger.all_sources') %></option>
+                        <option value="Bank"><%= t('remittance_ledger.source_bank') %></option>
+                        <option value="Sarafi"><%= t('remittance_ledger.source_sarafi') %></option>
+                    </select>
+                    <div class="rem-filter-dropdown" id="dd_rem_filter_source"></div>
+                </div>
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.registered_by_label') %></label>
+                    <select id="rem_filter_user" class="form-input" onchange="applyRemittanceFilters()">
+                        <option value="All"><%= t('remittance_ledger.all_agencies') %></option>
+                        <% if (typeof agencies !== 'undefined' && agencies.length > 0) { %>
+                            <% agencies.forEach(function(agency) { %>
+                                <option value="<%= agency.agency_name %>"><%= agency.agency_name %></option>
+                            <% }); %>
+                        <% } %>
+                    </select>
+                    <div class="rem-filter-dropdown" id="dd_rem_filter_user"></div>
+                </div>
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.date_range_label') %></label>
+                    <div class="date-range-group">
+                        <input type="text" id="rem_filter_start_date" class="form-input" data-datepicker="jalali" placeholder="<%= t('remittance_ledger.from_date') %>" onchange="applyRemittanceFilters()" readonly>
+                        <span class="date-range-separator"><%= t('remittance_ledger.to') %></span>
+                        <input type="text" id="rem_filter_end_date" class="form-input" data-datepicker="jalali" placeholder="<%= t('remittance_ledger.to_date') %>" onchange="applyRemittanceFilters()" readonly>
+                    </div>
+                </div>
+
+                <!-- Row 2: Search Filters -->
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.sender_name_label') %></label>
+                    <input type="text" id="rem_search_sender" class="form-input" placeholder="<%= t('remittance_ledger.search_sender_placeholder') %>" oninput="applyRemittanceFilters()">
+                </div>
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.bank_name_label') %></label>
+                    <input type="text" id="rem_search_source_name" class="form-input" placeholder="<%= t('remittance_ledger.search_bank_placeholder') %>" oninput="applyRemittanceFilters()">
+                </div>
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.hawala_number_label') %></label>
+                    <input type="text" id="rem_search_remittance_number" class="form-input" placeholder="<%= t('remittance_ledger.search_hawala_placeholder') %>" oninput="applyRemittanceFilters()">
+                </div>
+                <div class="filter-field">
+                    <label><%= t('remittance_ledger.amount_label') %></label>
+                    <input type="number" id="rem_search_amount" class="form-input" placeholder="<%= t('remittance_ledger.search_amount_placeholder') %>" oninput="applyRemittanceFilters()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="content-area">
+        <div class="table-wrapper">
+            <table class="data-table">
+                <colgroup>
+                    <col style="width: 50px;" />
+                    <col style="width: 90px;" />
+                    <col style="width: 140px;" />
+                    <col style="width: 100px;" />
+                    <col style="width: 120px;" />
+                    <col style="width: 90px;" />
+                    <col style="width: 110px;" />
+                    <col style="width: 110px;" />
+                    <col style="width: 110px;" />
+                    <col style="width: 110px;" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th><%= t('remittance_ledger.th_date') %></th>
+                        <th><%= t('remittance_ledger.th_customer') %></th>
+                        <th><%= t('remittance_ledger.th_province') %></th>
+                        <th><%= t('remittance_ledger.th_sender') %></th>
+                        <th><%= t('remittance_ledger.th_source') %></th>
+                        <th><%= t('remittance_ledger.th_hawala_number') %></th>
+                        <th><%= t('remittance_ledger.th_registered_by') %></th>
+                        <th><%= t('remittance_ledger.th_agency') %></th>
+                        <th><%= t('remittance_ledger.th_amount') %></th>
+                    </tr>
+                </thead>
+                <tbody id="remittance-ledger-rows">
+                    <tr>
+                        <td colspan="10">
+                            <div class="loading-state">
+                                <svg class="loading-spinner" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                                <p style="font-size: 15px; font-weight: 500; color: var(--text-main); margin: 0;"><%= t('remittance_ledger.loading') %></p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tfoot id="remittance-ledger-footer">
+                    <tr>
+                        <td colspan="9" style="padding: 16px 24px; text-align: left; border-top: 2px solid var(--border-color);">
+                            <span class="summary-label"><%= t('remittance_ledger.total_amount_label') %></span>
+                        </td>
+                        <td id="rem-total-amount" style="padding: 16px 24px; text-align: right; border-top: 2px solid var(--border-color);">
+                            <span class="summary-value">0</span>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination Bar -->
+    <div id="rem-pagination-container" class="pagination-bar no-print" data-page-label="<%= t('remittance_ledger.page') %>" data-of-label="<%= t('remittance_ledger.of') %>">
+        <div class="pagination-info">
+            <span><%= t('remittance_ledger.rows_per_page') %></span>
+            <select id="select_worker_rem_rows_per_page" class="form-input" style="width: 80px;" onchange="handleRowsPerPageChange(this.value)">
+                <option value="10" selected>۱۰</option>
+                <option value="25">۲۵</option>
+                <option value="50">۵۰</option>
+                <option value="100">۱۰۰</option>
+            </select>
+        </div>
+
+        <div class="pagination-info">
+            <%= t('remittance_ledger.showing') %> <span id="lbl_page_start">0</span> <%= t('remittance_ledger.to') %> <span id="lbl_page_end">0</span> <%= t('remittance_ledger.of') %> <span id="lbl_total_count">0</span> <%= t('remittance_ledger.items') %>
+        </div>
+
+        <div class="pagination-controls">
+            <button id="btn_page_prev" onclick="goToPrevPage()" class="pagination-btn" disabled><%= t('remittance_ledger.previous') %></button>
+            <span id="lbl_page_indicator" class="page-indicator"><%= t('remittance_ledger.page') %> ۱</span>
+            <button id="btn_page_next" onclick="goToNextPage()" class="pagination-btn" disabled><%= t('remittance_ledger.next') %></button>
+        </div>
+    </div>
+</div>
+
+<!-- Customer Financial Summary Modal -->
+<div id="customer-financial-summary-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div id="customer-financial-summary-modal-content" style="background: var(--card-bg); border-radius: 8px; width: 95%; max-width: 1400px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);" class="rtl-content">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-main);"><%= t('remittance_ledger.customer_summary_title') %></h3>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="printCustomerFinancialSummary()" class="btn-primary customer-summary-print-btn" style="padding: 8px 16px; font-size: 14px;">
+                    <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                    <%= t('remittance_ledger.print') %>
+                </button>
+                <button onclick="toggleCustomerSummaryMaximize()" id="cust_sum_maximize_btn" class="btn no-print" style="background: var(--table-header-bg); color: var(--text-main); padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 500; cursor: pointer;" title="<%= t('admin.full_screen') %>">
+                    <svg id="cust_sum_maximize_icon" style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    <svg id="cust_sum_restore_icon" style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; display: none;" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                </button>
+                <button onclick="closeCustomerFinancialSummaryModal()" class="report-close-btn" aria-label="<%= t('admin.close') %>" title="<%= t('admin.close') %>">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div style="padding: 20px;">
+            <!-- Filters -->
+            <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: flex-end;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.from_date') %></label>
+                        <input type="text" id="cust_sum_start_date" class="form-input" data-datepicker="jalali" placeholder="<%= t('remittance_ledger.from_date_example') %>" onchange="applyCustomerSummaryFilters()" readonly>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.to_date') %></label>
+                        <input type="text" id="cust_sum_end_date" class="form-input" data-datepicker="jalali" placeholder="<%= t('remittance_ledger.to_date_example') %>" onchange="applyCustomerSummaryFilters()" readonly>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.search_customer') %></label>
+                        <input type="text" id="cust_sum_search" class="form-input" placeholder="<%= t('remittance_ledger.search_customer_placeholder') %>" oninput="applyCustomerSummaryFilters()">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.account_status') %></label>
+                        <select id="cust_sum_balance" class="form-input" onchange="applyCustomerSummaryFilters()">
+                            <option value="All"><%= t('remittance_ledger.all_statuses') %></option>
+                            <option value="customer_owes"><%= t('remittance_ledger.status_customer_owes') %></option>
+                            <option value="company_owes"><%= t('remittance_ledger.status_company_owes') %></option>
+                            <option value="zero"><%= t('remittance_ledger.status_zero') %></option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.customer_province') %></label>
+                        <select id="cust_sum_province" class="form-input" onchange="applyCustomerSummaryFilters()">
+                            <option value="All"><%= t('remittance_ledger.all_provinces') %></option>
+                            <option value="Kabul">کابل (Kabul)</option>
+                            <option value="Herat">هرات (Herat)</option>
+                            <option value="Balkh">بلخ (Balkh)</option>
+                            <option value="Kandahar">قندهار (Kandahar)</option>
+                            <option value="Nangarhar">ننگرهار (Nangarhar)</option>
+                            <option value="Khost">خوست (Khost)</option>
+                            <option value="Paktia">پکتیا (Paktia)</option>
+                            <option value="Paktika">پکتیکا (Paktika)</option>
+                            <option value="Ghazni">غزنی (Ghazni)</option>
+                            <option value="Logar">لوگر (Logar)</option>
+                            <option value="Wardak">میدان وردک (Wardak)</option>
+                            <option value="Parwan">پروان (Parwan)</option>
+                            <option value="Kapisa">کاپیسا (Kapisa)</option>
+                            <option value="Panjshir">پنجشیر (Panjshir)</option>
+                            <option value="Laghman">لغمان (Laghman)</option>
+                            <option value="Kunar">کونر (Kunar)</option>
+                            <option value="Nuristan">نورستان (Nuristan)</option>
+                            <option value="Badakhshan">بدخشان (Badakhshan)</option>
+                            <option value="Takhar">تخار (Takhar)</option>
+                            <option value="Baghlan">بغلان (Baghlan)</option>
+                            <option value="Samangan">سمنگان (Samangan)</option>
+                            <option value="Jowzjan">جوزجان (Jowzjan)</option>
+                            <option value="Sar-e Pol">سرپل (Sar-e Pol)</option>
+                            <option value="Faryab">فاریاب (Faryab)</option>
+                            <option value="Kunduz">قندوز (Kunduz)</option>
+                            <option value="Badghis">بادغیس (Badghis)</option>
+                            <option value="Ghor">غور (Ghor)</option>
+                            <option value="Bamyan">بامیان (Bamyan)</option>
+                            <option value="Daikundi">دایکندی (Daikundi)</option>
+                            <option value="Farah">فراه (Farah)</option>
+                            <option value="Nimruz">نیمروز (Nimruz)</option>
+                            <option value="Helmand">هلمند (Helmand)</option>
+                            <option value="Zabul">زابل (Zabul)</option>
+                            <option value="Uruzgan">ارزگان (Uruzgan)</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.customer_summary_registered_by_label') %></label>
+                        <select id="cust_sum_agency" class="form-input" onchange="applyCustomerSummaryFilters()">
+                            <option value="All"><%= t('remittance_ledger.customer_summary_all_agencies') %></option>
+                            <% if (typeof agencies !== 'undefined' && agencies.length > 0) { %>
+                                <% agencies.forEach(function(agency) { %>
+                                    <option value="<%= agency.agency_name %>"><%= agency.agency_name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="table-wrapper" style="max-height: 500px; overflow-y: auto;">
+                <table class="customer-accounts-summary-table">
+                    <colgroup>
+                        <col class="col-id" />
+                        <col class="col-name" />
+                        <col class="col-amount" />
+                        <col class="col-amount" />
+                        <col class="col-amount" />
+                        <col class="col-amount" />
+                        <col class="col-count" />
+                        <col class="col-count" />
+                        <col class="col-count" />
+                        <col class="col-province" />
+                        <col class="col-registered" />
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th><%= t('remittance_ledger.customer_summary_header_id') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_name') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_cement_purchase') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_money_transferred') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_company_owes') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_customer_owes') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_transfers') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_bank_transfers') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_sarafi_transfers') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_province') %></th>
+                            <th><%= t('remittance_ledger.customer_summary_header_registered_by') %></th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-financial-summary-rows">
+                        <tr>
+                            <td colspan="11">
+                                <div class="loading-state">
+                                    <svg class="loading-spinner" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                                    <p style="font-size: 15px; font-weight: 500; color: var(--text-main); margin: 0;"><%= t('remittance_ledger.customer_summary_loading') %></p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot id="customer-financial-summary-totals" style="display: none;">
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div id="customer-summary-pagination" class="pagination-bar no-print" style="margin-top: 20px;" data-page-label="<%= t('remittance_ledger.page') %>" data-of-label="<%= t('remittance_ledger.of') %>">
+                <div class="pagination-info">
+                    <span><%= t('remittance_ledger.rows_per_page') %></span>
+                    <select id="cust_sum_rows_per_page" class="form-input" style="width: 80px;" onchange="handleCustomerSummaryRowsPerPageChange(this.value)">
+                        <option value="10" selected>۱۰</option>
+                        <option value="50">۵۰</option>
+                        <option value="100">۱۰۰</option>
+                    </select>
+                </div>
+
+                <div class="pagination-info">
+                    <%= t('remittance_ledger.showing') %> <span id="cust_sum_page_start">0</span> <%= t('remittance_ledger.to') %> <span id="cust_sum_page_end">0</span> <%= t('remittance_ledger.of') %> <span id="cust_sum_total_count">0</span> <%= t('remittance_ledger.items') %>
+                </div>
+
+                <div class="pagination-controls">
+                    <button id="cust_sum_btn_prev" onclick="goToCustomerSummaryPrevPage()" class="pagination-btn" disabled><%= t('remittance_ledger.previous') %></button>
+                    <span id="cust_sum_page_indicator" class="page-indicator"><%= t('remittance_ledger.page') %> ۱</span>
+                    <button id="cust_sum_btn_next" onclick="goToCustomerSummaryNextPage()" class="pagination-btn" disabled><%= t('remittance_ledger.next') %></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Shared customer modal is included once, AFTER the page script (see bottom of file),
+     so the shared openCustomerModal/closeCustomerModal implementations win. -->
+
+<script>
+// Set active sidebar item
+document.getElementById('nav-agent-remittances')?.classList.add('active');
+
+let currentTableData = [];
+let filteredTableData = [];
+let remCurrentPage = 1;
+let remRowsPerPage = 10;
+
+let customerSummaryData = [];
+let custSumCurrentPage = 1;
+let custSumRowsPerPage = 10;
+let isCustomerSummaryMaximized = false;
+
+// Reusable custom dropdown for the Filters section only.
+// Wraps a native select element (kept hidden so its .value still works) and
+// provides a theme-consistent, keyboard-navigable, ARIA-compliant dropdown with
+// a scrollable, styled options panel. No global styles; scoped to this page.
+// Shared registry so that opening one dropdown closes any other open one.
+const allDropdowns = [];
+
+class FilterDropdown {
+    constructor(selectEl) {
+        this.select = selectEl;
+        this.id = selectEl.id;
+        this.panelId = `ddlist_${this.id}`;
+        this.container = null;
+        this.trigger = null;
+        this.panel = null;
+        this.selectedDisplay = null;
+        this.arrow = null;
+        this.isOpen = false;
+        this.focusedIndex = -1;
+        // Bind once: add/removeEventListener must receive the SAME function
+        // reference, otherwise every open/close cycle leaks document listeners
+        // and keyboard handling runs multiple times per key press.
+        this._onKeyDown = this.onKeyDown.bind(this);
+        this._onOutsideClick = this.onOutsideClick.bind(this);
+        allDropdowns.push(this);
+
+        this.build();
+        this.syncFromNative();
+        this.bindEvents();
+    }
+
+    build() {
+        // Reuse the server-rendered dd_rem_filter_* placeholder when present so the
+        // labelled element in the markup is the real control (and no empty husk
+        // is left behind); otherwise create a container.
+        const placeholder = document.getElementById('dd_' + this.id);
+        this.container = placeholder || document.createElement('div');
+        this.container.innerHTML = '';
+        this.container.className = 'rem-filter-dropdown';
+        this.container.style.position = 'relative';
+
+        this.select.classList.add('rem-filter-native-select');
+
+        this.trigger = document.createElement('div');
+        this.trigger.className = 'rem-filter-trigger';
+        this.trigger.setAttribute('tabindex', '0');
+        this.trigger.setAttribute('role', 'combobox');
+        this.trigger.setAttribute('aria-expanded', 'false');
+        this.trigger.setAttribute('aria-haspopup', 'listbox');
+        this.trigger.setAttribute('aria-controls', this.panelId);
+        const label = this.select.previousElementSibling;
+        this.trigger.setAttribute('aria-label', label ? label.textContent.trim() : this.id);
+
+        this.selectedDisplay = document.createElement('span');
+        this.selectedDisplay.className = 'rem-filter-selected';
+
+        this.arrow = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        // NOTE: SVGElement.className is a read-only SVGAnimatedString, so assigning a
+        // string to it throws a TypeError and aborts construction of the dropdown.
+        // Always assign SVG classes through setAttribute('class', ...).
+        this.arrow.setAttribute('class', 'rem-filter-arrow');
+        this.arrow.setAttribute('viewBox', '0 0 24 24');
+        this.arrow.innerHTML = '<path d="M7 11l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>';
+
+        this.trigger.appendChild(this.selectedDisplay);
+        this.trigger.appendChild(this.arrow);
+
+        this.panel = document.createElement('div');
+        this.panel.className = 'rem-filter-options';
+        this.panel.id = this.panelId;
+        this.panel.setAttribute('role', 'listbox');
+        this.panel.hidden = true;
+
+        this.container.appendChild(this.trigger);
+        this.container.appendChild(this.panel);
+
+        this.select.parentNode.insertBefore(this.container, this.select.nextSibling);
+    }
+
+    syncFromNative() {
+        const val = this.select.value;
+        const opt = this.select.options[this.select.selectedIndex] || this.select.options[0];
+        this.selectedDisplay.textContent = opt ? opt.text : val;
+        this.selectedDisplay.setAttribute('data-value', val);
+
+        this.panel.innerHTML = '';
+        Array.from(this.select.options).forEach((optEl, index) => {
+            const o = document.createElement('div');
+            o.id = this.panelId + '_opt_' + index;
+            o.className = 'rem-filter-option' + (optEl.selected ? ' rem-filter-option-selected' : '');
+            o.setAttribute('role', 'option');
+            o.setAttribute('aria-selected', optEl.selected ? 'true' : 'false');
+            o.setAttribute('data-value', optEl.value);
+            o.textContent = optEl.text;
+            if (optEl.dataset.province) o.dataset.province = optEl.dataset.province;
+            o.addEventListener('click', () => this.selectValue(optEl.value));
+            this.panel.appendChild(o);
+        });
+    }
+
+    selectValue(value) {
+        this.select.value = value;
+        this.select.dispatchEvent(new Event('change', { bubbles: true }));
+        this.syncFromNative();
+        this.close();
+    }
+
+    open() {
+        if (this.isOpen) return;
+        // Only one dropdown may be expanded at a time.
+        allDropdowns.forEach((dd) => { if (dd !== this) dd.close(); });
+        this.isOpen = true;
+        this.trigger.setAttribute('aria-expanded', 'true');
+        this.panel.hidden = false;
+        this.panel.classList.remove('rem-filter-options--up');
+        this.positionPanel();
+        this.focusedIndex = Math.max(this.select.selectedIndex, 0);
+        this.updateFocusedOption();
+        document.addEventListener('keydown', this._onKeyDown);
+        document.addEventListener('click', this._onOutsideClick, true);
+    }
+
+    close() {
+        if (!this.isOpen) return;
+        this.isOpen = false;
+        this.trigger.setAttribute('aria-expanded', 'false');
+        this.trigger.removeAttribute('aria-activedescendant');
+        this.panel.hidden = true;
+        this.panel.classList.remove('rem-filter-options--up');
+        document.removeEventListener('keydown', this._onKeyDown);
+        document.removeEventListener('click', this._onOutsideClick, true);
+    }
+
+    toggle() {
+        if (this.isOpen) this.close(); else this.open();
+    }
+
+    positionPanel() {
+        // The panel is absolutely positioned inside this.container (position:relative),
+        // so every offset must be measured against the container — using document
+        // coordinates made the panel jump by window.scrollY after scrolling.
+        const cRect = this.container.getBoundingClientRect();
+        const tRect = this.trigger.getBoundingClientRect();
+        const gap = 8;
+        const PREFERRED = 260;
+        const spaceBelow = window.innerHeight - tRect.bottom - gap;
+        const spaceAbove = tRect.top - gap;
+
+        // Flip above the trigger only when there is genuinely more room up there.
+        const flipUp = spaceBelow < 180 && spaceAbove > spaceBelow;
+        if (flipUp) {
+            this.panel.classList.add('rem-filter-options--up');
+            this.panel.style.top = 'auto';
+            this.panel.style.bottom = (cRect.bottom - tRect.top) + 'px';
+        } else {
+            this.panel.classList.remove('rem-filter-options--up');
+            this.panel.style.bottom = 'auto';
+            this.panel.style.top = (tRect.bottom - cRect.top) + 'px';
+        }
+
+        // Never let the list grow past the space that actually exists, so the panel
+        // stays fully visible on short windows and inside the mobile viewport.
+        const available = flipUp ? spaceAbove : spaceBelow;
+        this.panel.style.maxHeight = Math.min(PREFERRED, Math.max(120, available)) + 'px';
+
+        if (document.documentElement.dir === 'rtl') {
+            this.panel.style.left = 'auto';
+            this.panel.style.right = (cRect.right - tRect.right) + 'px';
+        } else {
+            this.panel.style.left = (tRect.left - cRect.left) + 'px';
+            this.panel.style.right = 'auto';
+        }
+        this.panel.style.width = tRect.width + 'px';
+    }
+
+    updateFocusedOption() {
+        const options = Array.from(this.panel.querySelectorAll('.rem-filter-option'));
+        options.forEach((o, i) => {
+            o.classList.toggle('rem-filter-option-focused', i === this.focusedIndex);
+        });
+        // Combobox pattern: report the highlighted option back to screen readers.
+        const active = options[this.focusedIndex];
+        if (this.isOpen && active && active.id) this.trigger.setAttribute('aria-activedescendant', active.id);
+        else this.trigger.removeAttribute('aria-activedescendant');
+    }
+
+    bindEvents() {
+        this.trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.toggle();
+        });
+        this.trigger.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                this.open();
+            }
+        });
+
+        this.panel.addEventListener('mouseover', (e) => {
+            const opt = e.target.closest('.rem-filter-option');
+            if (opt) {
+                const index = Array.from(this.panel.children).indexOf(opt);
+                if (index >= 0) {
+                    this.focusedIndex = index;
+                    this.updateFocusedOption();
+                }
+            }
+        });
+    }
+
+    onKeyDown(e) {
+        if (!this.isOpen) return;
+        const options = Array.from(this.panel.querySelectorAll('.rem-filter-option:not([data-disabled="true"])'));
+        if (options.length === 0) return;
+
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            this.close();
+            this.trigger.focus();
+        } else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.focusedIndex = Math.min(this.focusedIndex + 1, options.length - 1);
+            this.updateFocusedOption();
+            options[this.focusedIndex]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.focusedIndex = Math.max(this.focusedIndex - 1, 0);
+            this.updateFocusedOption();
+            options[this.focusedIndex]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            this.focusedIndex = 0;
+            this.updateFocusedOption();
+            options[0]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            this.focusedIndex = options.length - 1;
+            this.updateFocusedOption();
+            options[options.length - 1]?.scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            const value = options[this.focusedIndex]?.dataset.value;
+            if (value !== undefined) this.selectValue(value);
+        } else if (e.key.length === 1) {
+            const char = e.key.toLowerCase();
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].textContent.toLowerCase().startsWith(char)) {
+                    this.focusedIndex = i;
+                    this.updateFocusedOption();
+                    options[i]?.scrollIntoView({ block: 'nearest' });
+                    break;
+                }
+            }
+        }
+    }
+
+    onOutsideClick(e) {
+        if (this.container && !this.container.contains(e.target)) {
+            this.close();
+        }
+    }
+
+    refresh() {
+        this.syncFromNative();
+    }
+}
+
+const filterDropdowns = {};
+function initFilterDropdowns() {
+    ['rem_filter_province', 'rem_filter_customer', 'rem_filter_source', 'rem_filter_user'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) filterDropdowns[id] = new FilterDropdown(el);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initFilterDropdowns);
+
+function loadRemittanceLedger() {
+    console.log('[DEBUG] Loading remittance ledger...');
+    
+    const province = document.getElementById('rem_filter_province')?.value || 'All';
+    const customerId = document.getElementById('rem_filter_customer')?.value || 'All';
+    const source = document.getElementById('rem_filter_source')?.value || 'All';
+    const agencyFilter = document.getElementById('rem_filter_user')?.value || 'All';
+    const startDate = document.getElementById('rem_filter_start_date')?.value || '';
+    const endDate = document.getElementById('rem_filter_end_date')?.value || '';
+    const searchSender = document.getElementById('rem_search_sender')?.value || '';
+    const searchSourceName = document.getElementById('rem_search_source_name')?.value || '';
+    const searchRemittanceNumber = document.getElementById('rem_search_remittance_number')?.value || '';
+    const searchAmount = document.getElementById('rem_search_amount')?.value || '';
+
+    let queryUrl = `/api/reports/remittance-ledger?province=${province}&customer_id=${customerId}&source=${source}&agency=${encodeURIComponent(agencyFilter)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}&search_sender=${encodeURIComponent(searchSender)}&search_source_name=${encodeURIComponent(searchSourceName)}&search_remittance_number=${encodeURIComponent(searchRemittanceNumber)}&search_amount=${encodeURIComponent(searchAmount)}`;
+    
+    fetch(queryUrl)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            let records = [];
+            if (Array.isArray(data)) records = data;
+            else if (data && Array.isArray(data.remittances)) records = data.remittances;
+            else if (data && Array.isArray(data.records)) records = data.records;
+            else if (data && Array.isArray(data.data)) records = data.data;
+
+            currentTableData = records;
+            
+            if (searchAmount) {
+                currentTableData = currentTableData.filter(row => 
+                    row.amount_received && row.amount_received.toString().includes(searchAmount.toString().trim())
+                );
+            }
+            
+            filteredTableData = [...currentTableData];
+            remCurrentPage = 1;
+            renderRemittanceTable(filteredTableData);
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading remittance ledger:', err);
+            currentTableData = [];
+            filteredTableData = [];
+            document.getElementById('remittance-ledger-rows').innerHTML = `
+                <tr>
+                    <td colspan="10">
+                        <div class="error-state" role="alert">
+                            <svg class="error-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                            <p class="error-text"><%= t('admin.error_loading') %></p>
+                            <p class="empty-state-sub">${esc(err.message)}</p>
+                            <button type="button" class="btn-secondary" onclick="loadRemittanceLedger()"><%= t('worker.try_again') %></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            renderPaginationControls(1);
+        });
+}
+
+function applyRemittanceFilters() { loadRemittanceLedger(); }
+
+function resetRemittanceFilters() {
+    document.getElementById('rem_filter_province').value = 'All';
+    document.getElementById('rem_filter_customer').value = 'All';
+    document.getElementById('rem_filter_source').value = 'All';
+    document.getElementById('rem_filter_user').value = 'All';
+    document.getElementById('rem_filter_start_date').value = '';
+    document.getElementById('rem_filter_end_date').value = '';
+    document.getElementById('rem_search_sender').value = '';
+    document.getElementById('rem_search_source_name').value = '';
+    document.getElementById('rem_search_remittance_number').value = '';
+    document.getElementById('rem_search_amount').value = '';
+    Object.values(filterDropdowns).forEach((dd) => dd.refresh());
+    applyRemittanceFilters();
+}
+
+function openCustomerFinancialSummaryModal() {
+    document.getElementById('customer-financial-summary-modal').style.display = 'flex';
+    loadCustomerFinancialSummary();
+}
+
+function toggleCustomerSummaryMaximize() {
+    const modal = document.getElementById('customer-financial-summary-modal');
+    const modalContent = modal.querySelector('div[style*="background: var(--card-bg)"]');
+    const maximizeIcon = document.getElementById('cust_sum_maximize_icon');
+    const restoreIcon = document.getElementById('cust_sum_restore_icon');
+
+    isCustomerSummaryMaximized = !isCustomerSummaryMaximized;
+
+    if (isCustomerSummaryMaximized) {
+        // Maximize
+        modalContent.style.width = '98%';
+        modalContent.style.maxWidth = '98%';
+        modalContent.style.height = '95vh';
+        modalContent.style.maxHeight = '95vh';
+        modalContent.style.borderRadius = '4px';
+        maximizeIcon.style.display = 'none';
+        restoreIcon.style.display = 'block';
+    } else {
+        // Restore
+        modalContent.style.width = '95%';
+        modalContent.style.maxWidth = '1400px';
+        modalContent.style.height = 'auto';
+        modalContent.style.maxHeight = '90vh';
+        modalContent.style.borderRadius = '8px';
+        maximizeIcon.style.display = 'block';
+        restoreIcon.style.display = 'none';
+    }
+}
+
+function closeCustomerFinancialSummaryModal() {
+    // Reset maximize state when closing
+    if (isCustomerSummaryMaximized) {
+        toggleCustomerSummaryMaximize();
+    }
+    document.getElementById('customer-financial-summary-modal').style.display = 'none';
+}
+
+function applyCustomerSummaryFilters() {
+    loadCustomerFinancialSummary();
+}
+
+function loadCustomerFinancialSummary() {
+    const startDate = document.getElementById('cust_sum_start_date')?.value || '';
+    const endDate = document.getElementById('cust_sum_end_date')?.value || '';
+    const searchCustomer = document.getElementById('cust_sum_search')?.value || '';
+    const balanceFilter = document.getElementById('cust_sum_balance')?.value || 'All';
+    const provinceFilter = document.getElementById('cust_sum_province')?.value || 'All';
+    const agencyFilter = document.getElementById('cust_sum_agency')?.value || 'All';
+
+    let queryUrl = `/api/reports/customer-financial-summary?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}&search_customer=${encodeURIComponent(searchCustomer)}&balance=${encodeURIComponent(balanceFilter)}&province=${encodeURIComponent(provinceFilter)}&agency=${encodeURIComponent(agencyFilter)}`;
+
+    fetch(queryUrl)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            const customers = data.customers || [];
+            customerSummaryData = customers;
+            custSumCurrentPage = 1;
+            renderCustomerFinancialSummary();
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading customer financial summary:', err);
+            document.getElementById('customer-financial-summary-rows').innerHTML = `
+                <tr>
+                    <td colspan="11">
+                        <div class="error-state" role="alert">
+                            <svg class="error-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                            <p class="error-text"><%= t('admin.error_loading') %></p>
+                            <p class="empty-state-sub">${esc(err.message)}</p>
+                            <button type="button" class="btn-secondary" onclick="loadCustomerFinancialSummary()"><%= t('worker.try_again') %></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function renderCustomerFinancialSummary() {
+    const rowsContainer = document.getElementById('customer-financial-summary-rows');
+    const totalsContainer = document.getElementById('customer-financial-summary-totals');
+    let html = '';
+
+    if (!customerSummaryData || customerSummaryData.length === 0) {
+        html = `
+            <tr>
+                <td colspan="11">
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <p class="empty-state-text"><%= t('remittance_ledger.customer_summary_no_customers') %></p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        totalsContainer.innerHTML = '';
+        totalsContainer.style.display = 'none';
+        document.getElementById('customer-summary-pagination').style.display = 'none';
+    } else {
+        // Calculate totals from ALL filtered data
+        const totals = {
+            total_cement_purchase_value: 0,
+            total_money_transferred: 0,
+            company_owes_customer: 0,
+            customer_owes_company: 0,
+            total_transfers: 0,
+            bank_transfers: 0,
+            sarafi_transfers: 0
+        };
+
+        customerSummaryData.forEach(customer => {
+            totals.total_cement_purchase_value += customer.total_cement_purchase_value || 0;
+            totals.total_money_transferred += customer.total_money_transferred || 0;
+            totals.company_owes_customer += customer.company_owes_customer || 0;
+            totals.customer_owes_company += customer.customer_owes_company || 0;
+            totals.total_transfers += customer.total_transfers || 0;
+            totals.bank_transfers += customer.bank_transfers || 0;
+            totals.sarafi_transfers += customer.sarafi_transfers || 0;
+        });
+
+        // Pagination
+        const totalPages = Math.ceil(customerSummaryData.length / custSumRowsPerPage) || 1;
+        const startIndex = (custSumCurrentPage - 1) * custSumRowsPerPage;
+        const endIndex = Math.min(startIndex + custSumRowsPerPage, customerSummaryData.length);
+        const paginatedCustomers = customerSummaryData.slice(startIndex, endIndex);
+
+        paginatedCustomers.forEach((customer, index) => {
+            html += `
+                <tr>
+                    <td style="font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-weight: 500;">${esc(customer.customer_customer_id || '-')}</td>
+                    <td style="font-weight: 500; color: var(--text-main);">
+                        <span class="customer-link" onclick="openCustomerModal('${esc(customer.customer_id)}')">${esc(customer.customer_name || '-')}</span>
+                    </td>
+                    <td class="col-amount">${esc((customer.total_cement_purchase_value || 0).toLocaleString())}</td>
+                    <td class="col-amount">${esc((customer.total_money_transferred || 0).toLocaleString())}</td>
+                    <td class="col-amount" style="color: ${esc(customer.company_owes_customer > 0 ? 'var(--success-green)' : 'var(--text-muted)')}">${esc((customer.company_owes_customer || 0).toLocaleString())}</td>
+                    <td class="col-amount" style="color: ${esc(customer.customer_owes_company > 0 ? 'var(--danger-red)' : 'var(--text-muted)')}">${esc((customer.customer_owes_company || 0).toLocaleString())}</td>
+                    <td>${esc(customer.total_transfers || 0)}</td>
+                    <td>${esc(customer.bank_transfers || 0)}</td>
+                    <td>${esc(customer.sarafi_transfers || 0)}</td>
+                    <td>${esc(customer.customer_province || '-')}</td>
+                    <td>${esc(customer.registered_agency || '-')}</td>
+                </tr>
+            `;
+        });
+
+        // Render totals row
+        const totalsHtml = `
+            <tr style="background-color: var(--bg-color); font-weight: 600;">
+                <td colspan="2" style="text-align: right; padding: 12px;"><%= t('tables.total') %></td>
+                <td class="col-amount">${esc(totals.total_cement_purchase_value.toLocaleString())}</td>
+                <td class="col-amount">${esc(totals.total_money_transferred.toLocaleString())}</td>
+                <td class="col-amount" style="color: var(--success-green);">${esc(totals.company_owes_customer.toLocaleString())}</td>
+                <td class="col-amount" style="color: var(--danger-red);">${esc(totals.customer_owes_company.toLocaleString())}</td>
+                <td>${esc(totals.total_transfers)}</td>
+                <td>${esc(totals.bank_transfers)}</td>
+                <td>${esc(totals.sarafi_transfers)}</td>
+                <td colspan="2"></td>
+            </tr>
+        `;
+        totalsContainer.innerHTML = totalsHtml;
+        totalsContainer.style.display = 'table-footer-group';
+
+        // Update pagination controls
+        document.getElementById('cust_sum_page_start').textContent = startIndex + 1;
+        document.getElementById('cust_sum_page_end').textContent = endIndex;
+        document.getElementById('cust_sum_total_count').textContent = customerSummaryData.length;
+        const sumBar = document.getElementById('customer-summary-pagination');
+        const sumPageLabel = (sumBar && sumBar.dataset.pageLabel) || '';
+        document.getElementById('cust_sum_page_indicator').textContent = `${sumPageLabel} ${custSumCurrentPage}`;
+        document.getElementById('cust_sum_btn_prev').disabled = custSumCurrentPage === 1;
+        document.getElementById('cust_sum_btn_next').disabled = custSumCurrentPage === totalPages;
+        document.getElementById('customer-summary-pagination').style.display = 'flex';
+    }
+
+    rowsContainer.innerHTML = html;
+}
+
+function handleCustomerSummaryRowsPerPageChange(rowsPerPage) {
+    custSumRowsPerPage = parseInt(rowsPerPage);
+    custSumCurrentPage = 1;
+    renderCustomerFinancialSummary();
+}
+
+function goToCustomerSummaryPrevPage() {
+    if (custSumCurrentPage > 1) {
+        custSumCurrentPage--;
+        renderCustomerFinancialSummary();
+    }
+}
+
+function goToCustomerSummaryNextPage() {
+    const totalPages = Math.ceil(customerSummaryData.length / custSumRowsPerPage) || 1;
+    if (custSumCurrentPage < totalPages) {
+        custSumCurrentPage++;
+        renderCustomerFinancialSummary();
+    }
+}
+
+function printCustomerFinancialSummary() {
+    const modalContent = document.getElementById('customer-financial-summary-modal').querySelector('div[style*="background: var(--card-bg)"]');
+    const printWindow = window.open('', '_blank');
+    
+    const startDate = document.getElementById('cust_sum_start_date')?.value || 'همه';
+    const endDate = document.getElementById('cust_sum_end_date')?.value || 'همه';
+    const searchCustomer = document.getElementById('cust_sum_search')?.value || 'همه';
+    const balanceFilter = document.getElementById('cust_sum_balance')?.value || 'همه';
+    const provinceFilter = document.getElementById('cust_sum_province')?.value || 'همه';
+    const agencyFilter = document.getElementById('cust_sum_agency')?.value || 'همه';
+    
+    const currentDate = new Date().toLocaleDateString('fa-IR');
+    
+    printWindow.document.write(`
+        <!DOCTYPE html>
+        <html dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <title>خلاصه گزارشات حسابات مشتریان</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                    direction: rtl;
+                }
+                h1 {
+                    text-align: center;
+                    margin-bottom: 10px;
+                }
+                .filters {
+                    margin: 20px 0;
+                    padding: 15px;
+                    background: #f5f5f5;
+                    border: 1px solid #ddd;
+                }
+                .filters p {
+                    margin: 5px 0;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-top: 20px;
+                }
+                th, td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: right;
+                }
+                th {
+                    background: #f0f0f0;
+                    font-weight: bold;
+                }
+                .totals {
+                    background: #e8e8e8;
+                    font-weight: bold;
+                }
+                .date {
+                    text-align: left;
+                    font-size: 12px;
+                    color: #666;
+                }
+            </style>
+        </head>
+        <body>
+            <h1>خلاصه گزارشات حسابات مشتریان</h1>
+            <div class="date">تاریخ چاپ: ${esc(currentDate)}</div>
+            
+            <div class="filters">
+                <p><strong>فیلترهای اعمال شده:</strong></p>
+                <p>از تاریخ: ${esc(startDate)}</p>
+                <p>تا تاریخ: ${esc(endDate)}</p>
+                <p>جستجوی مشتری: ${esc(searchCustomer)}</p>
+                <p>وضعیت حساب: ${esc(balanceFilter)}</p>
+                <p>ولایت مشتری: ${esc(provinceFilter)}</p>
+                <p>ثبت شده با نماینده‌گی: ${esc(agencyFilter)}</p>
+            </div>
+            
+            ${esc(modalContent.querySelector('table').outerHTML)}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.print();
+}
+
+function renderRemittanceTable(records) {
+    const rowsContainer = document.getElementById('remittance-ledger-rows');
+    let html = '';
+    
+    if (!records || records.length === 0) {
+        html = `
+            <tr>
+                <td colspan="10">
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <p class="empty-state-text"><%= t('worker_agent_remittances.no_remittances') %></p>
+                        <p class="empty-state-sub"><%= t('admin.no_records_filter') %></p>
+                        <button type="button" class="btn-secondary" onclick="resetRemittanceFilters()"><%= t('remittance_ledger.clear_filters') %></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        const totalAmountEl = document.getElementById('rem-total-amount');
+        if (totalAmountEl) totalAmountEl.innerHTML = '<span class="summary-value">0</span>';
+        // Keep the pager in sync when a filter combination matches nothing.
+        renderPaginationControls(1);
+    } else {
+        const totalPages = Math.ceil(records.length / remRowsPerPage) || 1;
+        const startIndex = (remCurrentPage - 1) * remRowsPerPage;
+        const endIndex = Math.min(startIndex + remRowsPerPage, records.length);
+        const paginatedRecords = records.slice(startIndex, endIndex);
+        
+        // Calculate total from ALL filtered records, not just paginated ones
+        let totalAmount = 0;
+        records.forEach((row, index) => {
+            totalAmount += (row.amount_received || 0);
+        });
+        
+        paginatedRecords.forEach((row, index) => {
+            
+            // Escape the raw value first; only the two known sources are replaced
+            // with badge markup that we control, so the row template can insert
+            // sourceBadge without re-escaping it (escaping it would print the tags).
+            let sourceBadge = esc(row.origin_source || '-');
+            if (row.origin_source === 'Bank') {
+                sourceBadge = `<span class="status-badge bank">Bank</span>`;
+            } else if (row.origin_source === 'Sarafi') {
+                sourceBadge = `<span class="status-badge sarafi">Sarafi</span>`;
+            }
+            
+            const displayIndex = startIndex + index + 1;
+            
+            html += `
+                <tr>
+                    <td class="col-index">${esc(displayIndex)}</td>
+                    <td>${esc(row.receipt_date || '-')}</td>
+                    <td>
+                        <span class="customer-link" onclick="openCustomerModal('${esc(row.customer_id)}')">
+                            ${esc(row.customer_name || 'نامشخص')}
+                        </span>
+                    </td>
+                    <td>${esc(row.customer_province || '-')}</td>
+                    <td>${esc(row.sender_name || '-')}</td>
+                    <td>${sourceBadge}</td>
+                    <td style="font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace; font-weight: 500;">${esc(row.remittance_number || '-')}</td>
+                    <td>${esc(row.submitted_by || '-')}</td>
+                    <td>${esc(row.agency || '-')}</td>
+                    <td class="col-amount">${esc(row.amount_received ? row.amount_received.toLocaleString() : '0')}</td>
+                </tr>
+            `;
+        });
+        
+        const totalAmountEl = document.getElementById('rem-total-amount');
+        if (totalAmountEl) totalAmountEl.innerHTML = '<span class="summary-value">' + totalAmount.toLocaleString() + ' Afs</span>';
+        
+        renderPaginationControls(totalPages);
+    }
+    
+    rowsContainer.innerHTML = html;
+}
+
+function renderPaginationControls(totalPages) {
+    const totalRecords = filteredTableData.length;
+    const start = totalRecords === 0 ? 0 : (remCurrentPage - 1) * remRowsPerPage + 1;
+    const end = Math.min(remCurrentPage * remRowsPerPage, totalRecords);
+    const pages = Math.max(totalPages || 1, 1);
+
+    // Labels come from the server-rendered data attributes so the indicator
+    // follows the active locale instead of being hardcoded.
+    const bar = document.getElementById('rem-pagination-container');
+    const pageLabel = (bar && bar.dataset.pageLabel) || '';
+    const ofLabel = (bar && bar.dataset.ofLabel) || '';
+
+    if (document.getElementById('lbl_page_start')) document.getElementById('lbl_page_start').textContent = start.toLocaleString();
+    if (document.getElementById('lbl_page_end')) document.getElementById('lbl_page_end').textContent = end.toLocaleString();
+    if (document.getElementById('lbl_total_count')) document.getElementById('lbl_total_count').textContent = totalRecords.toLocaleString();
+    if (document.getElementById('lbl_page_indicator')) document.getElementById('lbl_page_indicator').textContent = `${pageLabel} ${remCurrentPage} ${ofLabel} ${pages}`;
+
+    if (document.getElementById('btn_page_prev')) document.getElementById('btn_page_prev').disabled = (remCurrentPage === 1 || totalRecords === 0);
+    if (document.getElementById('btn_page_next')) document.getElementById('btn_page_next').disabled = (remCurrentPage >= pages || totalRecords === 0);
+}
+
+function handleRowsPerPageChange(val) {
+    remRowsPerPage = parseInt(val) || 10;
+    remCurrentPage = 1;
+    renderRemittanceTable(filteredTableData);
+}
+
+// The ledger is loaded once at the end of this script (the markup above has
+// already been parsed at that point), so no second DOMContentLoaded fetch.
+
+function goToPrevPage() {
+    if (remCurrentPage > 1) {
+        remCurrentPage--;
+        renderRemittanceTable(filteredTableData);
+    }
+}
+
+function goToNextPage() {
+    const totalPages = Math.ceil(filteredTableData.length / remRowsPerPage);
+    if (remCurrentPage < totalPages) {
+        remCurrentPage++;
+        renderRemittanceTable(filteredTableData);
+    }
+}
+
+// openCustomerModal()/closeCustomerModal() intentionally live in
+// partials/customer_modal.ejs (included once, after this script) so the page and
+// every other view share a single implementation.
+loadRemittanceLedger();
+</script>
+
+<%- include('partials/customer_modal') %>
+
+<%- include('partials/footer') %>

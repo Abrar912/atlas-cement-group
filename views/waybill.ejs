@@ -1,0 +1,560 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Default A5 Print Setup with Full Page Stretch */
+    @page {
+        size: A5 portrait;
+        margin: 5mm !important; /* Minimal margin to prevent unwanted browser headers/footers */
+    }
+
+    @media print {
+        html, body {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            font-size: 11pt !important;
+        }
+
+        body * {
+            visibility: hidden;
+        }
+
+        .waybill-print-sheet, .waybill-print-sheet * {
+            visibility: visible;
+        }
+
+        .waybill-print-sheet {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            min-height: 98vh !important;
+            padding: 5mm !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .eway-container {
+            border: 2px solid #1a1a1a !important;
+            padding: 10px !important;
+            height: 100% !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
+
+        .eway-section-header {
+            padding: 4px 8px !important;
+            font-size: 11pt !important;
+            margin-top: 8px !important;
+            margin-bottom: 4px !important;
+        }
+
+        .eway-grid-table td, .eway-grid-table th {
+            padding: 4px 6px !important;
+            font-size: 10pt !important;
+        }
+    }
+
+    .eway-container {
+        border: 2px solid #1a1a1a;
+        background: #ffffff;
+        padding: 20px;
+        font-family: 'Tahoma', 'Arial', sans-serif;
+        direction: rtl !important;
+        text-align: right !important;
+    }
+
+    /* Updated Header Banner with Centered Title & Right Logo */
+    .eway-header {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        align-items: center;
+        border-bottom: 2px solid #cf222e;
+        padding-bottom: 12px;
+        margin-bottom: 15px;
+    }
+
+    .eway-title {
+        font-size: 26px;
+        font-weight: 900;
+        color: #cf222e;
+        margin: 0;
+        text-align: center !important;
+    }
+
+    .eway-section-header {
+        background-color: #cf222e;
+        color: #ffffff;
+        font-weight: bold;
+        padding: 8px 12px;
+        font-size: 14px;
+        margin-top: 15px;
+        margin-bottom: 6px;
+        text-align: right !important;
+        direction: rtl !important;
+    }
+
+    .eway-grid-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+        direction: rtl !important;
+    }
+
+    .eway-grid-table td, .eway-grid-table th {
+        border: 1px solid #d0d7de;
+        padding: 8px 12px;
+        text-align: right !important; /* Forces right-alignment across all cells */
+    }
+
+    .eway-grid-table th {
+        background-color: #f6f8fa;
+        font-weight: bold;
+        color: #24292e;
+    }
+</style>
+
+<div class="no-print" style="border-bottom: 2px solid #eaeef2; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;"
+    data-js-required-field="<%= t('waybill.js_required_field') %>"
+    data-js-phone-invalid="<%= t('waybill.js_phone_invalid') %>"
+    data-js-bags-invalid="<%= t('waybill.js_bags_invalid') %>"
+    data-js-freight-invalid="<%= t('waybill.js_freight_invalid') %>"
+    data-js-save-error="<%= t('waybill.js_save_error') %>"
+    data-js-connection-error="<%= t('waybill.js_connection_error') %>"
+    data-js-truck-rental="<%= t('waybill.js_truck_rental') %>"
+    data-js-afghani="<%= t('waybill.js_afghani') %>"
+    data-js-ton="<%= t('waybill.js_ton') %>"
+    data-js-select-cement="<%= t('waybill.js_select_cement') %>"
+    data-field-loading-date="<%= t('waybill.field_loading_date') %>"
+    data-field-sent-to="<%= t('waybill.field_sent_to') %>"
+    data-field-driver-name="<%= t('waybill.field_driver_name') %>"
+    data-field-driver-phone="<%= t('waybill.field_driver_phone') %>"
+    data-field-truck-plate="<%= t('waybill.field_truck_plate') %>"
+    data-field-bags="<%= t('waybill.field_bags') %>"
+    data-field-loading-location="<%= t('waybill.field_loading_location') %>">
+    <div>
+        <h2><%= t('waybill.title') %></h2>
+        <p style="font-size: 14px; color: #57606a;"><%= t('waybill.subtitle') %></p>
+    </div>
+    <button onclick="saveAndPrintWaybill()" class="btn btn-primary" style="background-color: #0284c7; padding: 10px 20px; font-weight: bold; font-size: 14px;">
+        <%= t('waybill.save_print') %>
+    </button>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="card no-print">
+        <h3><%= t('waybill.enter_info') %></h3>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label><%= t('waybill.serial_number') %></label>
+            <input type="text" id="wb_serial" class="form-control" readonly style="background-color: #f0f7ff; font-weight: bold; border-color: #4a90e2;">
+            <small style="color: #57606a;"><%= t('waybill.serial_auto') %></small>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.loading_date') %></label>
+            <input type="text" id="wb_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('waybill.date_placeholder') %>" oninput="updateWaybillSheet()">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.sent_to') %></label>
+            <select id="wb_selled_to" class="form-control" oninput="updateWaybillSheet()">
+                <option value=""><%= t('waybill.select_agency') %></option>
+                <% if (typeof agencies !== 'undefined' && agencies.length > 0) { %>
+                    <% agencies.forEach(function(agency) { %>
+                        <option value="<%= agency.username %>"><%= agency.username %></option>
+                    <% }); %>
+                <% } %>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.driver_name') %></label>
+            <input type="text" id="wb_driver_name" class="form-control" placeholder="<%= t('waybill.driver_placeholder') %>" oninput="updateWaybillSheet()">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.driver_phone') %></label>
+            <div style="display: flex; direction: ltr; align-items: center; border: 1px solid #cbd5e1; border-radius: 6px; overflow: hidden; background: #ffffff;">
+                <span style="background-color: #e2e8f0; color: #0369a1; padding: 10px 14px; font-weight: 800; font-size: 14px; border-right: 1px solid #cbd5e1; user-select: none;">+93</span>
+                <input type="text" id="wb_driver_phone" class="form-control" placeholder="700123456" maxlength="9" style="border: none; border-radius: 0; direction: ltr; text-align: left; font-weight: bold;" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateWaybillSheet();">
+            </div>
+            <small style="color: #57606a; direction: rtl; text-align: right; display: block; margin-top: 4px;"><%= t('waybill.phone_hint') %></small>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.truck_plate') %></label>
+            <input type="text" id="wb_truck_plate" class="form-control" placeholder="<%= t('waybill.plate_placeholder') %>" oninput="updateWaybillSheet()">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.cement_type') %></label>
+            <select id="wb_type" class="form-control" onchange="updateWaybillSheet()">
+                <option value=""><%= t('waybill.select_cement') %></option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.bags') %></label>
+            <input type="number" id="wb_bags" class="form-control" placeholder="<%= t('waybill.bags_placeholder') %>" oninput="calculateTonnage(); updateWaybillSheet()">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.tonnage') %></label>
+            <input type="text" id="wb_tonnage" class="form-control" readonly style="background-color: #f0f7ff; font-weight: bold; border-color: #4a90e2;">
+            <input type="hidden" id="wb_calculated_tonnage_val">
+            <small style="color: #57606a;"><%= t('waybill.tonnage_formula') %></small>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.truck_type') %></label>
+            <select id="wb_truck_type" class="form-control" onchange="toggleTruckRentInput(); updateWaybillSheet();">
+                <option value="company" selected><%= t('waybill.truck_company') %></option>
+                <option value="rented"><%= t('waybill.truck_rental') %></option>
+            </select>
+        </div>
+
+        <!-- Conditional Freight per Ton Input -->
+        <div id="wb_rent_container" class="form-group" style="display: none;">
+            <label><%= t('waybill.freight_per_ton') %></label>
+            <input type="number" id="wb_freight_per_ton" class="form-control" placeholder="<%= t('waybill.freight_placeholder') %>" oninput="calculateFreightTotal(); updateWaybillSheet();">
+            <small style="color: #57606a;"><%= t('waybill.freight_formula') %></small>
+        </div>
+
+        <!-- Readonly Total Freight Display -->
+        <div id="wb_total_freight_container" class="form-group" style="display: none;">
+            <label><%= t('waybill.total_freight') %></label>
+            <input type="text" id="wb_total_freight_display" class="form-control" readonly style="background-color: #f0f7ff; font-weight: bold; color: #166534;">
+            <input type="hidden" id="wb_total_freight_val" value="0">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.loading_location') %></label>
+            <select id="wb_loading_province" class="form-control" oninput="updateWaybillSheet()">
+                <option value=""><%= t('waybill.select_location') %></option>
+                <option value="Kabul">کابل</option>
+                <option value="Herat">هرات</option>
+                <option value="Balkh">بلخ</option>
+                <option value="Kandahar">قندهار</option>
+                <option value="Nangarhar">ننگرهار</option>
+                <option value="Khost">خوست</option>
+                <option value="Paktia">پکتیا</option>
+                <option value="Paktika">پکتیکا</option>
+                <option value="Ghazni">غزنی</option>
+                <option value="Logar">لوگر</option>
+                <option value="Laghman">لغمان</option>
+                <option value="Wardak">میدان وردک</option>
+                <option value="Parwan">پروان</option>
+                <option value="Kapisa">کاپیسا</option>
+                <option value="Panjshir">پنجشیر</option>
+                <option value="Kunar">کونر</option>
+                <option value="Nuristan">نورستان</option>
+                <option value="Badakhshan">بدخشان</option>
+                <option value="Takhar">تخار</option>
+                <option value="Baghlan">بغلان</option>
+                <option value="Kunduz">قندوز</option>
+                <option value="Samangan">سمنگان</option>
+                <option value="Jowzjan">جوزجان</option>
+                <option value="Sar-e Pol">سرپل</option>
+                <option value="Faryab">فاریاب</option>
+                <option value="Badghis">بادغیس</option>
+                <option value="Ghor">غور</option>
+                <option value="Bamyan">بامیان</option>
+                <option value="Daikundi">دایکندی</option>
+                <option value="Farah">فراه</option>
+                <option value="Nimruz">نیمروز</option>
+                <option value="Helmand">هلمند</option>
+                <option value="Uruzgan">ارزگان</option>
+                <option value="Zabul">زابل</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Printable Preview Area -->
+    <div class="waybill-print-sheet">
+        <div class="eway-container">
+            <div class="eway-header">
+                <div style="font-size: 11px; text-align: right;">
+                    <strong><%= t('waybill.print_date') %></strong> <span id="print_wb_date">-</span><br>
+                    <strong><%= t('waybill.print_waybill') %></strong> <span id="print_wb_serial" style="font-weight: bold; color: #cf222e;">-</span>
+                </div>
+                <div style="text-align: center;">
+                    <img src="/Logo.png" alt="Atlas Cement Group ERP Logo" style="height: 50px; width: auto; object-fit: contain; border-radius: 50%;">
+                    <h2 class="eway-title" style="margin-top: 8px;"><%= t('waybill.print_title') %></h2>
+                </div>
+                <div style="text-align: left;">
+                    <span style="font-size: 12px; font-weight: bold; color: #24292f;"><%= t('waybill.company_name') %></span>
+                </div>
+            </div>
+
+            <div class="eway-section-header"><%= t('waybill.section_header') %></div>
+            <table class="eway-grid-table">
+                <tr>
+                    <td style="width: 25%;"><strong><%= t('waybill.print_sent_to') %></strong></td>
+                    <td id="print_wb_selled_to" style="width: 25%;">-</td>
+                    <td style="width: 25%;"><strong><%= t('waybill.print_driver_name') %></strong></td>
+                    <td id="print_wb_driver_name" style="width: 25%;">-</td>
+                </tr>
+                <tr>
+                    <td><strong><%= t('waybill.print_driver_phone') %></strong></td>
+                    <td id="print_wb_driver_phone">-</td>
+                    <td><strong><%= t('waybill.print_truck_plate') %></strong></td>
+                    <td id="print_wb_truck_plate">-</td>
+                </tr>
+                <tr>
+                    <td><strong><%= t('waybill.print_cement_type') %></strong></td>
+                    <td id="print_wb_type">-</td>
+                    <td><strong><%= t('waybill.print_bags') %></strong></td>
+                    <td id="print_wb_bags">-</td>
+                </tr>
+                <tr>
+                    <td><strong><%= t('waybill.print_tonnage') %></strong></td>
+                    <td id="print_wb_tonnage">-</td>
+                    <td><strong><%= t('waybill.print_loading_location') %></strong></td>
+                    <td id="print_wb_loading_province">-</td>
+                </tr>
+                <tr id="print_freight_row" style="display: none;">
+                    <td><strong><%= t('waybill.print_truck_type') %></strong></td>
+                    <td id="print_wb_truck_type">-</td>
+                    <td><strong><%= t('waybill.print_freight_total') %></strong></td>
+                    <td id="print_wb_total_freight">-</td>
+                </tr>
+            </table>
+
+            <div style="margin-top: 30px; display: flex; justify-content: space-between; text-align: center; font-size: 12px;">
+                <div>
+                    <p><%= t('waybill.signature_sender') %></p>
+                    <br><br>
+                    <p>_______________________</p>
+                </div>
+                <div>
+                    <p><%= t('waybill.signature_driver') %></p>
+                    <br><br>
+                    <p>_______________________</p>
+                </div>
+                <div>
+                    <p><%= t('waybill.signature_receiver') %></p>
+                    <br><br>
+                    <p>_______________________</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function calculateTonnage() {
+        const bags = parseFloat(document.getElementById('wb_bags').value) || 0;
+        const tonnage = bags / 20;
+        const container = document.querySelector('.no-print');
+        const tonText = container.dataset.jsTon || 'تن';
+        document.getElementById('wb_tonnage').value = tonnage ? tonnage.toFixed(2) + ' ' + tonText : '';
+        document.getElementById('wb_calculated_tonnage_val').value = tonnage;
+        calculateFreightTotal();
+    }
+
+    function toggleTruckRentInput() {
+        const truckType = document.getElementById('wb_truck_type').value;
+        const rentContainer = document.getElementById('wb_rent_container');
+        const totalFreightContainer = document.getElementById('wb_total_freight_container');
+        
+        if (truckType === 'rented') {
+            rentContainer.style.display = 'block';
+            totalFreightContainer.style.display = 'block';
+        } else {
+            rentContainer.style.display = 'none';
+            totalFreightContainer.style.display = 'none';
+            document.getElementById('wb_freight_per_ton').value = '';
+            document.getElementById('wb_total_freight_display').value = '';
+            document.getElementById('wb_total_freight_val').value = '0';
+        }
+    }
+
+    function calculateFreightTotal() {
+        const tonnage = parseFloat(document.getElementById('wb_calculated_tonnage_val').value) || 0;
+        const freightPerTon = parseFloat(document.getElementById('wb_freight_per_ton').value) || 0;
+        const totalFreight = tonnage * freightPerTon;
+        
+        const container = document.querySelector('.no-print');
+        const afghaniText = container.dataset.jsAfghani || 'افغانی';
+        document.getElementById('wb_total_freight_display').value = totalFreight ? totalFreight.toLocaleString() + ' ' + afghaniText : '';
+        document.getElementById('wb_total_freight_val').value = totalFreight;
+    }
+
+    function updateWaybillSheet() {
+        document.getElementById('print_wb_date').textContent = document.getElementById('wb_date').value || '-';
+        document.getElementById('print_wb_selled_to').textContent = document.getElementById('wb_selled_to').value || '-';
+        document.getElementById('print_wb_driver_name').textContent = document.getElementById('wb_driver_name').value || '-';
+        
+        const phone = document.getElementById('wb_driver_phone').value;
+        document.getElementById('print_wb_driver_phone').textContent = phone ? '+93 ' + phone : '-';
+        
+        document.getElementById('print_wb_truck_plate').textContent = document.getElementById('wb_truck_plate').value || '-';
+        document.getElementById('print_wb_type').textContent = document.getElementById('wb_type').value || '-';
+        document.getElementById('print_wb_bags').textContent = document.getElementById('wb_bags').value || '-';
+        document.getElementById('print_wb_tonnage').textContent = document.getElementById('wb_tonnage').value || '-';
+        document.getElementById('print_wb_loading_province').textContent = document.getElementById('wb_loading_province').value || '-';
+
+        const truckType = document.getElementById('wb_truck_type').value;
+        const freightRow = document.getElementById('print_freight_row');
+        const container = document.querySelector('.no-print');
+        const truckRentalText = container.dataset.jsTruckRental || 'موتر کرایی';
+        if (truckType === 'rented') {
+            freightRow.style.display = 'table-row';
+            document.getElementById('print_wb_truck_type').textContent = truckRentalText;
+            document.getElementById('print_wb_total_freight').textContent = document.getElementById('wb_total_freight_display').value || '-';
+        } else {
+            freightRow.style.display = 'none';
+        }
+    }
+
+    function validateWaybill() {
+        const container = document.querySelector('.no-print');
+        const requiredFields = {
+            'wb_date': container.dataset.fieldLoadingDate || 'Loading Date',
+            'wb_selled_to': container.dataset.fieldSentTo || 'Sent To',
+            'wb_driver_name': container.dataset.fieldDriverName || 'Driver Name',
+            'wb_driver_phone': container.dataset.fieldDriverPhone || 'Driver Phone',
+            'wb_truck_plate': container.dataset.fieldTruckPlate || 'Truck Plate',
+            'wb_bags': container.dataset.fieldBags || 'Bags',
+            'wb_loading_province': container.dataset.fieldLoadingLocation || 'Loading Location'
+        };
+
+        const requiredFieldMsg = container.dataset.jsRequiredField || 'Please fill field "{field}"';
+
+        for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
+            const value = document.getElementById(fieldId).value.trim();
+            if (!value) {
+                alert(requiredFieldMsg.replace('{field}', fieldName));
+                return false;
+            }
+        }
+
+        // Validate phone number (must be 9 digits)
+        const phone = document.getElementById('wb_driver_phone').value.trim();
+        const phoneInvalidMsg = container.dataset.jsPhoneInvalid || 'Phone must be 9 digits (without 0 or +93)';
+        if (phone.length !== 9 || !/^\d+$/.test(phone)) {
+            alert(phoneInvalidMsg);
+            return false;
+        }
+
+        // Validate bags (must be positive integer)
+        const bags = parseInt(document.getElementById('wb_bags').value);
+        const bagsInvalidMsg = container.dataset.jsBagsInvalid || 'Bags must be a positive number';
+        if (isNaN(bags) || bags <= 0) {
+            alert(bagsInvalidMsg);
+            return false;
+        }
+
+        // Validate freight fields if rented truck
+        const truckType = document.getElementById('wb_truck_type').value;
+        if (truckType === 'rented') {
+            const freightPerTon = parseFloat(document.getElementById('wb_freight_per_ton').value);
+            const freightInvalidMsg = container.dataset.jsFreightInvalid || 'Freight per ton must be a positive number';
+            if (isNaN(freightPerTon) || freightPerTon <= 0) {
+                alert(freightInvalidMsg);
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    async function saveAndPrintWaybill() {
+        if (!validateWaybill()) {
+            return;
+        }
+
+        const waybillData = {
+            wb_serial: document.getElementById('wb_serial').value,
+            wb_date: document.getElementById('wb_date').value,
+            wb_selled_to: document.getElementById('wb_selled_to').value,
+            wb_driver_name: document.getElementById('wb_driver_name').value,
+            wb_driver_phone: document.getElementById('wb_driver_phone').value,
+            wb_truck_plate: document.getElementById('wb_truck_plate').value,
+            wb_type: document.getElementById('wb_type').value,
+            wb_bags: parseInt(document.getElementById('wb_bags').value),
+            wb_tonnage: parseFloat(document.getElementById('wb_calculated_tonnage_val').value),
+            wb_truck_type: document.getElementById('wb_truck_type').value,
+            wb_freight_per_ton: parseFloat(document.getElementById('wb_freight_per_ton').value) || 0,
+            wb_total_freight: parseFloat(document.getElementById('wb_total_freight_val').value) || 0,
+            wb_loading_province: document.getElementById('wb_loading_province').value
+        };
+
+        try {
+            const response = await fetch('/api/waybills', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(waybillData)
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(errData.error || `Server error: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                window.print();
+            } else {
+                const container = document.querySelector('.no-print');
+                const saveErrorMsg = container.dataset.jsSaveError || 'Error saving waybill';
+                alert(saveErrorMsg + ': ' + (result.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error saving waybill:', error);
+            const container = document.querySelector('.no-print');
+            const connectionErrorMsg = container.dataset.jsConnectionError || 'Server connection error';
+            alert(connectionErrorMsg + ': ' + error.message);
+        }
+    }
+
+    // Generate automatic serial number on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        const serial = 'WB-' + Math.floor(100000 + Math.random() * 900000);
+        document.getElementById('wb_serial').value = serial;
+        document.getElementById('print_wb_serial').textContent = serial;
+        loadCementTypesDropdown();
+    });
+
+    // Load Cement Types Dropdown Options
+    async function loadCementTypesDropdown() {
+        try {
+            const res = await fetch('/api/config/cement-types');
+            if (!res.ok) return;
+            const items = await res.json();
+
+            const selectMain = document.getElementById('wb_type');
+            const container = document.querySelector('.no-print');
+            const selectCementMsg = container.dataset.jsSelectCement || '-- Select cement type --';
+            
+            const optionsHtml = items.map(item => 
+                `<option value="${item.cement_name}">${item.cement_name}</option>` 
+            ).join('');
+
+            if (selectMain) {
+                selectMain.innerHTML = '<option value="">' + selectCementMsg + '</option>' + optionsHtml;
+            }
+        } catch (err) {
+            console.error('[ERROR] Failed to load cement types into dropdown:', err);
+        }
+    }
+</script>
+
+<%- include('partials/footer') %>

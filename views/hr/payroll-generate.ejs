@@ -1,0 +1,146 @@
+<%- include('../partials/header') %>
+
+<div class="card" style="direction: rtl; text-align: right;">
+    <h2 style="margin-bottom: 20px; font-size: 24px;">➕ <%= t('hr.payroll.generate_monthly') %></h2>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="/admin/hr/payroll" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">→ <%= t('hr.payroll.back_to_payroll') %></a>
+    </div>
+    
+    <div class="card" style="background-color: rgba(212, 167, 44, 0.15); border: 1px solid var(--safety-orange); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--safety-orange);">⚠️ <%= t('hr.payroll.important_notes') %></h3>
+        <ul style="margin-right: 20px; color: var(--safety-orange);">
+            <li><%= t('hr.payroll.note_1') %></li>
+            <li><%= t('hr.payroll.note_2') %></li>
+            <li><%= t('hr.payroll.note_3') %></li>
+            <li><%= t('hr.payroll.note_4') %></li>
+        </ul>
+    </div>
+    
+    <% if (employeesWithArrears && Object.keys(employeesWithArrears).length > 0) { %>
+        <div class="card" style="background-color: rgba(231, 76, 60, 0.1); border: 1px solid var(--status-error); margin-bottom: 20px;">
+            <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--status-error);">💰 <%= t('hr.payroll.previous_unpaid_salary') %></h3>
+            
+            <div style="max-height: 400px; overflow-y: auto;">
+                <% Object.keys(employeesWithArrears).forEach(employeeId => { %>
+                    <% const arrearsData = employeesWithArrears[employeeId]; %>
+                    <% if (arrearsData.records && arrearsData.records.length > 0) { %>
+                        <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: var(--text-main);">
+                                <%= t('hr.payroll.employee_id') %>: <%= employeeId %> | <%= t('hr.payroll.total_arrears') %>: 
+                                <span style="color: <%= arrearsData.total < 0 ? 'var(--status-error)' : 'var(--status-success)' %>; font-weight: 700;">
+                                    <%= arrearsData.total.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+                                </span>
+                                <% if (arrearsData.total < 0) { %>
+                                    <span style="color: var(--status-error); font-size: 12px; margin-left: 10px;">
+                                        ⚠️ <%= t('hr.payroll.negative_balance_warning') %>
+                                    </span>
+                                <% } %>
+                            </div>
+                            
+                            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="background-color: var(--bg-color);">
+                                        <th style="padding: 8px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.period') %></th>
+                                        <th style="padding: 8px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.net_salary') %></th>
+                                        <th style="padding: 8px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.status') %></th>
+                                        <th style="padding: 8px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.days_overdue') %></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% arrearsData.records.forEach(record => { %>
+                                        <tr>
+                                            <td style="padding: 8px; border: 1px solid var(--border-color);"><%= record.payroll_period %></td>
+                                            <td style="padding: 8px; border: 1px solid var(--border-color); color: <%= record.net_salary < 0 ? 'var(--status-error)' : 'var(--text-main)' %>; font-weight: 600;">
+                                                <%= record.net_salary.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid var(--border-color); color: var(--status-error); font-weight: 600;">
+                                                <%= t('hr.payroll.unpaid') %>
+                                            </td>
+                                            <td style="padding: 8px; border: 1px solid var(--border-color);">
+                                                <%= record.daysOverdue !== null ? record.daysOverdue : '—' %>
+                                            </td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } %>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+    
+    <form method="POST" action="/admin/hr/payroll/generate">
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div class="card" style="background-color: var(--bg-color);">
+                <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text-main);"><%= t('hr.payroll.payroll_period') %></h3>
+                
+                <div class="form-group">
+                    <label for="payroll_period">Pay Date (YYYY/MM/DD) *</label>
+                    <input type="text" name="payroll_period" class="form-control" required data-datepicker="jalali" placeholder="مثلاً ۱۴۰۵/۰۷/۰۱" dir="ltr" id="payroll_period">
+                    <small style="color: var(--text-secondary); margin-top: 5px; display: block;">
+                        Enter the date when employees will be paid. Must be the first day of a Solar Hijri month (e.g., 1405/07/01).
+                    </small>
+                </div>
+            </div>
+            
+            <div class="card" style="background-color: var(--bg-color);">
+                <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text-main);"><%= t('hr.payroll.include_in_calculation') %></h3>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px;" for="include_overtime">
+                        <input type="checkbox" name="include_overtime" value="1" id="include_overtime">
+                        <%= t('hr.payroll.include_overtime') %>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px;" for="include_deductions">
+                        <input type="checkbox" name="include_deductions" value="1" id="include_deductions">
+                        <%= t('hr.payroll.include_deductions') %>
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px;" for="include_advances">
+                        <input type="checkbox" name="include_advances" value="1" id="include_advances">
+                        <%= t('hr.payroll.include_advances') %>
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button type="button" class="btn" style="background-color: var(--primary); color: white;" onclick="previewPayroll(this.form);"><%= t('hr.payroll.preview') %></button>
+            <button type="submit" class="btn btn-primary" data-confirm-msg="<%= t('hr.payroll.generate_confirm').replace(/"/g, '&quot;') %>" onclick="return confirm(this.dataset.confirmMsg);"><%= t('hr.payroll.generate') %></button>
+            <a href="/admin/hr/payroll" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);"><%= t('forms.cancel') %></a>
+        </div>
+    </form>
+    
+    <script>
+    function previewPayroll(form) {
+        const formData = new FormData(form);
+        const params = new URLSearchParams(formData);
+        
+        fetch('/admin/hr/payroll/preview', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: params
+        })
+        .then(response => response.text())
+        .then(html => {
+            document.open();
+            document.write(html);
+            document.close();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error loading preview');
+        });
+    }
+    </script>
+    </form>
+</div>

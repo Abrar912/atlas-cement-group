@@ -1,0 +1,200 @@
+<%- include('../partials/header') %>
+
+<style>
+.doc-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.doc-hero-left{display:flex;align-items:center;gap:12px}
+.doc-hero-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(255,111,0,.2)}
+.doc-hero-icon svg{width:20px;height:20px;color:#fff;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.doc-hero-title{font-size:20px;font-weight:800;color:var(--text-main);margin:0;letter-spacing:-.3px}
+.doc-hero-sub{font-size:12px;color:var(--text-muted);margin:2px 0 0}
+.doc-hero-count{display:inline-block;background:rgba(255,111,0,.1);color:var(--primary);font-size:11px;font-weight:700;padding:1px 8px;border-radius:20px;margin-inline-start:6px}
+.doc-context{background:var(--primary);color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.doc-context-left{display:flex;align-items:center;gap:10px}
+.doc-context-avatar{width:32px;height:32px;border-radius:6px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0;overflow:hidden}
+.doc-context-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.doc-context-name{font-size:14px;font-weight:600}
+.doc-context-id{font-size:11px;opacity:.8;font-family:monospace}
+.doc-context-label{font-size:11px;opacity:.9}
+.doc-context-link{background:rgba(255,255,255,.2);color:#fff;padding:6px 12px;border-radius:6px;text-decoration:none;font-size:12px;transition:background .15s}
+.doc-context-link:hover{background:rgba(255,255,255,.3)}
+.doc-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px;padding:10px 14px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:10px}
+.doc-filters select{padding:6px 10px;font-size:12px;border:1px solid var(--border-color);border-radius:6px;background:var(--input-bg);color:var(--text-main);min-width:160px}
+
+.emp-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:10px;margin-bottom:12px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.emp-card:hover{border-color:var(--primary);box-shadow:0 2px 10px rgba(255,111,0,.06)}
+.emp-card-header{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--card-bg);cursor:pointer;user-select:none}
+.emp-card-header:hover{background:var(--bg-color)}
+.emp-card-avatar{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px;flex-shrink:0;overflow:hidden}
+.emp-card-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.emp-card-identity{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.emp-card-name{font-size:14px;font-weight:700;color:var(--text-main);white-space:nowrap}
+.emp-card-id{font-size:11px;color:var(--text-muted);font-family:monospace}
+.emp-card-meta{font-size:11px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-inline-start:auto}
+.emp-card-meta .meta-sep{color:var(--border-color)}
+.emp-card-toggle{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s,transform .2s;background:var(--bg-color);border:1px solid var(--border-color)}
+.emp-card-toggle svg{width:14px;height:14px;stroke:var(--text-muted);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.emp-card.open .emp-card-toggle svg{transform:rotate(180deg)}
+.emp-card-body{padding:0;display:none}
+.emp-card.open .emp-card-body{display:block}
+
+.emp-cat-row{display:flex;align-items:center;gap:8px;padding:6px 14px;border-bottom:1px solid var(--border-color);background:var(--bg-color);font-size:12px}
+.emp-cat-row:last-child{border-bottom:none}
+.emp-cat-row-icon{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.emp-cat-row-icon svg{width:11px;height:11px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.emp-cat-tazkira .emp-cat-row-icon{background:rgba(9,105,218,.1);color:var(--accent-blue)}
+.emp-cat-cv .emp-cat-row-icon{background:rgba(26,127,55,.1);color:var(--status-success)}
+.emp-cat-degrees .emp-cat-row-icon{background:rgba(212,167,44,.15);color:var(--safety-orange)}
+.emp-cat-other .emp-cat-row-icon{background:var(--bg-color);color:var(--text-muted);border:1px solid var(--border-color)}
+.emp-cat-row-name{font-weight:700;color:var(--text-main);white-space:nowrap}
+.emp-cat-row-count{font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:var(--card-bg);color:var(--text-muted);border:1px solid var(--border-color)}
+.emp-cat-row-empty{font-size:11px;color:var(--text-muted);font-style:italic;margin-inline-start:auto}
+
+.emp-cat-chips{display:flex;flex-wrap:wrap;gap:4px;margin-inline-start:auto;justify-content:flex-end}
+.emp-cat-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:4px;font-size:10px;background:var(--card-bg);border:1px solid var(--border-color);white-space:nowrap;transition:background .1s}
+.emp-cat-chip:hover{background:var(--bg-color)}
+.emp-cat-chip-type{font-weight:600;color:var(--text-main)}
+.emp-cat-chip .doc-view-btn{padding:2px 6px;font-size:9px}
+.doc-no-file{font-size:10px;color:var(--text-muted);font-style:italic;margin-inline-start:auto}
+
+.emp-contract{display:flex;align-items:center;gap:6px;padding:7px 14px;border-top:1px solid var(--border-color);flex-wrap:wrap}
+.emp-contract-label{font-size:11px;font-weight:700;color:var(--text-main);margin-inline-end:auto}
+.emp-contract-select{padding:4px 8px;font-size:11px;font-weight:600;border:1px solid var(--border-color);border-radius:5px;background:var(--input-bg);color:var(--text-main);cursor:pointer;min-width:140px}
+
+.doc-empty{text-align:center;padding:32px 16px;color:var(--text-muted)}
+.doc-empty-icon{width:48px;height:48px;border-radius:12px;background:var(--bg-color);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+.doc-empty-icon svg{width:20px;height:20px;stroke:var(--text-muted);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.doc-empty-title{font-size:14px;font-weight:600;color:var(--text-main);margin:0 0 4px}
+.doc-empty-sub{font-size:12px;color:var(--text-muted);margin:0}
+
+@media(max-width:900px){.emp-card-header{flex-direction:column;align-items:flex-start;gap:8px}.emp-card-identity{width:100%}.emp-card-meta{margin-inline-start:0}.emp-card-toggle{align-self:flex-end}.emp-cat-chips{justify-content:flex-start}.emp-contract{flex-direction:column;align-items:flex-start}.emp-contract-label{margin-inline-end:0}}
+@media(max-width:640px){.doc-hero{flex-direction:column;align-items:flex-start}.doc-filters{flex-direction:column}.doc-filters select{width:100%;min-width:0}.emp-card-header{padding:8px 10px}.emp-cat-row{padding:5px 10px;flex-wrap:wrap}.emp-cat-chips{width:100%}.emp-contract{padding:6px 10px}.emp-contract-select{width:100%}}
+</style>
+
+<div class="card">
+    <% if (contextEmployee) { %>
+        <div class="doc-context">
+            <div class="doc-context-left">
+                <div class="doc-context-avatar"><% if (contextEmployee.photo_path) { %><img src="/<%= contextEmployee.photo_path %>" alt="<%= contextEmployee.full_name %>"><% } else { %><%= contextEmployee.full_name.charAt(0).toUpperCase() %><% } %></div>
+                <div>
+                    <div class="doc-context-label"><%= t('hr.employees.full_name') %></div>
+                    <div class="doc-context-name"><%= contextEmployee.full_name %></div>
+                    <div class="doc-context-id"><%= contextEmployee.employee_id || 'N/A' %></div>
+                </div>
+            </div>
+            <a href="/admin/hr/employees/<%= contextEmployee.id %>" class="doc-context-link">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                <%= t('hr.employees.back_to_list') %>
+            </a>
+        </div>
+    <% } %>
+
+    <div class="doc-hero">
+        <div class="doc-hero-left">
+            <div class="doc-hero-icon">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            </div>
+            <div>
+                <h1 class="doc-hero-title"><%= t('hr.documents.title') %><% if (employees && employees.length > 0) { %><span class="doc-hero-count"><%= employees.length %></span><% } %></h1>
+                <p class="doc-hero-sub"><%= t('hr.documents.title_desc') %></p>
+            </div>
+        </div>
+    </div>
+
+    <form method="GET" action="/admin/hr/documents" class="doc-filters">
+        <select name="employee_id" id="employeeFilter" onchange="this.form.submit()" class="doc-form-select">
+            <option value=""><%= t('hr.documents.all_employees') || 'All Employees' %></option>
+            <% if (employees && employees.length > 0) { %>
+                <% employees.forEach(function(emp) { %>
+                    <option value="<%= emp.id %>" <%= filters && filters.employee_id == emp.id ? 'selected' : '' %>><%= emp.full_name %></option>
+                <% }); %>
+            <% } %>
+        </select>
+    </form>
+
+    <% if (cardEmployees && cardEmployees.length > 0) { %>
+        <% cardEmployees.forEach(function(emp) { %>
+            <% var empDocs = documentsByEmployee[emp.id] || []; %>
+            <div class="emp-card">
+                <div class="emp-card-header" onclick="var c=this.closest('.emp-card');c.classList.toggle('open')" tabindex="0" role="button" aria-expanded="false" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+                    <div class="emp-card-avatar">
+                        <% if (emp.photo_path) { %>
+                            <img src="/<%= emp.photo_path %>" alt="<%= emp.full_name %>">
+                        <% } else { %>
+                            <%= emp.full_name.charAt(0).toUpperCase() %>
+                        <% } %>
+                    </div>
+                    <div class="emp-card-identity">
+                        <span class="emp-card-name"><%= emp.full_name %></span>
+                        <% if (emp.employee_id) { %>
+                            <span class="emp-card-id"><%= emp.employee_id %></span>
+                        <% } %>
+                    </div>
+                    <div class="emp-card-meta">
+                        <% if (emp.department_name) { %><span><%= emp.department_name %></span><% } %>
+                        <% if (emp.department_name && emp.position) { %><span class="meta-sep">|</span><% } %>
+                        <% if (emp.position) { %><span><%= emp.position %></span><% } %>
+                    </div>
+                    <div class="emp-card-toggle">
+                        <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                </div>
+
+                <div class="emp-contract">
+                    <span class="emp-contract-label"><%= t('hr.documents.contracts_title') %></span>
+                    <select class="emp-contract-select" onchange="if(this.value){window.open(this.value,'_blank');this.selectedIndex=0}">
+                        <option value=""><%= t('hr.documents.contracts_title') %> &#9662;</option>
+                        <option value="/admin/hr/employees/<%= emp.id %>/contract?lang=en"><%= t('hr.documents.print_english') %></option>
+                        <option value="/admin/hr/employees/<%= emp.id %>/contract?lang=da"><%= t('hr.documents.print_dari') %></option>
+                        <option value="/admin/hr/employees/<%= emp.id %>/contract?lang=ps"><%= t('hr.documents.print_pashto') %></option>
+                    </select>
+                </div>
+
+                <div class="emp-card-body">
+                    <%
+                    var categories = [
+                        { key: 'tazkira_passport', cls: 'emp-cat-tazkira', icon: '<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>', types: [4, 8], labelKey: 'hr.documents.cat_tazkira_passport' },
+                        { key: 'cv', cls: 'emp-cat-cv', icon: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>', types: [7], labelKey: 'hr.documents.cat_cv' },
+                        { key: 'degrees_certificates', cls: 'emp-cat-degrees', icon: '<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>', types: [2, 5], labelKey: 'hr.documents.cat_degrees_certificates' },
+                        { key: 'other', cls: 'emp-cat-other', icon: '<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>', types: [3], labelKey: 'hr.documents.cat_other' }
+                    ];
+                    categories.forEach(function(cat) {
+                        var catDocs = empDocs.filter(function(d) { return cat.types.indexOf(d.document_type_id) !== -1; });
+                        var catFileDocs = catDocs.filter(function(d) { return !!d.file_path; });
+                    %>
+                        <div class="emp-cat-row <%= cat.cls %>" data-category="<%= cat.key %>">
+                            <div class="emp-cat-row-icon"><svg viewBox="0 0 24 24"><%= cat.icon %></svg></div>
+                            <span class="emp-cat-row-name"><%= t(cat.labelKey) %></span>
+                            <span class="emp-cat-row-count"><%= catDocs.length %></span>
+                            <% if (catFileDocs.length === 0) { %>
+                                <span class="doc-no-file"><%= t('hr.documents.no_file') || 'No file' %></span>
+                            <% } else { %>
+                                <div class="emp-cat-chips">
+                                    <% catFileDocs.forEach(function(doc) { %>
+                                        <span class="emp-cat-chip">
+                                            <span class="emp-cat-chip-type"><%= doc.document_type_name %></span>
+                                            <a href="/admin/hr/employees/<%= doc.employee_id %>/documents/<%= doc.id %>/view" target="_blank" class="doc-view-btn">
+                                                <svg viewBox="0 0 24 24" width="8" height="8" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                <%= t('hr.documents.view_pdf') || 'View' %>
+                                            </a>
+                                        </span>
+                                    <% }); %>
+                                    <% if (catFileDocs.length < catDocs.length) { %>
+                                        <span class="doc-no-file"><%= t('hr.documents.no_file') || 'No file' %></span>
+                                    <% } %>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        <% }); %>
+    <% } else { %>
+        <div class="doc-empty">
+            <div class="doc-empty-icon">
+                <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <p class="doc-empty-title"><%= t('hr.documents.no_employees') %></p>
+            <p class="doc-empty-sub"><%= t('hr.documents.title_desc') %></p>
+        </div>
+    <% } %>
+</div>

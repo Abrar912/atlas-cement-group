@@ -1,0 +1,950 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Page-specific styles - filter-row now handled globally in header.ejs */
+    .role-tag {
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        display: inline-block;
+    }
+
+    /* Table row number styling - theme-aware */
+    .table-row-number {
+        padding: 8px;
+        text-align: center;
+        font-weight: 600;
+        background-color: var(--table-header-bg);
+        color: var(--text-muted);
+    }
+
+    @media print {
+        .sidebar, .top-navbar, .filter-row, .no-print, select, input, button {
+            display: none !important;
+        }
+        .main-viewport { flex: 1; overflow: visible; }
+        body { background: #ffffff !important; color: #000000 !important; }
+        .card { border: 1px solid #000 !important; box-shadow: none !important; background: #ffffff !important; }
+        .table-responsive { overflow: visible !important; }
+        table { width: 100% !important; border: 1px solid #000 !important; background: #ffffff !important; color: #000000 !important; }
+        thead { background: #ffffff !important; color: #000000 !important; }
+        tbody { background: #ffffff !important; color: #000000 !important; }
+        tfoot { background: #ffffff !important; color: #000000 !important; }
+        th { background: #f5f5f5 !important; color: #000000 !important; border: 1px solid #000 !important; }
+        td { background: #ffffff !important; color: #000000 !important; border: 1px solid #000 !important; }
+        .page-header-print { display: none !important; }
+    }
+</style>
+
+<div class="page-header-print" style="border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;" data-no-remittances="<%= t('worker_agent_remittances.no_remittances') %>" data-no-remittances-sub="<%= t('worker_agent_remittances.no_remittances_sub') %>" data-error-loading="<%= t('worker_agent_remittances.error_loading') %>" data-page-of="<%= t('worker_agent_remittances.page_of_js') %>">
+    <div>
+        <h2><%= t('worker_agent_remittances.title') %></h2>
+        <p style="font-size: 14px; color: var(--text-muted);"><%= t('worker_agent_remittances.description') %></p>
+    </div>
+    <div style="display: flex; gap: 10px;">
+        <button onclick="openCustomerFinancialSummaryModal()" class="btn btn-primary no-print" style="background-color: #2563eb;">
+            <%= t('remittance_ledger.customer_summary_title') %>
+        </button>
+        <button onclick="window.print()" class="btn btn-primary no-print" style="background-color: #24292f;">
+            <%= t('worker_agent_remittances.export_ledger') %>
+        </button>
+    </div>
+</div>
+
+<!-- Filter Bar - 3 Dropdown Controls (Agent/Zone removed for workers) -->
+<div class="no-print" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;">
+    <div>
+        <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);"><%= t('worker_agent_remittances.province') %></label>
+        <select id="rem_filter_province" class="form-control" onchange="applyRemittanceFilters()">
+            <option value="All"><%= t('worker_agent_remittances.all_provinces') %></option>
+            <option value="Kabul">کابل (Kabul)</option>
+            <option value="Herat">هرات (Herat)</option>
+            <option value="Balkh">بلخ (Balkh)</option>
+            <option value="Kandahar">قندهار (Kandahar)</option>
+            <option value="Nangarhar">ننگرهار (Nangarhar)</option>
+            <option value="Khost">خوست (Khost)</option>
+            <option value="Paktia">پکتیا (Paktia)</option>
+            <option value="Paktika">پکتیکا (Paktika)</option>
+            <option value="Ghazni">غزنی (Ghazni)</option>
+            <option value="Logar">لوگر (Logar)</option>
+            <option value="Laghman">لغمان (Laghman)</option>
+            <option value="Wardak"> میدان وردک (Wardak)</option>
+            <option value="Parwan">پروان (Parwan)</option>
+            <option value="Kapisa">کاپیسا (Kapisa)</option>
+            <option value="Panjshir">پنجشیر (Panjshir)</option>
+            <option value="Kunar">کونر (Kunar)</option>
+            <option value="Nuristan">نورستان (Nuristan)</option>
+            <option value="Badakhshan">بدخشان (Badakhshan)</option>
+            <option value="Takhar">تخار (Takhar)</option>
+            <option value="Baghlan">بغلان (Baghlan)</option>
+            <option value="Kunduz">قندوز (Kunduz)</option>
+            <option value="Samangan">سمنگان (Samangan)</option>
+            <option value="Jowzjan">جوزجان (Jowzjan)</option>
+            <option value="Sar-e Pol">سرپل (Sar-e Pol)</option>
+            <option value="Faryab">فاریاب (Faryab)</option>
+            <option value="Badghis">بادغیس (Badghis)</option>
+            <option value="Ghor">غور (Ghor)</option>
+            <option value="Bamyan">بامیان (Bamyan)</option>
+            <option value="Daikundi">دایکندی (Daikundi)</option>
+            <option value="Farah">فراه (Farah)</option>
+            <option value="Nimruz">نیمروز (Nimruz)</option>
+            <option value="Helmand">هلمند (Helmand)</option>
+            <option value="Zabul">زابل (Zabul)</option>
+            <option value="Uruzgan">ارزگان (Uruzgan)</option>
+        </select>
+    </div>
+    <div>
+        <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);"><%= t('worker_agent_remittances.customer') %></label>
+        <select id="rem_filter_customer" class="form-control" onchange="applyRemittanceFilters()">
+            <option value="All"><%= t('worker_agent_remittances.all_accounts') %></option>
+            <% if (typeof customers !== 'undefined' && customers.length > 0) { %>
+                <% customers.forEach(function(customer) { %>
+                    <% 
+                        // Clean up display label to prevent duplicating customer name
+                        let displayLabel = customer.customer_id || ('#CUST-' + customer.id);
+                        const cleanName = (customer.name || '').trim();
+                        
+                        // Only append customer.name if it isn't already included in customer_id
+                        if (cleanName && !displayLabel.includes(cleanName)) {
+                            displayLabel += ' - ' + cleanName;
+                        }
+                        if (customer.province) {
+                            displayLabel += ' (' + customer.province + ')';
+                        }
+                    %>
+                    <option value="<%= customer.id %>" data-province="<%= customer.province %>">
+                        <%= displayLabel %>
+                    </option>
+                <% }); %>
+            <% } %>
+        </select>
+    </div>
+    <div style="display: flex; gap: 16px; align-items: flex-start; grid-column: span 2;">
+        <div style="flex: 1;">
+            <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);"><%= t('worker_agent_remittances.source') %></label>
+            <select id="rem_filter_source" class="form-control" onchange="applyRemittanceFilters()">
+                <option value="All"><%= t('worker_agent_remittances.all_sources') %></option>
+                <option value="Bank"><%= t('worker_agent_remittances.bank') %></option>
+                <option value="Sarafi"><%= t('worker_agent_remittances.sarafi') %></option>
+            </select>
+        </div>
+        <div id="bank_sarafi_name_container" style="flex: 1; display: none;">
+            <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); display: block;"><%= t('worker_agent_remittances.bank_sarafi_name') %></label>
+            <input type="text" id="rem_search_source_name" class="form-control" placeholder="<%= t('worker_agent_remittances.search_bank_placeholder') %>" oninput="applyRemittanceFilters()">
+        </div>
+    </div>
+    <div>
+        <label style="font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main);"><%= t('worker_agent_remittances.time_range') %></label>
+        <div style="display: flex; gap: 5px; align-items: center;">
+            <input type="text" id="rem_filter_start_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('worker_agent_remittances.from_date_placeholder') %>" onchange="applyRemittanceFilters()" readonly>
+            <span style="font-size: 12px; color:#57606a;"><%= t('worker_agent_remittances.to') %></span>
+            <input type="text" id="rem_filter_end_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('worker_agent_remittances.to_date_placeholder') %>" onchange="applyRemittanceFilters()" readonly>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Search Toolbar - 3 Search Controls (Customer search and Bank/Sarafi Name removed for workers) -->
+<div class="no-print" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; padding: 15px; background-color: var(--bg-color); border-radius: 6px; border: 1px solid var(--border-color);">
+    <div>
+        <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted);"><%= t('worker_agent_remittances.sender_name') %></label>
+        <input type="text" id="rem_search_sender" class="form-control" placeholder="<%= t('worker_agent_remittances.search_sender_placeholder') %>" oninput="applyRemittanceFilters()">
+    </div>
+    <div>
+        <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted);"><%= t('worker_agent_remittances.remittance_number') %></label>
+        <input type="text" id="rem_search_remittance_number" class="form-control" placeholder="<%= t('worker_agent_remittances.search_remittance_placeholder') %>" oninput="applyRemittanceFilters()">
+    </div>
+    <div>
+        <label style="font-size: 12px; font-weight: 600; margin-bottom: 4px; color: var(--text-muted);"><%= t('worker_agent_remittances.amount') %></label>
+        <input type="number" id="rem_search_amount" class="form-control" placeholder="<%= t('worker_agent_remittances.search_amount_placeholder') %>" oninput="applyRemittanceFilters()">
+    </div>
+</div>
+
+<!-- Reset Filters Button -->
+<div class="no-print" style="margin-bottom: 20px;">
+    <button onclick="resetRemittanceFilters()" class="btn btn-secondary" style="background-color:#6e7781; color: white; width: 100%; padding: 10px;"><%= t('worker_agent_remittances.reset_filters') %></button>
+</div>
+
+<!-- Remittance Data Table -->
+<div class="table-responsive" style="overflow-x: auto;">
+    <table style="font-size: 12px; white-space: nowrap; table-layout: fixed; width: 100%; border-collapse: collapse;">
+        <colgroup>
+            <col style="width: 50px;" />
+            <col style="width: 90px;" />
+            <col style="width: 130px;" />
+            <col style="width: 120px;" />
+            <col style="width: 100px;" />
+            <col style="width: 110px;" />
+            <col style="width: 110px;" />
+            <col style="width: 130px;" />
+        </colgroup>
+        <thead style="background-color: var(--table-header-bg); border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 700;">
+            <tr>
+                <th style="padding: 8px; text-align: center;"><%= t('worker_agent_remittances.th_hash') %></th>
+                <th style="padding: 8px; text-align: center;"><%= t('worker_agent_remittances.th_date') %></th>
+                <th style="padding: 8px; text-align: right;"><%= t('worker_agent_remittances.th_customer') %></th>
+                <th style="padding: 8px; text-align: right;"><%= t('worker_agent_remittances.th_sender') %></th>
+                <th style="padding: 8px; text-align: center;"><%= t('worker_agent_remittances.th_source') %></th>
+                <th style="padding: 8px; text-align: center;"><%= t('worker_agent_remittances.th_ref') %></th>
+                <th style="padding: 8px; text-align: center;"><%= t('worker_agent_remittances.th_agent') %></th>
+                <th style="padding: 8px; text-align: center;"><%= t('worker_agent_remittances.th_amount') %></th>
+            </tr>
+        </thead>
+        <tbody id="remittance-ledger-rows">
+            <tr>
+                <td colspan="8" style="text-align: center; color:#57606a; padding: 20px;"><%= t('worker_agent_remittances.loading') %></td>
+            </tr>
+        </tbody>
+        <tfoot id="remittance-ledger-footer" style="background-color: var(--bg-color); font-weight: 700; border-top: 2px solid var(--border-color);">
+            <tr>
+                <td colspan="7" style="padding: 8px; text-align: center; color: var(--text-main);"><%= t('worker_agent_remittances.total_remitted') %></td>
+                <td id="rem-total-amount" style="padding: 8px; text-align: center; color: var(--success-color); font-weight: 800;">0</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+<!-- Standardized Pagination Footer with Rows Per Page Dropdown -->
+<div id="rem-pagination-container" class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 12px; border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: 10px; direction: rtl; text-align: right;">
+    
+    <!-- Rows Per Page Selector -->
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted);">
+        <span><%= t('worker_agent_remittances.rows_per_page') %></span>
+        <select id="select_worker_rem_rows_per_page" class="form-control" style="width: 80px; padding: 4px 8px; font-size: 13px; font-weight: bold; border: 1px solid var(--border-color); border-radius: 6px;" onchange="handleRowsPerPageChange(this.value)">
+            <option value="10" selected>۱۰</option>
+            <option value="25">۲۵</option>
+            <option value="50">۵۰</option>
+            <option value="100">۱۰۰</option>
+        </select>
+    </div>
+
+    <!-- Summary Count Indicator -->
+    <div style="font-size: 13px; color: var(--text-muted);">
+        <%= t('worker_agent_remittances.showing') %> <span id="lbl_page_start">0</span> <%= t('worker_agent_remittances.to') %> <span id="lbl_page_end">0</span> <%= t('worker_agent_remittances.of') %> <span id="lbl_total_count">0</span> <%= t('worker_agent_remittances.entries') %>
+    </div>
+
+    <!-- Page Buttons Navigation -->
+    <div style="display: flex; gap: 8px; align-items: center;">
+        <button id="btn_page_prev" onclick="goToPrevPage()" class="btn btn-secondary" style="padding: 5px 12px; font-size: 12px;" disabled><%= t('worker_agent_remittances.previous') %></button>
+        <span id="lbl_page_indicator" style="font-size: 13px; font-weight: bold; color: #0284c7;">Page 1</span>
+        <button id="btn_page_next" onclick="goToNextPage()" class="btn btn-secondary" style="padding: 5px 12px; font-size: 12px;" disabled><%= t('worker_agent_remittances.next') %></button>
+    </div>
+</div>
+
+<!-- Customer Details Modal -->
+<%- include('partials/customer_modal') %>
+
+<!-- Customer Financial Summary Modal -->
+<div id="customer-financial-summary-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div id="customer-financial-summary-modal-content" style="background: var(--card-bg); border-radius: 8px; width: 95%; max-width: 1400px; max-height: 90vh; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);" class="rtl-content">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-main);"><%= t('remittance_ledger.customer_summary_title') %></h3>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="printCustomerFinancialSummary()" class="btn btn-primary no-print" style="padding: 8px 16px; font-size: 14px; background-color: #2563eb;">
+                    <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                    <%= t('remittance_ledger.print') %>
+                </button>
+                <button onclick="toggleCustomerSummaryMaximize()" id="cust_sum_maximize_btn" class="btn no-print" style="background: var(--table-header-bg); color: var(--text-main); padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 500; cursor: pointer;" title="<%= t('admin.full_screen') %>">
+                    <svg id="cust_sum_maximize_icon" style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    <svg id="cust_sum_restore_icon" style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none; display: none;" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                </button>
+                <button onclick="closeCustomerFinancialSummaryModal()" class="btn no-print" style="background: #dc2626; color: #fff; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                    <%= t('admin.close') %>
+                </button>
+            </div>
+        </div>
+
+        <div style="padding: 20px;">
+            <!-- Filters -->
+            <div class="no-print" style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: flex-end;">
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.from_date') %></label>
+                        <input type="text" id="cust_sum_start_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('remittance_ledger.from_date_example') %>" onchange="applyCustomerSummaryFilters()" readonly>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.to_date') %></label>
+                        <input type="text" id="cust_sum_end_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('remittance_ledger.to_date_example') %>" onchange="applyCustomerSummaryFilters()" readonly>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.search_customer') %></label>
+                        <input type="text" id="cust_sum_search" class="form-control" placeholder="<%= t('remittance_ledger.search_customer_placeholder') %>" oninput="applyCustomerSummaryFilters()">
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.account_status') %></label>
+                        <select id="cust_sum_balance" class="form-control" onchange="applyCustomerSummaryFilters()">
+                            <option value="All"><%= t('remittance_ledger.all_statuses') %></option>
+                            <option value="customer_owes"><%= t('remittance_ledger.status_customer_owes') %></option>
+                            <option value="company_owes"><%= t('remittance_ledger.status_company_owes') %></option>
+                            <option value="zero"><%= t('remittance_ledger.status_zero') %></option>
+                        </select>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px;">
+                        <label style="font-size: 13px; font-weight: 600; color: var(--text-muted);"><%= t('remittance_ledger.customer_province') %></label>
+                        <select id="cust_sum_province" class="form-control" onchange="applyCustomerSummaryFilters()">
+                            <option value="All"><%= t('remittance_ledger.all_provinces') %></option>
+                            <option value="Kabul">کابل (Kabul)</option>
+                            <option value="Herat">هرات (Herat)</option>
+                            <option value="Balkh">بلخ (Balkh)</option>
+                            <option value="Kandahar">قندهار (Kandahar)</option>
+                            <option value="Nangarhar">ننگرهار (Nangarhar)</option>
+                            <option value="Khost">خوست (Khost)</option>
+                            <option value="Paktia">پکتیا (Paktia)</option>
+                            <option value="Paktika">پکتیکا (Paktika)</option>
+                            <option value="Ghazni">غزنی (Ghazni)</option>
+                            <option value="Logar">لوگر (Logar)</option>
+                            <option value="Wardak">میدان وردک (Wardak)</option>
+                            <option value="Parwan">پروان (Parwan)</option>
+                            <option value="Kapisa">کاپیسا (Kapisa)</option>
+                            <option value="Panjshir">پنجشیر (Panjshir)</option>
+                            <option value="Laghman">لغمان (Laghman)</option>
+                            <option value="Kunar">کونر (Kunar)</option>
+                            <option value="Nuristan">نورستان (Nuristan)</option>
+                            <option value="Badakhshan">بدخشان (Badakhshan)</option>
+                            <option value="Takhar">تخار (Takhar)</option>
+                            <option value="Baghlan">بغلان (Baghlan)</option>
+                            <option value="Samangan">سمنگان (Samangan)</option>
+                            <option value="Jowzjan">جوزجان (Jowzjan)</option>
+                            <option value="Sar-e Pol">سرپل (Sar-e Pol)</option>
+                            <option value="Faryab">فاریاب (Faryab)</option>
+                            <option value="Kunduz">قندوز (Kunduz)</option>
+                            <option value="Badghis">بادغیس (Badghis)</option>
+                            <option value="Ghor">غور (Ghor)</option>
+                            <option value="Bamyan">بامیان (Bamyan)</option>
+                            <option value="Daikundi">دایکندی (Daikundi)</option>
+                            <option value="Farah">فراه (Farah)</option>
+                            <option value="Nimruz">نیمروز (Nimruz)</option>
+                            <option value="Helmand">هلمند (Helmand)</option>
+                            <option value="Zabul">زابل (Zabul)</option>
+                            <option value="Uruzgan">ارزگان (Uruzgan)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div style="max-height: 500px; overflow-y: auto;">
+                <table style="width: 100%; table-layout: auto; border-collapse: collapse; font-size: 13px;">
+                    <colgroup>
+                        <col style="width: 80px;" />
+                        <col style="width: 120px;" />
+                        <col style="width: 90px;" />
+                        <col style="width: 90px;" />
+                        <col style="width: 90px;" />
+                        <col style="width: 90px;" />
+                        <col style="width: 60px;" />
+                        <col style="width: 60px;" />
+                        <col style="width: 60px;" />
+                        <col style="width: 80px;" />
+                        <col style="width: 100px;" />
+                    </colgroup>
+                    <thead>
+                        <tr style="background-color: var(--table-header-bg); border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 700;">
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_id') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_name') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_cement_purchase') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_money_transferred') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_company_owes') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_customer_owes') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_transfers') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_bank_transfers') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_sarafi_transfers') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_province') %></th>
+                            <th style="padding: 7px 8px; white-space: nowrap;"><%= t('remittance_ledger.customer_summary_header_registered_by') %></th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-financial-summary-rows">
+                        <tr>
+                            <td colspan="11">
+                                <div style="padding: 60px 20px; text-align: center;">
+                                    <svg style="width: 40px; height: 40px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px; animation: spin 1s linear infinite;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                                    <p style="font-size: 15px; font-weight: 500; color: var(--text-main); margin: 0;"><%= t('remittance_ledger.customer_summary_loading') %></p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div id="customer-summary-pagination" class="no-print" style="margin-top: 20px; display: flex; justify-content: space-between; align-items:-center; padding-top: 12px; border-top: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted);">
+                    <span><%= t('worker_agent_remittances.rows_per_page') %></span>
+                    <select id="cust_sum_rows_per_page" class="form-control" style="width: 80px;" onchange="handleCustomerSummaryRowsPerPageChange(this.value)">
+                        <option value="10" selected>۱۰</option>
+                        <option value="50">۵۰</option>
+                        <option value="100">۱۰۰</option>
+                    </select>
+                </div>
+
+                <div style="font-size: 13px; color: var(--text-muted);">
+                    <%= t('worker_agent_remittances.showing') %> <span id="cust_sum_page_start">0</span> <%= t('worker_agent_remittances.to') %> <span id="cust_sum_page_end">0</span> <%= t('worker_agent_remittances.of') %> <span id="cust_sum_total_count">0</span> <%= t('worker_agent_remittances.items') %>
+                </div>
+
+                <div style="display: flex; gap: 8px;">
+                    <button id="cust_sum_btn_prev" onclick="goToCustomerSummaryPrevPage()" class="btn btn-secondary no-print" style="padding: 6px 12px; font-size: 12px;" disabled><%= t('worker_agent_remittances.previous') %></button>
+                    <span id="cust_sum_page_indicator" style="font-size: 13px; color: var(--text-main);"><%= t('worker_agent_remittances.page_of_js') %></span>
+                    <button id="cust_sum_btn_next" onclick="goToCustomerSummaryNextPage()" class="btn btn-secondary no-print" style="padding: 6px 12px; font-size: 12px;" disabled><%= t('worker_agent_remittances.next') %></button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+// Set active sidebar item
+document.getElementById('nav-worker-remittances').classList.add('active');
+
+// Bank/Sarafi Name field conditional visibility
+function toggleBankSarafiField() {
+    const sourceSelect = document.getElementById('rem_filter_source');
+    const bankSarafiContainer = document.getElementById('bank_sarafi_name_container');
+    const bankSarafiInput = document.getElementById('rem_search_source_name');
+    
+    if (sourceSelect && bankSarafiContainer) {
+        const sourceValue = sourceSelect.value;
+        
+        if (sourceValue === 'Bank' || sourceValue === 'Sarafi') {
+            bankSarafiContainer.style.display = 'block';
+        } else {
+            bankSarafiContainer.style.display = 'none';
+            // Clear the input when hiding
+            if (bankSarafiInput) {
+                bankSarafiInput.value = '';
+            }
+        }
+    }
+}
+
+// Attach event listener to Source dropdown
+document.addEventListener('DOMContentLoaded', function() {
+    const sourceSelect = document.getElementById('rem_filter_source');
+    if (sourceSelect) {
+        sourceSelect.addEventListener('change', toggleBankSarafiField);
+        // Initialize visibility on page load
+        toggleBankSarafiField();
+    }
+});
+
+// Table Pagination State
+let currentTableData = [];
+let filteredTableData = [];
+let remCurrentPage = 1;
+let remRowsPerPage = 10; // Default dynamic rows count
+
+// Load remittance ledger data
+function loadRemittanceLedger() {
+    console.log('[DEBUG] Loading remittance ledger...');
+    
+    // Get filter values with defensive reading
+    const province = document.getElementById('rem_filter_province')?.value || 'All';
+    const customerId = document.getElementById('rem_filter_customer')?.value || 'All';
+    const source = document.getElementById('rem_filter_source')?.value || 'All';
+    const startDate = document.getElementById('rem_filter_start_date')?.value || '';
+    const endDate = document.getElementById('rem_filter_end_date')?.value || '';
+    const searchSender = document.getElementById('rem_search_sender')?.value || '';
+    const searchSourceName = document.getElementById('rem_search_source_name')?.value || '';
+    const searchRemittanceNumber = document.getElementById('rem_search_remittance_number')?.value || '';
+    const searchAmount = document.getElementById('rem_search_amount')?.value || '';
+    
+    // Build query URL with encoding (worker-scoped API)
+    let queryUrl = `/api/worker/remittance-ledger?province=${province}&customer_id=${customerId}&source=${source}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}&search_sender=${encodeURIComponent(searchSender)}&search_source_name=${encodeURIComponent(searchSourceName)}&search_remittance_number=${encodeURIComponent(searchRemittanceNumber)}&search_amount=${encodeURIComponent(searchAmount)}`;
+    
+    fetch(queryUrl)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            // Safely extract array regardless of payload structure
+            let records = [];
+            if (Array.isArray(data)) {
+                records = data;
+            } else if (data && Array.isArray(data.remittances)) {
+                records = data.remittances;
+            } else if (data && Array.isArray(data.records)) {
+                records = data.records;
+            } else if (data && Array.isArray(data.data)) {
+                records = data.data;
+            } else if (data && data.error) {
+                throw new Error(data.error);
+            }
+
+            currentTableData = records;
+            
+            // Apply client-side amount filtering if specified
+            if (searchAmount) {
+                currentTableData = currentTableData.filter(row => 
+                    row.amount_received && row.amount_received.toString().includes(searchAmount.toString().trim())
+                );
+            }
+            
+            filteredTableData = [...currentTableData];
+            remCurrentPage = 1; // Reset to first page on new data
+            renderRemittanceTable(filteredTableData);
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading remittance ledger:', err);
+            currentTableData = [];
+            filteredTableData = [];
+            const pageData = document.querySelector('[data-no-remittances]');
+            document.getElementById('remittance-ledger-rows').innerHTML = `
+                <tr>
+                    <td colspan="8" style="text-align: center; color:#cf222e; padding:20px;">
+                        ${esc(pageData.getAttribute('data-error-loading'))}: ${esc(err.message)}
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+// Apply remittance filters
+function applyRemittanceFilters() {
+    console.log('[DEBUG] Applying remittance filters...');
+    loadRemittanceLedger();
+}
+
+// Reset all remittance filters
+function resetRemittanceFilters() {
+    // Reset dropdowns
+    document.getElementById('rem_filter_province').value = 'All';
+    document.getElementById('rem_filter_customer').value = 'All';
+    document.getElementById('rem_filter_source').value = 'All';
+    
+    // Reset date inputs
+    document.getElementById('rem_filter_start_date').value = '';
+    document.getElementById('rem_filter_end_date').value = '';
+    
+    // Clear search inputs
+    document.getElementById('rem_search_sender').value = '';
+    document.getElementById('rem_search_source_name').value = '';
+    document.getElementById('rem_search_remittance_number').value = '';
+    document.getElementById('rem_search_amount').value = '';
+    
+    // Apply filters
+    applyRemittanceFilters();
+}
+
+// Render remittance table with pagination
+function renderRemittanceTable(records) {
+    const rowsContainer = document.getElementById('remittance-ledger-rows');
+    let html = '';
+    
+    if (!records || records.length === 0) {
+        const pageData = document.querySelector('[data-no-remittances]');
+        html = `
+            <tr>
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px 20px; background-color: var(--bg-color);">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                        <span style="font-size: 32px;">🔍</span>
+                        <p style="font-size: 14px; font-weight: 600; color: var(--text-main); margin: 0;">
+                            ${esc(pageData.getAttribute('data-no-remittances'))}
+                        </p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                            ${esc(pageData.getAttribute('data-no-remittances-sub'))}
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        // Reset footer total
+        const totalAmountEl = document.getElementById('rem-total-amount');
+        if (totalAmountEl) totalAmountEl.textContent = '0';
+        
+        // Clear pagination
+        const paginationContainer = document.getElementById('rem-pagination-container');
+        if (paginationContainer) {
+            paginationContainer.innerHTML = '';
+        }
+    } else {
+        // Calculate pagination
+        const totalPages = Math.ceil(records.length / remRowsPerPage) || 1;
+        const startIndex = (remCurrentPage - 1) * remRowsPerPage;
+        const endIndex = Math.min(startIndex + remRowsPerPage, records.length);
+        const paginatedRecords = records.slice(startIndex, endIndex);
+        
+        let totalAmount = 0;
+        
+        paginatedRecords.forEach((row, index) => {
+            totalAmount += (row.amount_received || 0);
+            
+            // Source badge styling
+            let sourceBadge;
+            if (row.origin_source === 'Bank') {
+                sourceBadge = `<span class="role-tag" style="background-color:#e1ecf4; color:#0969da; font-weight:700;">Bank</span>`;
+            } else if (row.origin_source === 'Sarafi') {
+                sourceBadge = `<span class="role-tag" style="background-color:#fff8c5; color:#9a6700; font-weight:700;">Sarafi</span>`;
+            } else {
+                sourceBadge = row.origin_source || '-';
+            }
+            
+            const displayIndex = startIndex + index + 1;
+            
+            html += `
+                <tr style="border-bottom: 1px solid #eaeef2;">
+                    <td class="table-row-number">${esc(displayIndex)}</td>
+                    <td style="padding: 8px; text-align: center;">${esc(row.receipt_date || '-')}</td>
+                    <td style="padding: 8px; text-align: right; font-weight: 600;">
+                        <span style="color: var(--accent-blue); cursor: pointer; text-decoration: none;"
+                              onclick="openCustomerModal('${esc(row.customer_id)}')"
+                              onmouseover="this.style.textDecoration='underline'"
+                              onmouseout="this.style.textDecoration='none'">
+                            ${esc(row.customer_name || 'Unknown')}
+                        </span>
+                    </td>
+                    <td style="padding: 8px; text-align: right;">${esc(row.sender_name || '-')}</td>
+                    <td style="padding: 8px; text-align: center;">${esc(sourceBadge)}</td>
+                    <td style="padding: 8px; text-align: center; font-family: monospace;">${esc(row.remittance_number || '-')}</td>
+                    <td style="padding: 8px; text-align: center;">${esc(row.submitted_by || '-')}</td>
+                    <td style="padding: 8px; text-align: center; font-weight: 700; color: #1a7f37;">${esc(row.amount_received ? row.amount_received.toLocaleString() : '0')} Afs</td>
+                </tr>
+            `;
+        });
+        
+        // Update footer total
+        const totalAmountEl = document.getElementById('rem-total-amount');
+        if (totalAmountEl) totalAmountEl.textContent = totalAmount.toLocaleString() + ' Afs';
+        
+        // Render pagination controls
+        renderPaginationControls(totalPages);
+    }
+    
+    rowsContainer.innerHTML = html;
+}
+
+// Render pagination controls
+function renderPaginationControls(totalPages) {
+    const totalRecords = filteredTableData.length;
+    const start = totalRecords === 0 ? 0 : (remCurrentPage - 1) * remRowsPerPage + 1;
+    const end = Math.min(remCurrentPage * remRowsPerPage, totalRecords);
+
+    if (document.getElementById('lbl_page_start')) document.getElementById('lbl_page_start').textContent = start.toLocaleString();
+    if (document.getElementById('lbl_page_end')) document.getElementById('lbl_page_end').textContent = end.toLocaleString();
+    if (document.getElementById('lbl_total_count')) document.getElementById('lbl_total_count').textContent = totalRecords.toLocaleString();
+    const pageData = document.querySelector('[data-no-remittances]');
+    const pageOfTemplate = pageData.getAttribute('data-page-of');
+    if (document.getElementById('lbl_page_indicator')) document.getElementById('lbl_page_indicator').textContent = pageOfTemplate.replace('{current}', remCurrentPage).replace('{total}', totalPages);
+
+    if (document.getElementById('btn_page_prev')) document.getElementById('btn_page_prev').disabled = (remCurrentPage === 1 || totalRecords === 0);
+    if (document.getElementById('btn_page_next')) document.getElementById('btn_page_next').disabled = (remCurrentPage >= totalPages || totalRecords === 0);
+}
+
+// Handle Rows Per Page Selection Change
+function handleRowsPerPageChange(val) {
+    remRowsPerPage = parseInt(val) || 10;
+    remCurrentPage = 1; // Reset to first page when limit changes
+    renderRemittanceTable(filteredTableData);
+}
+
+// Go to previous page
+function goToPrevPage() {
+    if (remCurrentPage > 1) {
+        remCurrentPage--;
+        renderRemittanceTable(filteredTableData);
+    }
+}
+
+// Go to next page
+function goToNextPage() {
+    const totalPages = Math.ceil(filteredTableData.length / remRowsPerPage);
+    if (remCurrentPage < totalPages) {
+        remCurrentPage++;
+        renderRemittanceTable(filteredTableData);
+    }
+}
+
+
+// Customer Details Modal Functions
+function openCustomerModal(customerId) {
+    const modal = document.getElementById('customerDetailsModal');
+    const loadingDiv = document.getElementById('modal_loading');
+    const bodyDiv = document.getElementById('modal_body');
+    
+    if (!modal) return;
+    
+    modal.style.display = 'flex';
+    if (loadingDiv) loadingDiv.style.display = 'block';
+    if (bodyDiv) bodyDiv.style.display = 'none';
+    
+    fetch(`/api/reports/customer-details?customer_id=${customerId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                if (loadingDiv) loadingDiv.innerHTML = `<div style="color: #cf222e; padding:20px;">Error: ${esc(data.error)}</div>`;
+                return;
+            }
+            
+            const customer = data.customer || {};
+            const creator = data.creator || {};
+            const financial = data.financial || { total_debit: 0, total_credit: 0 };
+            
+            // Populate fields using correct partials/customer_modal.ejs IDs
+            if (document.getElementById('modal_customer_name')) document.getElementById('modal_customer_name').textContent = customer.name || 'N/A';
+            if (document.getElementById('modal_cust_id')) document.getElementById('modal_cust_id').textContent = customer.customer_id || ('#CUST-' + customer.id);
+            if (document.getElementById('modal_cust_type')) document.getElementById('modal_cust_type').textContent = customer.customer_type || 'Not specified';
+            if (document.getElementById('modal_contact_position')) document.getElementById('modal_contact_position').textContent = customer.contact_person_position || 'Not specified';
+            if (document.getElementById('modal_province')) document.getElementById('modal_province').textContent = customer.province || 'N/A';
+            if (document.getElementById('modal_agency')) document.getElementById('modal_agency').textContent = customer.created_by_agency || customer.agency || 'Unknown';
+            if (document.getElementById('modal_creator')) document.getElementById('modal_creator').textContent = creator.username || 'Not linked';
+            if (document.getElementById('modal_phone')) document.getElementById('modal_phone').textContent = customer.phone || 'Not provided';
+            if (document.getElementById('modal_alt_phone')) document.getElementById('modal_alt_phone').textContent = customer.alternative_phone || 'Not provided';
+            if (document.getElementById('modal_email')) document.getElementById('modal_email').textContent = customer.email || 'Not provided';
+            if (document.getElementById('modal_address')) document.getElementById('modal_address').textContent = customer.address || 'Not provided';
+            
+            if (document.getElementById('modal_total_debit')) document.getElementById('modal_total_debit').textContent = (financial.total_debit || 0).toLocaleString() + ' Afs';
+            if (document.getElementById('modal_total_credit')) document.getElementById('modal_total_credit').textContent = (financial.total_credit || 0).toLocaleString() + ' Afs';
+            
+            // Format agency badge name
+            const agencyValue = customer.created_by_agency || customer.agency || customer.province || 'Unknown';
+            let agencyName = agencyValue;
+            if (agencyValue.includes('_')) {
+                agencyName = agencyValue.split('_').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+            } else {
+                agencyName = agencyValue.charAt(0).toUpperCase() + agencyValue.slice(1);
+                if (agencyName.toLowerCase() !== 'unknown') agencyName += ' Agency';
+            }
+            if (document.getElementById('modal_agency_badge_name')) document.getElementById('modal_agency_badge_name').textContent = agencyName;
+            
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (bodyDiv) bodyDiv.style.display = 'block';
+        })
+        .catch(err => {
+            if (loadingDiv) loadingDiv.innerHTML = `<div style="color: #cf222e; text-align: center; padding: 20px;">Error: ${esc(err.message)}</div>`;
+        });
+}
+
+function closeCustomerModal() {
+    document.getElementById('customerDetailsModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('customerDetailsModal');
+    if (event.target === modal) {
+        closeCustomerModal();
+    }
+}
+
+// Customer Financial Summary Modal Functions
+let customerSummaryData = [];
+let customerSummaryTotals = null;
+let custSumCurrentPage = 1;
+let custSumRowsPerPage = 10;
+let isCustomerSummaryMaximized = false;
+
+function openCustomerFinancialSummaryModal() {
+    document.getElementById('customer-financial-summary-modal').style.display = 'flex';
+    loadCustomerFinancialSummary();
+}
+
+function closeCustomerFinancialSummaryModal() {
+    document.getElementById('customer-financial-summary-modal').style.display = 'none';
+}
+
+function toggleCustomerSummaryMaximize() {
+    const modal = document.getElementById('customer-financial-summary-modal');
+    const modalContent = modal.querySelector('div[style*="background: var(--card-bg)"]');
+    const maximizeIcon = document.getElementById('cust_sum_maximize_icon');
+    const restoreIcon = document.getElementById('cust_sum_restore_icon');
+
+    isCustomerSummaryMaximized = !isCustomerSummaryMaximized;
+
+    if (isCustomerSummaryMaximized) {
+        modalContent.style.width = '98%';
+        modalContent.style.maxWidth = '98%';
+        modalContent.style.height = '95vh';
+        modalContent.style.maxHeight = '95vh';
+        modalContent.style.borderRadius = '4px';
+        maximizeIcon.style.display = 'none';
+        restoreIcon.style.display = 'block';
+    } else {
+        modalContent.style.width = '95%';
+        modalContent.style.maxWidth = '1400px';
+        modalContent.style.height = 'auto';
+        modalContent.style.maxHeight = '90vh';
+        modalContent.style.borderRadius = '8px';
+        maximizeIcon.style.display = 'block';
+        restoreIcon.style.display = 'none';
+    }
+}
+
+function loadCustomerFinancialSummary() {
+    const startDate = document.getElementById('cust_sum_start_date')?.value || '';
+    const endDate = document.getElementById('cust_sum_end_date')?.value || '';
+    const searchCustomer = document.getElementById('cust_sum_search')?.value || '';
+    const balanceStatus = document.getElementById('cust_sum_balance')?.value || 'All';
+    const province = document.getElementById('cust_sum_province')?.value || 'All';
+
+    let queryUrl = `/api/worker/customer-financial-summary?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}&search_customer=${encodeURIComponent(searchCustomer)}&balance_status=${balanceStatus}&province=${province}`;
+    
+    fetch(queryUrl)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            customerSummaryData = data.records || [];
+            customerSummaryTotals = data.totals || null;
+            custSumCurrentPage = 1;
+            renderCustomerFinancialSummaryTable();
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading customer financial summary:', err);
+            document.getElementById('customer-financial-summary-rows').innerHTML = `
+                <tr>
+                    <td colspan="11">
+                        <div style="padding: 60px 20px; text-align: center; color: #dc2626;">
+                            <p style="font-size: 15px; font-weight: 500; margin: 0;">خطا در بارگذاری اطلاعات: ${esc(err.message)}</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+}
+
+function applyCustomerSummaryFilters() {
+    loadCustomerFinancialSummary();
+}
+
+function renderCustomerFinancialSummaryTable() {
+    const tbody = document.getElementById('customer-financial-summary-rows');
+    const startIndex = (custSumCurrentPage - 1) * custSumRowsPerPage;
+    const endIndex = startIndex + custSumRowsPerPage;
+    const paginatedData = customerSummaryData.slice(startIndex, endIndex);
+
+    if (paginatedData.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="11" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                    <%= t('worker_agent_remittances.no_remittances') %>
+                </td>
+            </tr>
+        `;
+        document.getElementById('cust_sum_page_start').textContent = '0';
+        document.getElementById('cust_sum_page_end').textContent = '0';
+        document.getElementById('cust_sum_total_count').textContent = '0';
+        document.getElementById('cust_sum_btn_prev').disabled = true;
+        document.getElementById('cust_sum_btn_next').disabled = true;
+        return;
+    }
+
+    let html = '';
+    paginatedData.forEach(row => {
+        html += `
+            <tr>
+                <td>${esc(row.customer_id || ('#CUST-' + row.id))}</td>
+                <td>${esc(row.name || '-')}</td>
+                <td style="font-family: monospace; font-weight: 600;">${esc(row.total_debit ? row.total_debit.toLocaleString() : '0')}</td>
+                <td style="font-family: monospace; font-weight: 600;">${esc(row.total_credit ? row.total_credit.toLocaleString() : '0')}</td>
+                <td style="font-family: monospace; font-weight: 600; color: ${esc(row.balance > 0 ? '#059669' : '#000')};">${esc(row.balance > 0 ? row.balance.toLocaleString() : '0')}</td>
+                <td style="font-family: monospace; font-weight: 600; color: ${esc(row.balance < 0 ? '#dc2626' : '#000')};">${esc(row.balance < 0 ? Math.abs(row.balance).toLocaleString() : '0')}</td>
+                <td>${esc(row.transfer_count || 0)}</td>
+                <td>${esc(row.bank_count || 0)}</td>
+                <td>${esc(row.sarafi_count || 0)}</td>
+                <td>${esc(row.province || '-')}</td>
+                <td>${esc(row.created_by || '-')}</td>
+            </tr>
+        `;
+    });
+
+    // Add totals row if we have totals data
+    if (customerSummaryTotals) {
+        html += `
+            <tr style="background-color: var(--table-header-bg); border-top: 2px solid var(--border-color); font-weight: 700;">
+                <td colspan="2" style="text-align: center; color: var(--text-main);">TOTAL</td>
+                <td style="font-family: monospace; color: var(--text-main);">${esc(customerSummaryTotals.total_debit ? customerSummaryTotals.total_debit.toLocaleString() : '0')}</td>
+                <td style="font-family: monospace; color: var(--text-main);">${esc(customerSummaryTotals.total_credit ? customerSummaryTotals.total_credit.toLocaleString() : '0')}</td>
+                <td style="font-family: monospace; color: #059669;">${esc(customerSummaryTotals.company_owes_customer ? customerSummaryTotals.company_owes_customer.toLocaleString() : '0')}</td>
+                <td style="font-family: monospace; color: #dc2626;">${esc(customerSummaryTotals.customer_owes_company ? customerSummaryTotals.customer_owes_company.toLocaleString() : '0')}</td>
+                <td style="color: var(--text-main);">${esc(customerSummaryTotals.total_transfers || 0)}</td>
+                <td style="color: var(--text-main);">${esc(customerSummaryTotals.bank_transfers || 0)}</td>
+                <td style="color: var(--text-main);">${esc(customerSummaryTotals.sarafi_transfers || 0)}</td>
+                <td colspan="2"></td>
+            </tr>
+        `;
+    }
+
+    tbody.innerHTML = html;
+
+    // Update pagination info
+    const totalPages = Math.ceil(customerSummaryData.length / custSumRowsPerPage);
+    document.getElementById('cust_sum_page_start').textContent = startIndex + 1;
+    document.getElementById('cust_sum_page_end').textContent = Math.min(endIndex, customerSummaryData.length);
+    document.getElementById('cust_sum_total_count').textContent = customerSummaryData.length;
+    
+    // Fix pagination text by replacing placeholders
+    const pageOfTemplate = '<%= t("worker_agent_remittances.page_of_js") %>';
+    document.getElementById('cust_sum_page_indicator').textContent = pageOfTemplate.replace('{current}', custSumCurrentPage).replace('{total}', totalPages);
+
+    // Update pagination buttons
+    document.getElementById('cust_sum_btn_prev').disabled = custSumCurrentPage === 1;
+    document.getElementById('cust_sum_btn_next').disabled = endIndex >= customerSummaryData.length;
+}
+
+function handleCustomerSummaryRowsPerPageChange(value) {
+    custSumRowsPerPage = parseInt(value);
+    custSumCurrentPage = 1;
+    renderCustomerFinancialSummaryTable();
+}
+
+function goToCustomerSummaryPrevPage() {
+    if (custSumCurrentPage > 1) {
+        custSumCurrentPage--;
+        renderCustomerFinancialSummaryTable();
+    }
+}
+
+function goToCustomerSummaryNextPage() {
+    const maxPage = Math.ceil(customerSummaryData.length / custSumRowsPerPage);
+    if (custSumCurrentPage < maxPage) {
+        custSumCurrentPage++;
+        renderCustomerFinancialSummaryTable();
+    }
+}
+
+function printCustomerFinancialSummary() {
+    window.print();
+}
+
+// Load remittance ledger on page load
+loadRemittanceLedger();
+
+// Viewport-aware datepicker positioning for end date input
+function repositionRemittanceDatepicker() {
+    setTimeout(() => {
+        const popup = document.getElementById('custom-jalali-datepicker');
+        const endDateInput = document.getElementById('rem_filter_end_date');
+        if (popup && endDateInput) {
+            const inputRect = endDateInput.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+            
+            popup.style.setProperty('position', 'fixed', 'important');
+            popup.style.setProperty('top', `${inputRect.bottom + 4}px`, 'important');
+            
+            // Position from right edge to avoid scrollbar overlap
+            const rightPos = viewportWidth - inputRect.right - scrollbarWidth - 15;
+            popup.style.setProperty('left', 'auto', 'important');
+            popup.style.setProperty('right', `${rightPos}px`, 'important');
+        }
+    }, 30);
+}
+
+// Attach positioning handlers
+setTimeout(() => {
+    const endDateInput = document.getElementById('rem_filter_end_date');
+    if (endDateInput) {
+        endDateInput.addEventListener('focus', repositionRemittanceDatepicker);
+        endDateInput.addEventListener('click', repositionRemittanceDatepicker);
+    }
+}, 100);
+</script>
+
+<%- include('partials/footer') %>

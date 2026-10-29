@@ -1,0 +1,161 @@
+<%- include('partials/header') %>
+
+<style>
+    .dashboard-container {
+        direction: ltr;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="header-title-group">
+            <h2 style="margin: 0; color: var(--text-main); font-size: 22px; font-weight: 800;"><%= t('stock.title') %></h2>
+            <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);"><%= t('stock.description') %></p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="/admin/stock/summary" style="background-color: var(--text-muted, #57606a); color: #fff; border-radius: 8px; padding: 9px 18px; font-weight: 600; text-decoration: none; display: inline-block; font-size: 14px;">
+                📊 <%= t('stock.summary_button') %>
+            </a>
+            <a href="/admin/stock/add" style="background-color: var(--accent-blue, #0969da); color: #fff; border-radius: 8px; padding: 9px 18px; font-weight: 600; text-decoration: none; display: inline-block;">
+                ➕ <%= t('stock.add_new') %>
+            </a>
+        </div>
+    </div>
+
+    <!-- 3 KPI Summary Cards -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px;">
+        <div style="background: linear-gradient(135deg, #0969da 0%, #0550ae 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center;">
+            <span style="font-size: 13px; font-weight: 600;"><%= t('stock.kpi_bags') %></span>
+            <h2 style="margin-top: 10px; font-size: 1.8rem; font-weight: 800;"><%= Number(totals.total_bags).toLocaleString('en-US') %></h2>
+        </div>
+        <div style="background: linear-gradient(135deg, #2ea44f 0%, #1a7f37 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center;">
+            <span style="font-size: 13px; font-weight: 600;"><%= t('stock.kpi_tonnage') %></span>
+            <h2 style="margin-top: 10px; font-size: 1.8rem; font-weight: 800;"><%= Number(totals.total_tonnage).toLocaleString('en-US') %></h2>
+        </div>
+        <div style="background: linear-gradient(135deg, #d29922 0%, #9a6700 100%); color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); text-align: center;">
+            <span style="font-size: 13px; font-weight: 600;"><%= t('stock.kpi_money') %></span>
+            <h2 style="margin-top: 10px; font-size: 1.8rem; font-weight: 800;"><%= Number(totals.total_money).toLocaleString('en-US') %> Afs</h2>
+        </div>
+    </div>
+
+    <!-- Entries Table -->
+    <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;">
+        <h3 style="margin: 0 0 15px 0; color: var(--text-main); font-size: 16px; font-weight: 700;"><%= t('stock.table_title') %></h3>
+        <% if (entries.length === 0) { %>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;"><%= t('stock.no_entries') %></p>
+        <% } else { %>
+            <!-- Registered stock filters -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px;">
+                <select id="filter_cement_type" onchange="applyStockFilters()" style="padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--card-bg); color: var(--text-main); font-size: 13px;">
+                    <option value=""><%= t('stock.filter_all_types') %></option>
+                </select>
+                <input type="text" id="filter_price" placeholder="<%= t('stock.filter_all_prices') %>" oninput="applyStockFilters()" style="padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--card-bg); color: var(--text-main); font-size: 13px; width: 150px;">
+                <input type="text" id="filter_money" placeholder="<%= t('stock.filter_all_money') %>" oninput="applyStockFilters()" style="padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--card-bg); color: var(--text-main); font-size: 13px; width: 150px;">
+                <input type="text" id="filter_date" data-datepicker="jalali" readonly placeholder="1405/01/01" oninput="applyStockFilters()" style="padding: 8px 10px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--card-bg); color: var(--text-main); font-size: 13px; width: 130px; cursor: pointer;">
+                <button type="button" onclick="clearStockFilters()" title="✕" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--card-bg); color: var(--text-main); cursor: pointer; font-size: 13px;">✕</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color);">
+                            <th style="text-align: left; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_date') %></th>
+                            <th style="text-align: left; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_type') %></th>
+                            <th style="text-align: right; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_bags') %></th>
+                            <th style="text-align: right; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_tonnage') %></th>
+                            <th style="text-align: right; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_price_per_bag') %></th>
+                            <th style="text-align: right; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_money') %></th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock_entries_body">
+                        <% entries.forEach(function (row) { %>
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 10px 8px; color: var(--text-main);"><%= row.stock_date %></td>
+                                <td style="padding: 10px 8px; color: var(--text-main);"><%= row.cement_type %></td>
+                                <td style="padding: 10px 8px; color: var(--text-main); text-align: right;"><%= Number(row.bags).toLocaleString('en-US') %></td>
+                                <td style="padding: 10px 8px; color: var(--text-main); text-align: right;"><%= Number(row.tonnage).toLocaleString('en-US') %></td>
+                                <td style="padding: 10px 8px; color: var(--text-main); text-align: right;"><%= Number(row.price_per_bag).toLocaleString('en-US') %></td>
+                                <td style="padding: 10px 8px; color: var(--text-main); text-align: right; font-weight: 700;"><%= Number(row.bags * row.price_per_bag).toLocaleString('en-US') %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+// Registered stock filters: cement type dropdown options are built from the rendered table rows
+function buildStockFilterOptions() {
+    const tbody = document.getElementById('stock_entries_body');
+    if (!tbody) return;
+    const select = document.getElementById('filter_cement_type');
+    if (!select) return;
+    const seen = {};
+    Array.prototype.forEach.call(tbody.rows, function (row) {
+        const cell = row.cells[1];
+        if (!cell) return;
+        const value = cell.textContent.trim();
+        if (!value || seen[value]) return;
+        seen[value] = true;
+        const opt = document.createElement('option');
+        opt.value = value;
+        opt.textContent = value;
+        select.appendChild(opt);
+    });
+}
+
+function normalizeStockDate(value) {
+    return (value || '').trim().replace(/-/g, '/');
+}
+
+// Price and money are search boxes: match anywhere in the number, commas/spaces ignored
+function stockSearchMatch(cellText, query) {
+    const norm = function (s) { return (s || '').replace(/[,\s]/g, ''); };
+    const q = norm(query);
+    return !q || norm(cellText).indexOf(q) !== -1;
+}
+
+function applyStockFilters() {
+    const typeVal = document.getElementById('filter_cement_type').value;
+    const priceVal = document.getElementById('filter_price').value;
+    const moneyVal = document.getElementById('filter_money').value;
+    const dateVal = normalizeStockDate(document.getElementById('filter_date').value);
+    const tbody = document.getElementById('stock_entries_body');
+    if (!tbody) return;
+    Array.prototype.forEach.call(tbody.rows, function (row) {
+        const date = normalizeStockDate(row.cells[0] ? row.cells[0].textContent : '');
+        const type = row.cells[1] ? row.cells[1].textContent.trim() : '';
+        const price = row.cells[4] ? row.cells[4].textContent.trim() : '';
+        const money = row.cells[5] ? row.cells[5].textContent.trim() : '';
+        const match = (!typeVal || type === typeVal) &&
+            stockSearchMatch(price, priceVal) &&
+            stockSearchMatch(money, moneyVal) &&
+            (!dateVal || date === dateVal);
+        row.style.display = match ? '' : 'none';
+    });
+}
+
+function clearStockFilters() {
+    document.getElementById('filter_cement_type').value = '';
+    document.getElementById('filter_price').value = '';
+    document.getElementById('filter_money').value = '';
+    document.getElementById('filter_date').value = '';
+    applyStockFilters();
+}
+
+buildStockFilterOptions();
+</script>
+
+<%- include('partials/footer') %>

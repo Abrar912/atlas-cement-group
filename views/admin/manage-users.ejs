@@ -1,0 +1,960 @@
+<%- include('../partials/header') %>
+
+<div class="card" style="direction: rtl; text-align: right;"
+    data-js-edit-account="<%= t('admin_users.edit_account') %>"
+    data-js-save-changes="<%= t('admin_users.save_changes') %>"
+    data-js-create-account="<%= t('admin_users.create_account') %>"
+    data-js-create-account-btn="<%= t('admin_users.create_account_btn') %>"
+    data-js-confirm-delete="<%= t('admin_users.confirm_delete') %>">
+    
+    <!-- Page Header -->
+    <div style="margin-bottom: 24px;">
+        <h2 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 600;"><%= t('admin_users.title') %></h2>
+        <p style="color: var(--text-muted); margin: 0; font-size: 14px;"><%= t('admin_users.description') %></p>
+    </div>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger" style="background-color: rgba(207, 34, 46, 0.1); color: var(--status-error); border: 1px solid rgba(255,129,130,0.4); padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+            <%= error %>
+        </div>
+    <% } %>
+    <% if (typeof message !== 'undefined' && message) { %>
+        <div class="alert alert-<%= message.type %>" style="margin-bottom: 20px; padding: 12px 16px; border-radius: 6px; background-color: <%= message.type === 'error' ? 'rgba(207, 34, 46, 0.1)' : 'rgba(46, 160, 67, 0.1)' %>; color: <%= message.type === 'error' ? 'var(--status-error)' : 'var(--status-success)' %>; border: 1px solid <%= message.type === 'error' ? 'rgba(255, 129, 130, 0.4)' : 'rgba(74, 194, 107, 0.4)' %>;">">
+            <%= message.text %>
+        </div>
+    <% } %>
+
+    <!-- EDIT USER ACCOUNT SECTION -->
+    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 24px; overflow: hidden;">
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-main);" id="formTitle"><%= t('admin_users.create_account') %></h3>
+        </div>
+        
+        <form action="/admin/manage-users/add" method="POST" id="userForm" enctype="multipart/form-data">
+            <input type="hidden" name="user_id" id="userIdInput" value="">
+            
+            <div style="padding: 24px;">
+                <div style="display: grid; grid-template-columns: 200px 1fr; gap: 32px;">
+                    
+                    <!-- Profile Card -->
+                    <div>
+                        <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center;">
+                            <h4 style="margin: 0 0 16px 0; font-size: 14px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.profile_section') %></h4>
+                            
+                            <div id="profilePreview" style="width: 100px; height: 100px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--card-bg); box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin: 0 auto 16px;">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                            </div>
+                            
+                            <input type="file" name="profile_upload" id="profileUpload" accept="image/jpeg,image/jpg,image/png,image/webp" style="display: none;" onchange="handleProfileUpload(event)">
+                            <button type="button" class="btn" style="background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); font-size: 13px; padding: 8px 16px; border-radius: 6px; cursor: pointer; width: 100%;" onclick="document.getElementById('profileUpload').click()">
+                                <%= t('admin_users.change_photo') %>
+                            </button>
+                            <p style="margin: 12px 0 0 0; font-size: 11px; color: var(--text-muted);"><%= t('admin_users.photo_hint') %></p>
+                            <input type="hidden" name="profile_picture" id="profilePictureInput" value="">
+                        </div>
+                    </div>
+                    
+                    <!-- Account Information -->
+                    <div>
+                        <h4 style="margin: 0 0 20px 0; font-size: 14px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.account_info') %></h4>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                            <!-- Username -->
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t('admin_users.username') %></label>
+                                <input type="text" name="username" class="form-control" placeholder="<%= t('admin_users.username_placeholder') %>" required dir="ltr" id="usernameInput" autocomplete="off" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t('admin_users.email') %></label>
+                                <input type="email" name="email" class="form-control" placeholder="<%= t('admin_users.email_placeholder') %>" dir="ltr" id="emailInput" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                            </div>
+                            
+                            <!-- Password -->
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t('admin_users.password') %></label>
+                                <div style="position: relative;">
+                                    <input type="password" name="password" class="form-control" placeholder="••••••••" <%= typeof user_id !== 'undefined' && user_id ? '' : 'required' %> dir="ltr" id="passwordInput" minlength="8" autocomplete="new-password" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                                    <button type="button" onclick="togglePasswordVisibility('passwordInput')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 16px; color: var(--text-muted);">👁</button>
+                                </div>
+                                <small style="color: var(--text-muted); font-size: 11px;"><%= typeof user_id !== 'undefined' && user_id ? t('admin_users.password_edit_hint') : t('admin_users.password_hint') %></small>
+                            </div>
+                            
+                            <!-- Authority/Role -->
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t('admin_users.authority') %></label>
+                                <select name="role" class="form-control" required id="roleInput" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; background: var(--input-bg);">
+                                    <option value="worker"><%= t('admin_users.role_worker') %></option>
+                                    <option value="admin"><%= t('admin_users.role_admin') %></option>
+                                </select>
+                            </div>
+                            
+                            <!-- Province/Station -->
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t('admin_users.assigned_province') %></label>
+                                <select name="assigned_province" class="form-control" dir="ltr" id="provinceInput" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; background: var(--input-bg);">
+                                    <option value=""><%= t('admin_users.select_province') %></option>
+                                    <option value="Kabul">کابل (Kabul)</option>
+                                    <option value="Herat">هرات (Herat)</option>
+                                    <option value="Balkh">بلخ (Balkh)</option>
+                                    <option value="Kandahar">قندهار (Kandahar)</option>
+                                    <option value="Nangarhar">ننگرهار (Nangarhar)</option>
+                                    <option value="Khost">خوست (Khost)</option>
+                                    <option value="Paktia">پکتیا (Paktia)</option>
+                                    <option value="Paktika">پکتیکا (Paktika)</option>
+                                    <option value="Ghazni">غزنی (Ghazni)</option>
+                                    <option value="Logar">لوگر (Logar)</option>
+                                    <option value="Wardak">میدان وردک (Wardak)</option>
+                                    <option value="Parwan">پروان (Parwan)</option>
+                                    <option value="Kapisa">کاپیسا (Kapisa)</option>
+                                    <option value="Panjshir">پنجشیر (Panjshir)</option>
+                                    <option value="Laghman">لغمان (Laghman)</option>
+                                    <option value="Kunar">کونر (Kunar)</option>
+                                    <option value="Nuristan">نورستان (Nuristan)</option>
+                                    <option value="Badakhshan">بدخشان (Badakhshan)</option>
+                                    <option value="Takhar">تخار (Takhar)</option>
+                                    <option value="Baghlan">بغلان (Baghlan)</option>
+                                    <option value="Samangan">سمنگان (Samangan)</option>
+                                    <option value="Jowzjan">جوزجان (Jowzjan)</option>
+                                    <option value="Sar-e Pol">سرپل (Sar-e Pol)</option>
+                                    <option value="Faryab">فاریاب (Faryab)</option>
+                                    <option value="Kunduz">قندوز (Kunduz)</option>
+                                    <option value="Badghis">بادغیس (Badghis)</option>
+                                    <option value="Ghor">غور (Ghor)</option>
+                                    <option value="Daikundi">دایکندی (Daikundi)</option>
+                                    <option value="Bamyan">بامیان (Bamyan)</option>
+                                    <option value="Uruzgan">ارزگان (Uruzgan)</option>
+                                    <option value="Zabul">زابل (Zabul)</option>
+                                    <option value="Helmand">هلمند (Helmand)</option>
+                                    <option value="Nimruz">نیمروز (Nimruz)</option>
+                                    <option value="Farah">فراه (Farah)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Agency Name -->
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t('admin_users.agency_name') %></label>
+                                <input type="text" name="agency_name" class="form-control" placeholder="<%= t('admin_users.agency_placeholder') %>" dir="rtl" id="agencyNameInput" style="padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                                <small style="color: var(--text-muted); font-size: 11px;"><%= t('admin_users.agency_hint') %></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border-color);">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()" style="display: none; padding: 10px 20px; font-size: 14px;" id="cancelBtn"><%= t('admin_users.cancel') %></button>
+                    <button type="submit" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;" id="submitBtn"><%= t('admin_users.create_account_btn') %></button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Account Recovery Section (Only shown when editing) -->
+        <div id="recoverySection" style="display: none; border-top: 1px solid var(--border-color);">
+            <div style="padding: 20px 24px; background: var(--bg-color); border-bottom: 1px solid var(--border-color);">
+                <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.account_security') %></h3>
+            </div>
+            
+            <div style="padding: 24px;">
+                <!-- Worker Recovery Section -->
+                <div id="workerRecoverySection" style="display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <!-- Recovery Key Card -->
+                        <div id="workerKeyCard" onclick="openViewKeyModal('worker')" style="cursor: pointer; padding: 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 48px; height: 48px; background: var(--bg-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; font-size: 14px; color: var(--text-main); margin-bottom: 4px;"><%= t('admin_users.account_recovery_key') %></div>
+                                <div style="font-size: 12px; color: var(--text-muted);"><%= t('admin_users.manage_long_term_key') %></div>
+                            </div>
+                            <div style="color: var(--text-muted); flex-shrink: 0;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Recovery Section -->
+                <div id="adminRecoverySection" style="display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <!-- Recovery Key Card -->
+                        <div id="adminKeyCard" onclick="openViewKeyModal('admin')" style="cursor: pointer; padding: 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 48px; height: 48px; background: var(--bg-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; font-size: 14px; color: var(--text-main); margin-bottom: 4px;"><%= t('admin_users.account_recovery_key') %></div>
+                                <div style="font-size: 12px; color: var(--text-muted);"><%= t('admin_users.long_term_credential') %></div>
+                            </div>
+                            <div style="color: var(--text-muted); flex-shrink: 0;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+
+                        <!-- One-Time Recovery Codes Card -->
+                        <div id="adminCodesCard" onclick="openViewCodesModal()" style="cursor: pointer; padding: 20px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; transition: all 0.2s; display: flex; align-items: center; gap: 16px;">
+                            <div style="width: 48px; height: 48px; background: var(--bg-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent-blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path>
+                                </svg>
+                            </div>
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="font-weight: 600; font-size: 14px; color: var(--text-main); margin-bottom: 4px;"><%= t('admin_users.one_time_recovery_codes') %></div>
+                                <div style="font-size: 12px; color: var(--text-muted);"><%= t('admin_users.backup_codes') %></div>
+                            </div>
+                            <div style="color: var(--text-muted); flex-shrink: 0;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="9 18 15 12 9 6"></polyline>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- USER ACCOUNTS LIST SECTION -->
+    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); background: var(--bg-color);">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.accounts_list') %></h3>
+        </div>
+        
+        <div class="table-responsive" style="padding: 0;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--table-header-bg);">
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.th_profile') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.th_username') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.th_authority') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.th_email') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.th_agency') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.th_province') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.th_actions') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% users.forEach(function(user) { %>
+                    <tr style="border-bottom: 1px solid var(--border-color); transition: background 0.2s;">
+                        <td style="padding: 16px;">
+                            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid var(--card-bg); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                <% if (user.profile_picture) { %>
+                                    <img src="<%= user.profile_picture %>" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                                <% } else { %>
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                <% } %>
+                            </div>
+                        </td>
+                        <td style="padding: 16px;">
+                            <div style="font-weight: 500; color: var(--accent-blue); font-size: 14px;"><%= user.username %></div>
+                            <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;"><%= user.email || '-' %></div>
+                        </td>
+                        <td style="padding: 16px;">
+                            <% if (user.role === 'admin') { %>
+                                <span style="display: inline-block; padding: 4px 10px; background: var(--accent-blue); color: white; border-radius: 12px; font-size: 12px; font-weight: 500;"><%= t('admin_users.role_admin') %></span>
+                            <% } else { %>
+                                <span style="display: inline-block; padding: 4px 10px; background: var(--border-color); color: var(--text-main); border-radius: 12px; font-size: 12px; font-weight: 500;"><%= t('admin_users.role_worker') %></span>
+                            <% } %>
+                        </td>
+                        <td style="padding: 16px; color: var(--text-muted); font-size: 13px; dir="ltr;"><%= user.email || '-' %></td>
+                        <td style="padding: 16px; color: var(--text-main); font-size: 13px;"><%= user.agency_name || '-' %></td>
+                        <td style="padding: 16px; color: var(--text-main); font-size: 13px;"><%= user.assigned_province || '-' %></td>
+                        <td style="padding: 16px;">
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <% if (session.role === 'admin') { %>
+                                    <button type="button" class="btn" style="padding: 6px 12px; font-size: 12px; background: #0969da; color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="editUser(<%= user.id %>, <%= JSON.stringify(user.email) %>, <%= JSON.stringify(user.username) %>, <%= JSON.stringify(user.assigned_province) %>, <%= JSON.stringify(user.role) %>, <%= JSON.stringify(user.profile_picture) %>, <%= JSON.stringify(user.agency_name) %>, <%= JSON.stringify(user.password) %>)"><%= t('admin_users.edit') %></button>
+                                <% } %>
+                                <% if (user.username !== session.username && session.role === 'admin') { %>
+                                    <button type="button" class="btn" style="padding: 6px 12px; font-size: 12px; background: var(--status-error); color: white; border: none; border-radius: 4px; cursor: pointer;" onclick="confirmDelete(<%= user.id %>, <%= JSON.stringify(user.username) %>)"><%= t('admin_users.delete') %></button>
+                                <% } %>
+                                <% if (user.username === session.username) { %>
+                                    <span style="display: flex; align-items: center; gap: 4px; color: var(--status-success); font-size: 12px; font-weight: 500;">
+                                        <span style="width: 6px; height: 6px; background: var(--status-success); border-radius: 50%;"></span>
+                                        <%= t('admin_users.active_session') %>
+                                    </span>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PASSWORD RESET REQUESTS SECTION -->
+    <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; margin-top: 24px;">
+        <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); background: var(--bg-color); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.password_reset_requests') %></h3>
+            <button type="button" class="btn" onclick="loadPasswordResetRequests()" style="padding: 6px 12px; font-size: 12px; background: var(--accent-blue); color: white; border: none; border-radius: 4px; cursor: pointer;">
+                <%= t('admin_users.refresh') %>
+            </button>
+        </div>
+        
+        <div class="table-responsive" style="padding: 0;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: var(--table-header-bg);">
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.user') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.email') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.agency') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.province') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.reason') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.requested_at') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.status') %></th>
+                        <th style="padding: 12px 16px; text-align: left; border-bottom: 2px solid var(--border-color); font-size: 13px; font-weight: 600; color: var(--text-main);"><%= t('admin_users.actions') %></th>
+                    </tr>
+                </thead>
+                <tbody id="passwordResetRequestsTable">
+                    <tr>
+                        <td colspan="8" style="padding: 40px; text-align: center; color: var(--text-muted);">
+                            <%= t('admin_users.loading_requests') %>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Set Password Modal -->
+<div id="setPasswordModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); border-radius: 8px; width: 90%; max-width: 450px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0; font-size: 18px; color: var(--text-main);"><%= t("admin_users.set_new_password") %></h2>
+            <button type="button" onclick="closeSetPasswordModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="margin-bottom: 20px; padding: 15px; background: var(--bg-color); border-radius: 6px;">
+                <div style="font-size: 13px; line-height: 1.8; color: var(--text-main);">
+                    <div><strong><%= t("admin_users.username") %>:</strong> <span id="setPasswordUsername"></span></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t("admin_users.new_password") %></label>
+                <input type="password" id="newPasswordInput" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; background: var(--input-bg); color: var(--text-main);" minlength="8" required>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t("admin_users.confirm_password") %></label>
+                <input type="password" id="confirmPasswordInput" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; background: var(--input-bg); color: var(--text-main);" minlength="8" required>
+            </div>
+            
+            <div id="passwordError" style="display: none; padding: 12px; background: rgba(207, 34, 46, 0.1); border-radius: 6px; border: 1px solid rgba(255, 129, 130, 0.4); margin-bottom: 20px; color: var(--status-error); font-size: 13px;"></div>
+        </div>
+        
+        <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;">
+            <button type="button" onclick="closeSetPasswordModal()" style="padding: 8px 16px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-main);"><%= t("admin_users.cancel") %></button>
+            <button type="button" onclick="submitSetPassword()" id="setPasswordSubmitBtn" style="padding: 8px 16px; background: var(--status-success); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;"><%= t("admin_users.set_password") %></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editUser(userId, email, username, province, role, profilePicture, agencyName, password) {
+        const card = document.querySelector('.card');
+        // Load user data into form
+        document.getElementById('userIdInput').value = userId;
+        document.getElementById('emailInput').value = email || '';
+        document.getElementById('usernameInput').value = username || '';
+        document.getElementById('provinceInput').value = province || '';
+        document.getElementById('roleInput').value = role || 'worker';
+        document.getElementById('profilePictureInput').value = profilePicture || '';
+        document.getElementById('agencyNameInput').value = agencyName || '';
+        document.getElementById('passwordInput').value = password || '';
+
+        // Update profile preview
+        if (profilePicture) {
+            document.getElementById('profilePreview').innerHTML = `<img src="${esc(profilePicture)}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
+        } else {
+            document.getElementById('profilePreview').innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+        }
+
+        document.getElementById('passwordInput').required = false;
+        document.getElementById('passwordInput').placeholder = '••••••••';
+        document.getElementById('passwordInput').type = 'text';
+
+        // Clear file input
+        document.getElementById('profileUpload').value = '';
+
+        // Update form for edit mode
+        document.getElementById('formTitle').textContent = card.dataset.jsEditAccount || 'Edit User Account';
+        document.getElementById('submitBtn').textContent = card.dataset.jsSaveChanges || 'Save Changes';
+        document.getElementById('userForm').action = '/admin/manage-users/update';
+        document.getElementById('cancelBtn').style.display = 'inline-block';
+        
+        // Show recovery section and load recovery data
+        document.getElementById('recoverySection').style.display = 'block';
+        loadEditRecoveryData(userId, role);
+        
+        // Scroll to form
+        document.querySelector('.card').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    function resetForm() {
+        const card = document.querySelector('.card');
+        document.getElementById('userForm').reset();
+        document.getElementById('userIdInput').value = '';
+        document.getElementById('emailInput').value = '';
+        document.getElementById('roleInput').value = 'worker';
+        document.getElementById('passwordInput').required = true;
+        document.getElementById('passwordInput').placeholder = '••••••••';
+        document.getElementById('passwordInput').type = 'password';
+        document.getElementById('passwordInput').value = '';
+        document.getElementById('profilePreview').innerHTML = `<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>`;
+        
+        document.getElementById('formTitle').textContent = card.dataset.jsCreateAccount || 'Create New User Account';
+        document.getElementById('submitBtn').textContent = card.dataset.jsCreateAccountBtn || 'Create Account';
+        document.getElementById('userForm').action = '/admin/manage-users/add';
+        document.getElementById('cancelBtn').style.display = 'none';
+        
+        // Hide recovery section
+        document.getElementById('recoverySection').style.display = 'none';
+    }
+    
+    function confirmDelete(userId, username) {
+        const card = document.querySelector('.card');
+        const confirmMsg = card.dataset.jsConfirmDelete || 'Are you sure you want to delete user "{username}"? This action cannot be undone.';
+        if (confirm(confirmMsg.replace('{username}', username))) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/admin/manage-users/delete/' + userId;
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_csrf';
+            csrf.value = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+    
+    function togglePasswordVisibility(inputId) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+            input.type = 'text';
+        } else {
+            input.type = 'password';
+        }
+    }
+    
+    function handleProfileUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profilePreview').innerHTML = `<img src="${esc(e.target.result)}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">`;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    document.addEventListener("DOMContentLoaded", function() {
+        const activeNav = document.getElementById('nav-admin-users');
+        if(activeNav) activeNav.classList.add('active');
+    });
+
+    // Store current editing user info
+    let currentEditUserId = null;
+    let currentEditUsername = null;
+    let currentEditRole = null;
+
+    function loadEditRecoveryData(userId, role) {
+        currentEditUserId = userId;
+        currentEditRole = role;
+        
+        const workerSection = document.getElementById('workerRecoverySection');
+        const adminSection = document.getElementById('adminRecoverySection');
+        
+        if (role === 'admin') {
+            workerSection.style.display = 'none';
+            adminSection.style.display = 'block';
+        } else {
+            workerSection.style.display = 'block';
+            adminSection.style.display = 'none';
+        }
+    }
+
+    function openViewKeyModal(type) {
+        const modal = document.getElementById('viewKeyModal');
+        if (!modal) return;
+        
+        // Get user info from the form
+        const username = document.getElementById('usernameInput').value;
+        const email = document.getElementById('emailInput').value;
+        const role = document.getElementById('roleInput').value;
+        const province = document.getElementById('provinceInput').value;
+        const agency = document.getElementById('agencyNameInput').value;
+        
+        document.getElementById('viewKeyUsername').textContent = username;
+        document.getElementById('viewKeyEmail').textContent = email || '-';
+        document.getElementById('viewKeyRole').textContent = role === 'admin' ? 'Administrator' : 'User';
+        document.getElementById('viewKeyProvince').textContent = province || '-';
+        document.getElementById('viewKeyAgency').textContent = agency || '-';
+        
+        fetch(`/api/admin/recovery/status/${currentEditUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.hasKey) {
+                    const statusText = data.status === 'active' ? '<%= t("admin_users.status_active") %>' : 
+                                      data.status === 'used' ? '<%= t("admin_users.status_used") %>' : 
+                                      '<%= t("admin_users.revoked") %>';
+                    const createdDate = new Date(data.created_at).toLocaleDateString();
+                    
+                    document.getElementById('viewKeyStatus').textContent = statusText;
+                    document.getElementById('viewKeyGenerated').textContent = createdDate;
+                    document.getElementById('viewKeyValue').textContent = data.recoveryKey || '<%= t("admin_users.key_used") %>';
+                    
+                    modal.style.display = 'flex';
+                } else {
+                    document.getElementById('viewKeyStatus').textContent = '<%= t("admin_users.no_key_exists") %>';
+                    document.getElementById('viewKeyGenerated').textContent = '-';
+                    document.getElementById('viewKeyValue').textContent = '-';
+                    modal.style.display = 'flex';
+                }
+            })
+            .catch(err => {
+                alert('<%= t("admin_users.error") %>: ' + err);
+            });
+    }
+
+    function closeViewKeyModal() {
+        const modal = document.getElementById('viewKeyModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function openViewCodesModal() {
+        const modal = document.getElementById('viewCodesModal');
+        if (!modal) return;
+        
+        // Get user info from the form
+        const username = document.getElementById('usernameInput').value;
+        const email = document.getElementById('emailInput').value;
+        const province = document.getElementById('provinceInput').value;
+        const agency = document.getElementById('agencyNameInput').value;
+        
+        document.getElementById('viewCodesUsername').textContent = username;
+        document.getElementById('viewCodesEmail').textContent = email || '-';
+        document.getElementById('viewCodesProvince').textContent = province || '-';
+        document.getElementById('viewCodesAgency').textContent = agency || '-';
+        
+        const tableBody = document.getElementById('viewCodesTableBody');
+        tableBody.innerHTML = '<tr><td colspan="3"><%= t("admin_users.loading") %></td></tr>';
+        
+        fetch(`/api/admin/recovery/status/${currentEditUserId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.hasCodes && data.codes.length > 0) {
+                    const activeCount = data.codes.filter(c => c.status === 'active').length;
+                    document.getElementById('codesSummary').textContent = `${activeCount}/10 <%= t("admin_users.codes_remaining") %>`;
+                    
+                    let tableHtml = '';
+                    data.codes.forEach((code, index) => {
+                        const statusText = code.status === 'active' ? '<%= t("admin_users.available") %>' : 
+                                          code.status === 'used' ? '<%= t("admin_users.used") %>' : 
+                                          '<%= t("admin_users.revoked") %>';
+                        const statusStyle = code.status === 'active' 
+                            ? 'color: var(--status-success); font-weight: 500;' 
+                            : code.status === 'used' 
+                                ? 'color: var(--text-muted); text-decoration: line-through;' 
+                                : 'color: var(--text-muted);';
+                        
+                        tableHtml += `
+                            <tr>
+                                <td>${esc(index + 1)}</td>
+                                <td style="font-family: 'Courier New', monospace; font-size: 13px;">${esc(code.code || 'XXXX-XXXX-XXXX-XXXX')}</td>
+                                <td style="${esc(statusStyle)}">${esc(statusText)}</td>
+                            </tr>
+                        `;
+                    });
+                    tableBody.innerHTML = tableHtml;
+                    modal.style.display = 'flex';
+                } else {
+                    document.getElementById('codesSummary').textContent = '<%= t("admin_users.no_recovery_codes") %>';
+                    tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);"><%= t("admin_users.no_recovery_codes") %></td></tr>';
+                    modal.style.display = 'flex';
+                }
+            })
+            .catch(err => {
+                alert('<%= t("admin_users.error") %>: ' + err);
+            });
+    }
+
+    function closeViewCodesModal() {
+        const modal = document.getElementById('viewCodesModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function generateKeyFromModal() {
+        if (!confirm('<%= t("admin_users.generate_key_confirm") %>')) return;
+        
+        const btn = document.getElementById('modalGenerateKeyBtn');
+        btn.disabled = true;
+        btn.textContent = '<%= t("admin_users.loading") %>';
+        
+        if (currentEditRole === 'admin') {
+            fetch(`/api/admin/recovery/generate-admin-long-key/${currentEditUserId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('viewKeyValue').textContent = data.recoveryKey;
+                    const createdDate = new Date().toLocaleDateString();
+                    document.getElementById('viewKeyGenerated').textContent = createdDate;
+                    document.getElementById('viewKeyStatus').textContent = '<%= t("admin_users.status_active") %>';
+                } else {
+                    alert('<%= t("admin_users.error") %>: ' + (data.error || 'Unknown error'));
+                }
+                btn.disabled = false;
+                btn.textContent = '<%= t("admin_users.generate_new_key") %>';
+            })
+            .catch(err => {
+                alert('<%= t("admin_users.error") %>: ' + err);
+                btn.disabled = false;
+                btn.textContent = '<%= t("admin_users.generate_new_key") %>';
+            });
+        } else {
+            fetch(`/api/admin/recovery/generate-user-key/${currentEditUserId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('viewKeyValue').textContent = data.recoveryKey;
+                    const createdDate = new Date().toLocaleDateString();
+                    document.getElementById('viewKeyGenerated').textContent = createdDate;
+                    document.getElementById('viewKeyStatus').textContent = '<%= t("admin_users.status_active") %>';
+                } else {
+                    alert('<%= t("admin_users.error") %>: ' + (data.error || 'Unknown error'));
+                }
+                btn.disabled = false;
+                btn.textContent = '<%= t("admin_users.generate_new_key") %>';
+            })
+            .catch(err => {
+                alert('<%= t("admin_users.error") %>: ' + err);
+                btn.disabled = false;
+                btn.textContent = '<%= t("admin_users.generate_new_key") %>';
+            });
+        }
+    }
+
+    function downloadPdfFromModal() {
+        if (currentEditRole === 'admin') {
+            window.location.href = `/api/admin/recovery/download-pdf/${currentEditUserId}/admin-long-key`;
+        } else {
+            window.location.href = `/api/admin/recovery/download-pdf/${currentEditUserId}/user-key`;
+        }
+    }
+
+    function generateCodesFromModal() {
+        if (!confirm('<%= t("admin_users.generate_codes_confirm") %>')) return;
+        
+        const btn = document.getElementById('modalGenerateCodesBtn');
+        btn.disabled = true;
+        btn.textContent = '<%= t("admin_users.loading") %>';
+        
+        fetch(`/api/admin/recovery/generate-admin-codes/${currentEditUserId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Refresh the modal to show new codes
+                openViewCodesModal();
+            } else {
+                alert('<%= t("admin_users.error") %>: ' + (data.error || 'Unknown error'));
+            }
+            btn.disabled = false;
+            btn.textContent = '<%= t("admin_users.generate_new_codes") %>';
+        })
+        .catch(err => {
+            alert('<%= t("admin_users.error") %>: ' + err);
+            btn.disabled = false;
+            btn.textContent = '<%= t("admin_users.generate_new_codes") %>';
+        });
+    }
+
+    function downloadCodesPdfFromModal() {
+        window.location.href = `/api/admin/recovery/download-pdf/${currentEditUserId}/admin-codes`;
+    }
+
+    // Password Reset Requests Management
+    let currentSetPasswordRequestId = null;
+
+    function loadPasswordResetRequests() {
+        const tableBody = document.getElementById('passwordResetRequestsTable');
+        tableBody.innerHTML = '<tr><td colspan="8" style="padding: 40px; text-align: center; color: var(--text-muted);"><%= t("admin_users.loading_requests") %></td></tr>';
+        
+        fetch('/api/admin/recovery/password-reset-requests')
+            .then(response => response.json())
+            .then(data => {
+                if (data.requests && data.requests.length > 0) {
+                    tableBody.innerHTML = data.requests.map(request => {
+                        const statusClass = request.status === 'pending' ? 'var(--safety-orange)' : 
+                                          request.status === 'approved' ? 'var(--status-success)' : 'var(--status-error)';
+                        const statusText = request.status === 'pending' ? '<%= t("admin_users.status_pending") %>' :
+                                          request.status === 'approved' ? '<%= t("admin_users.status_approved") %>' : 
+                                          '<%= t("admin_users.status_rejected") %>';
+                        const requestedAt = new Date(request.created_at).toLocaleString();
+                        const reason = request.reason || '-';
+                        
+                        let actions = '';
+                        if (request.status === 'pending') {
+                            actions = `
+                                <button type="button" onclick="openSetPasswordModal('${esc(request.request_id)}', '${esc(request.username)}')" style="padding: 4px 10px; font-size: 11px; background: var(--status-success); color: white; border: none; border-radius: 4px; cursor: pointer; margin-right: 4px;"><%= t("admin_users.accept") %></button>
+                                <button type="button" onclick="rejectRequest('${esc(request.request_id)}')" style="padding: 4px 10px; font-size: 11px; background: var(--status-error); color: white; border: none; border-radius: 4px; cursor: pointer;"><%= t("admin_users.reject") %></button>
+                            `;
+                        } else {
+                            actions = '-';
+                        }
+                        
+                        return `
+                            <tr style="border-bottom: 1px solid var(--border-color);">
+                                <td style="padding: 12px 16px; font-weight: 500; color: var(--accent-blue); font-size: 13px;">${esc(request.username)}</td>
+                                <td style="padding: 12px 16px; color: var(--text-muted); font-size: 13px; dir="ltr;">${esc(request.email || '-')}</td>
+                                <td style="padding: 12px 16px; color: var(--text-main); font-size: 13px;">${esc(request.agency_name || '-')}</td>
+                                <td style="padding: 12px 16px; color: var(--text-main); font-size: 13px;">${esc(request.assigned_province || '-')}</td>
+                                <td style="padding: 12px 16px; color: var(--text-main); font-size: 13px; max-width: 200px; word-wrap: break-word;">${esc(reason)}</td>
+                                <td style="padding: 12px 16px; color: var(--text-muted); font-size: 13px;">${esc(requestedAt)}</td>
+                                <td style="padding: 12px 16px;"><span style="display: inline-block; padding: 4px 10px; background: ${esc(statusClass)}; color: white; border-radius: 12px; font-size: 11px; font-weight: 500;">${esc(statusText)}</span></td>
+                                <td style="padding: 12px 16px;">${esc(actions)}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tableBody.innerHTML = '<tr><td colspan="8" style="padding: 40px; text-align: center; color: var(--text-muted);"><%= t("admin_users.no_requests") %></td></tr>';
+                }
+            })
+            .catch(err => {
+                console.error('Error loading password reset requests:', err);
+                tableBody.innerHTML = '<tr><td colspan="8" style="padding: 40px; text-align: center; color: var(--status-error);"><%= t("admin_users.error_loading_requests") %></td></tr>';
+            });
+    }
+
+    function openSetPasswordModal(requestId, username) {
+        currentSetPasswordRequestId = requestId;
+        document.getElementById('setPasswordUsername').textContent = username;
+        document.getElementById('newPasswordInput').value = '';
+        document.getElementById('confirmPasswordInput').value = '';
+        document.getElementById('passwordError').style.display = 'none';
+        document.getElementById('setPasswordModal').style.display = 'flex';
+    }
+
+    function closeSetPasswordModal() {
+        document.getElementById('setPasswordModal').style.display = 'none';
+        currentSetPasswordRequestId = null;
+    }
+
+    function submitSetPassword() {
+        const newPassword = document.getElementById('newPasswordInput').value;
+        const confirmPassword = document.getElementById('confirmPasswordInput').value;
+        const errorDiv = document.getElementById('passwordError');
+        
+        errorDiv.style.display = 'none';
+        
+        if (!newPassword || !confirmPassword) {
+            errorDiv.textContent = '<%= t("admin_users.password_required") %>';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        
+        if (newPassword.length < 8) {
+            errorDiv.textContent = '<%= t("admin_users.password_too_short") %>';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+            errorDiv.textContent = '<%= t("admin_users.passwords_not_match") %>';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        
+        const btn = document.getElementById('setPasswordSubmitBtn');
+        btn.disabled = true;
+        btn.textContent = '<%= t("admin_users.loading") %>';
+        
+        fetch('/api/admin/recovery/set-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requestId: currentSetPasswordRequestId, newPassword })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                closeSetPasswordModal();
+                loadPasswordResetRequests();
+                alert('<%= t("admin_users.password_set_success") %>');
+            } else {
+                errorDiv.textContent = data.error || '<%= t("admin_users.error_setting_password") %>';
+                errorDiv.style.display = 'block';
+            }
+            btn.disabled = false;
+            btn.textContent = '<%= t("admin_users.set_password") %>';
+        })
+        .catch(err => {
+            errorDiv.textContent = '<%= t("admin_users.error") %>: ' + err;
+            errorDiv.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = '<%= t("admin_users.set_password") %>';
+        });
+    }
+
+    function rejectRequest(requestId) {
+        if (!confirm('<%= t("admin_users.confirm_reject") %>')) return;
+        
+        fetch(`/api/admin/recovery/reject-request/${requestId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadPasswordResetRequests();
+            } else {
+                alert('<%= t("admin_users.error") %>: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(err => {
+            alert('<%= t("admin_users.error") %>: ' + err);
+        });
+    }
+
+    // Load password reset requests on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadPasswordResetRequests();
+    });
+
+</script>
+
+<!-- View Recovery Key Modal -->
+<div id="viewKeyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); border-radius: 8px; width: 90%; max-width: 550px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0; font-size: 18px; color: var(--text-main);"><%= t("admin_users.view_key_modal_title") %></h2>
+            <button type="button" onclick="closeViewKeyModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="margin-bottom: 20px; padding: 15px; background: var(--bg-color); border-radius: 6px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-main);"><%= t("admin_users.user_info") %></h3>
+                <div style="font-size: 13px; line-height: 1.8;">
+                    <div><strong><%= t("admin_users.username") %>:</strong> <span id="viewKeyUsername"></span></div>
+                    <div><strong><%= t("admin_users.email") %>:</strong> <span id="viewKeyEmail"></span></div>
+                    <div><strong><%= t("admin_users.account_type") %>:</strong> <span id="viewKeyRole"></span></div>
+                    <div><strong><%= t("admin_users.assigned_province") %>:</strong> <span id="viewKeyProvince"></span></div>
+                    <div><strong><%= t("admin_users.agency_name") %>:</strong> <span id="viewKeyAgency"></span></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--text-main);"><%= t("admin_users.recovery_key_label") %></h3>
+                <div style="background: rgba(207, 34, 46, 0.1); padding: 20px; border-radius: 6px; border: 2px solid rgba(255, 129, 130, 0.4);">
+                    <p id="viewKeyValue" style="margin: 0; font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; color: var(--status-error); word-break: break-all; text-align: center;"></p>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px; padding: 15px; background: var(--bg-color); border-radius: 6px; font-size: 13px;">
+                <div style="margin-bottom: 8px;"><strong><%= t("admin_users.key_status") %>:</strong> <span id="viewKeyStatus"></span></div>
+                <div><strong><%= t("admin_users.generated_date") %>:</strong> <span id="viewKeyGenerated"></span></div>
+            </div>
+            
+            <div style="padding: 12px; background: rgba(212, 167, 44, 0.15); border-radius: 6px; border: 1px solid var(--safety-orange); margin-bottom: 20px;">
+                <strong style="color: var(--safety-orange);"><%= t("admin_users.security_notice") %></strong>
+                <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--text-main);"><%= t("admin_users.security_notice_text") %></p>
+            </div>
+        </div>
+        
+        <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" id="modalGenerateKeyBtn" onclick="generateKeyFromModal()" style="padding: 8px 16px;">
+                <%= t("admin_users.generate_new_key") %>
+            </button>
+            <button type="button" class="btn btn-secondary" id="modalDownloadPdfBtn" onclick="downloadPdfFromModal()" style="padding: 8px 16px;">
+                <%= t("admin_users.download_pdf") %>
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="closeViewKeyModal()" style="padding: 8px 16px;">
+                <%= t("admin_users.close") %>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- View Recovery Codes Modal -->
+<div id="viewCodesModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); border-radius: 8px; width: 90%; max-width: 650px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="margin: 0; font-size: 18px; color: var(--text-main);"><%= t("admin_users.view_codes_modal_title") %></h2>
+            <button type="button" onclick="closeViewCodesModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="margin-bottom: 20px; padding: 15px; background: var(--bg-color); border-radius: 6px;">
+                <h3 style="margin: 0 0 12px 0; font-size: 14px; color: var(--text-main);"><%= t("admin_users.user_info") %></h3>
+                <div style="font-size: 13px; line-height: 1.8;">
+                    <div><strong><%= t("admin_users.username") %>:</strong> <span id="viewCodesUsername"></span></div>
+                    <div><strong><%= t("admin_users.email") %>:</strong> <span id="viewCodesEmail"></span></div>
+                    <div><strong><%= t("admin_users.account_type") %>:</strong> Administrator</div>
+                    <div><strong><%= t("admin_users.assigned_province") %>:</strong> <span id="viewCodesProvince"></span></div>
+                    <div><strong><%= t("admin_users.agency_name") %>:</strong> <span id="viewCodesAgency"></span></div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px; padding: 10px; background: rgba(9, 105, 218, 0.1); border-radius: 6px; border: 1px solid var(--accent-blue);">
+                <strong id="codesSummary" style="color: var(--accent-blue);"></strong>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px;">
+                <thead>
+                    <tr style="background: var(--table-header-bg);">
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color); color: var(--text-main);"><%= t("admin_users.code_number") %></th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color); color: var(--text-main);"><%= t("admin_users.recovery_code") %></th>
+                        <th style="padding: 10px; text-align: left; border-bottom: 2px solid var(--border-color); color: var(--text-main);"><%= t("admin_users.code_status") %></th>
+                    </tr>
+                </thead>
+                <tbody id="viewCodesTableBody">
+                </tbody>
+            </table>
+            
+            <div style="padding: 12px; background: rgba(212, 167, 44, 0.15); border-radius: 6px; border: 1px solid var(--safety-orange); margin-bottom: 20px;">
+                <strong style="color: var(--safety-orange);"><%= t("admin_users.security_notice") %></strong>
+                <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--text-main);"><%= t("admin_users.security_notice_text") %></p>
+            </div>
+        </div>
+        
+        <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+            <button type="button" class="btn btn-primary" id="modalGenerateCodesBtn" onclick="generateCodesFromModal()" style="padding: 8px 16px;">
+                <%= t("admin_users.generate_new_codes") %>
+            </button>
+            <button type="button" class="btn btn-secondary" id="modalDownloadCodesPdfBtn" onclick="downloadCodesPdfFromModal()" style="padding: 8px 16px;">
+                <%= t("admin_users.print_codes") %>
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="closeViewCodesModal()" style="padding: 8px 16px;">
+                <%= t("admin_users.close") %>
+            </button>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

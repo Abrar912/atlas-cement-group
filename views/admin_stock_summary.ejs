@@ -1,0 +1,61 @@
+<%- include('partials/header') %>
+
+<style>
+    .dashboard-container {
+        direction: ltr;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <div class="header-title-group">
+            <h2 style="margin: 0; color: var(--text-main); font-size: 22px; font-weight: 800;"><%= t('stock.summary_title') %></h2>
+            <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);"><%= t('stock.description') %></p>
+        </div>
+        <a href="/admin/stock" style="background-color: var(--text-muted, #57606a); color: #fff; border-radius: 8px; padding: 9px 18px; font-weight: 600; text-decoration: none; display: inline-block;">
+            ⬅ <%= t('stock.back') %>
+        </a>
+    </div>
+
+    <!-- Per cement type: available bags, tonnage and money (waybill sales subtracted) -->
+    <div style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px;">
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                <thead>
+                    <tr style="border-bottom: 2px solid var(--border-color);">
+                        <th style="text-align: left; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_type') %></th>
+                        <th style="text-align: right; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.summary_col_available') %></th>
+                        <th style="text-align: right; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_tonnage') %></th>
+                        <th style="text-align: right; padding: 10px 8px; color: var(--text-main); font-weight: 700;"><%= t('stock.col_money') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (summary.length === 0) { %>
+                        <tr><td colspan="4" style="padding: 10px 8px; color: var(--text-muted);"><%= t('stock.no_entries') %></td></tr>
+                    <% } %>
+                    <% summary.forEach(function (s) { %>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 10px 8px; color: var(--text-main);"><%= s.cement_type %></td>
+                            <td style="padding: 10px 8px; color: var(--text-main); text-align: right; font-weight: 700;"><%= Number(s.available_bags).toLocaleString('en-US') %></td>
+                            <td style="padding: 10px 8px; color: var(--text-main); text-align: right;"><%= Number(s.available_tonnage).toLocaleString('en-US') %></td>
+                            <td style="padding: 10px 8px; color: var(--text-main); text-align: right;"><%= Number(s.total_money).toLocaleString('en-US') %></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

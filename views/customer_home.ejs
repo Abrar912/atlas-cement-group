@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+    <title><%= t('home.page_title') %></title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <%- include('partials/customer_styles') %>
+</head>
+<body>
+    <%- include('partials/customer_nav') %>
+
+    <section class="hero">
+        <div class="container">
+            <h1><%= content.hero_headline %></h1>
+            <p><%= content.hero_subtext %></p>
+            <div class="hero-actions">
+                <a href="/quote" class="btn btn-primary"><%= t('home.request_bulk_quote') %></a>
+                <a href="/products" class="btn btn-outline"><%= t('home.explore_catalog') %></a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section alt">
+        <div class="container">
+            <div class="section-head reveal">
+                <h2><%= t('home.product_catalog_title') %></h2>
+            </div>
+            <div class="product-grid">
+                <% if (products && products.length > 0) { %>
+                    <% products.slice(0, 3).forEach(function (product) { %>
+                        <div class="product-card reveal">
+                            <div class="product-media">
+                                <% if (product.image_path) { %>
+                                    <img src="<%= product.image_path %>" alt="<%= product.name %>">
+                                <% } else { %>
+                                    <%= (product.name || '?').charAt(0) %>
+                                <% } %>
+                            </div>
+                            <h3><%= product.name %></h3>
+                            <p><%= product.description %></p>
+                            <div class="product-specs"><%= product.specifications %></div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="empty-note"><%= t('home.no_products_available') %></div>
+                <% } %>
+            </div>
+            <% if (products && products.length > 3) { %>
+                <div style="text-align: center; margin-top: 36px;">
+                    <a href="/products" class="btn btn-outline"><%= t('home.explore_catalog') %></a>
+                </div>
+            <% } %>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="about-grid reveal">
+                <div>
+                    <div class="section-head" style="margin-bottom: 20px;">
+                        <h2><%= t('home.about_title') %></h2>
+                    </div>
+                    <h3><%= t('home.about_subtitle') %></h3>
+                    <p style="margin-bottom: 18px;"><%= content.about_story %></p>
+                    <p><strong style="color: var(--text);"><%= t('home.mission_label') %></strong> <%= content.company_mission %></p>
+                    <p style="margin-top: 10px;"><strong style="color: var(--text);"><%= t('home.vision_label') %></strong> <%= content.company_vision %></p>
+                    <div style="margin-top: 28px;">
+                        <a href="/about" class="btn btn-outline"><%= t('home.nav_about') %></a>
+                    </div>
+                </div>
+                <div class="about-media" style="background-image: url('<%= media.about_image || "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?q=80&w=800" %>');"></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta-band">
+        <div class="container reveal">
+            <h2><%= t('home.request_quote_title') %></h2>
+            <a href="/quote" class="btn btn-primary"><%= t('home.transmit_quote') %></a>
+        </div>
+    </section>
+
+    <%- include('partials/customer_footer') %>
+</body>
+</html>

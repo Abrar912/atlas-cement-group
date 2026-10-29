@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+    <title><%= t('home.request_quote_title') %> | <%= t('home.header_company_name') %></title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <%- include('partials/customer_styles') %>
+</head>
+<body>
+    <%- include('partials/customer_nav') %>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1><%= t('home.request_quote_title') %></h1>
+            <p><%= content.hero_subtext %></p>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="quote-card reveal">
+            <form id="quotationForm" onsubmit="submitQuotationRequest(event)">
+                <div class="form-grid">
+                    <div class="input-box"><label><%= t('home.full_name') %></label><input type="text" id="quote_full_name" required></div>
+                    <div class="input-box"><label><%= t('home.company_name') %></label><input type="text" id="quote_company_name"></div>
+                    <div class="input-box"><label><%= t('home.email_address') %></label><input type="email" id="quote_email"></div>
+                    <div class="input-box"><label><%= t('home.phone_number') %></label><input type="text" id="quote_phone" required></div>
+                    <div class="input-box">
+                        <label><%= t('home.province') %></label>
+                        <select id="quote_province" required>
+                            <option value=""><%= t('home.select_province') %></option>
+                            <option value="Kabul">کابل (Kabul)</option>
+                            <option value="Herat">هرات (Herat)</option>
+                            <option value="Balkh">بلخ (Balkh)</option>
+                            <option value="Kandahar">قندهار (Kandahar)</option>
+                            <option value="Nangarhar">ننگرهار (Nangarhar)</option>
+                            <option value="Khost">خوست (Khost)</option>
+                            <option value="Paktia">پکتیا (Paktia)</option>
+                            <option value="Paktika">پکتیکا (Paktika)</option>
+                            <option value="Ghazni">غزنی (Ghazni)</option>
+                            <option value="Logar">لوگر (Logar)</option>
+                            <option value="Wardak">میدان وردک (Wardak)</option>
+                            <option value="Parwan">پروان (Parwan)</option>
+                            <option value="Kapisa">کاپیسا (Kapisa)</option>
+                            <option value="Panjshir">پنجشیر (Panjshir)</option>
+                            <option value="Laghman">لغمان (Laghman)</option>
+                            <option value="Kunar">کونر (Kunar)</option>
+                            <option value="Nuristan">نورستان (Nuristan)</option>
+                            <option value="Badakhshan">بدخشان (Badakhshan)</option>
+                            <option value="Takhar">تخار (Takhar)</option>
+                            <option value="Baghlan">بغلان (Baghlan)</option>
+                            <option value="Samangan">سمنگان (Samangan)</option>
+                            <option value="Jowzjan">جوزجان (Jowzjan)</option>
+                            <option value="Sar-e Pol">سرپل (Sar-e Pol)</option>
+                            <option value="Faryab">فاریاب (Faryab)</option>
+                            <option value="Kunduz">قندوز (Kunduz)</option>
+                            <option value="Badghis">بادغیس (Badghis)</option>
+                            <option value="Ghor">غور (Ghor)</option>
+                            <option value="Daikundi">دایکندی (Daikundi)</option>
+                            <option value="Bamyan">بامیان (Bamyan)</option>
+                            <option value="Uruzgan">ارزگان (Uruzgan)</option>
+                            <option value="Zabul">زابل (Zabul)</option>
+                            <option value="Helmand">هلمند (Helmand)</option>
+                            <option value="Nimruz">نیمروز (Nimruz)</option>
+                            <option value="Farah">فراه (Farah)</option>
+                        </select>
+                    </div>
+                    <div class="input-box">
+                        <label><%= t('home.cement_category') %></label>
+                        <select id="quote_cement_type" required>
+                            <option value=""><%= t('home.loading_cement_types') %></option>
+                        </select>
+                    </div>
+                    <div class="input-box"><label><%= t('home.target_cargo_volume') %></label><input type="number" id="quote_quantity" required></div>
+                    <div class="input-box"><label><%= t('home.delivery_address') %></label><input type="text" id="quote_address" required></div>
+                    <div class="input-box full"><label><%= t('home.additional_message') %></label><textarea id="quote_message" rows="3"></textarea></div>
+                </div>
+                <button type="submit" class="btn btn-primary"><%= t('home.transmit_quote') %></button>
+            </form>
+            <div id="quoteSuccessMessage" class="form-message success"></div>
+            <div id="quoteErrorMessage" class="form-message error"></div>
+        </div>
+    </div>
+
+    <%- include('partials/customer_footer') %>
+
+    <script>
+    // Translation strings for JavaScript
+    const i18nStrings = {
+        jsNoCementTypes: '<%= t("home.js_no_cement_types") %>',
+        jsSelectCementType: '<%= t("home.js_select_cement_type") %>',
+        jsErrorSubmitting: '<%= t("home.js_error_submitting") %>',
+        jsNetworkError: '<%= t("home.js_network_error") %>',
+        jsErrorSubmittingFallback: '<%= t("home.js_error_submitting_fallback") %>'
+    };
+
+    // Load cement types dynamically
+    async function loadCementTypes() {
+        try {
+            const res = await fetch('/api/public/cement-types');
+            const cementTypes = await res.json();
+            const select = document.getElementById('quote_cement_type');
+
+            if (cementTypes.length === 0) {
+                select.innerHTML = '<option value="">' + i18nStrings.jsNoCementTypes + '</option>';
+                return;
+            }
+
+            select.innerHTML = '<option value="">' + i18nStrings.jsSelectCementType + '</option>';
+            cementTypes.forEach(ct => {
+                const option = document.createElement('option');
+                option.value = ct.cement_name;
+                option.textContent = ct.cement_name;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading cement types:', error);
+            document.getElementById('quote_cement_type').innerHTML = '<option value="">' + i18nStrings.jsErrorSubmitting + '</option>';
+        }
+    }
+
+    // Submit quotation request
+    async function submitQuotationRequest(event) {
+        event.preventDefault();
+
+        const formData = {
+            customer_name: document.getElementById('quote_full_name').value,
+            company_name: document.getElementById('quote_company_name').value,
+            email: document.getElementById('quote_email').value,
+            phone: document.getElementById('quote_phone').value,
+            province: document.getElementById('quote_province').value,
+            cement_type: document.getElementById('quote_cement_type').value,
+            quantity: document.getElementById('quote_quantity').value,
+            delivery_address: document.getElementById('quote_address').value,
+            message: document.getElementById('quote_message').value
+        };
+
+        try {
+            const res = await fetch('/api/quotation-requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                const successDiv = document.getElementById('quoteSuccessMessage');
+                successDiv.textContent = result.message;
+                successDiv.classList.add('show');
+                document.getElementById('quoteErrorMessage').classList.remove('show');
+                document.getElementById('quotationForm').reset();
+                loadCementTypes();
+
+                setTimeout(() => {
+                    successDiv.classList.remove('show');
+                }, 5000);
+            } else {
+                const errorDiv = document.getElementById('quoteErrorMessage');
+                errorDiv.textContent = result.error || i18nStrings.jsErrorSubmittingFallback;
+                errorDiv.classList.add('show');
+                document.getElementById('quoteSuccessMessage').classList.remove('show');
+            }
+        } catch (error) {
+            console.error('Error submitting quotation request:', error);
+            const errorDiv = document.getElementById('quoteErrorMessage');
+            errorDiv.textContent = i18nStrings.jsNetworkError;
+            errorDiv.classList.add('show');
+            document.getElementById('quoteSuccessMessage').classList.remove('show');
+        }
+    }
+
+    // Load cement types on page load
+    document.addEventListener('DOMContentLoaded', loadCementTypes);
+    </script>
+</body>
+</html>

@@ -1,0 +1,399 @@
+<%- include('../partials/header') %>
+
+<style>
+.wz-wrap{max-width:920px;margin:0 auto}
+.wz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.wz-title{font-size:23px;font-weight:800;margin:0;letter-spacing:-.3px}
+.wz-sub{font-size:13px;color:var(--text-muted,#6b7280);margin:5px 0 0 0}
+.wz-steps{display:flex;align-items:center;gap:8px;margin-bottom:26px;flex-wrap:wrap}
+.wz-step{display:flex;align-items:center;gap:9px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border-color,#d1d5db);font-size:12.5px;font-weight:700;color:var(--text-muted,#6b7280);background:transparent;white-space:nowrap}
+.wz-step-num{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;background:rgba(107,114,128,.15);color:inherit}
+.wz-step-active{border-color:var(--primary,#FF6F00);color:var(--primary,#FF6F00);background:rgba(255,111,0,.06)}
+.wz-step-active .wz-step-num{background:var(--primary,#FF6F00);color:#fff}
+.wz-step-arrow{color:var(--text-muted,#6b7280);font-size:13px;opacity:.6}
+/* employee banner */
+.wz-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--primary,#FF6F00);color:#fff;padding:14px 18px;border-radius:12px;margin-bottom:18px}
+.wz-banner-name{font-size:16px;font-weight:800}
+.wz-banner-meta{font-size:12.5px;opacity:.9;display:flex;gap:14px;flex-wrap:wrap;margin-top:3px}
+.wz-banner-meta span{white-space:nowrap}
+/* panels */
+.wz-panel{border:1px solid var(--border-color,#d1d5db);border-radius:14px;padding:16px 18px;background:var(--bg-color,#fafafa);margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+[data-theme="dark"] .wz-panel{box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.wz-panel-head{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;margin-bottom:14px}
+.wz-panel-head::after{content:"";flex:1;height:1px;background:var(--border-color,#d1d5db)}
+/* attendance tiles */
+.wz-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.wz-tile{border:1px solid var(--border-color,#e5e7eb);border-radius:10px;padding:10px 12px;background:var(--card-bg,#fff)}
+.wz-tile-label{font-size:11px;font-weight:700;color:var(--text-muted,#6b7280);letter-spacing:.2px}
+.wz-tile-value{font-size:17px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}
+.wz-tile-bad .wz-tile-value{color:#b91c1c}
+.wz-tile-warn .wz-tile-value{color:#b45309}
+/* status + warning chips */
+.wz-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:800;white-space:nowrap}
+.wz-chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
+.wz-chip-ok{background:rgba(16,185,129,.15);color:#047857}
+.wz-chip-zero{background:rgba(59,130,246,.14);color:#1d4ed8}
+.wz-chip-unavail{background:rgba(107,114,128,.14);color:#6b7280}
+.wz-chip-blocked{background:rgba(239,68,68,.14);color:#b91c1c}
+.wz-chip-divergent{background:rgba(245,158,11,.16);color:#b45309}
+[data-theme="dark"] .wz-chip-ok{background:rgba(16,185,129,.2);color:#3fb950}
+[data-theme="dark"] .wz-chip-zero{background:rgba(96,165,250,.18);color:#60a5fa}
+[data-theme="dark"] .wz-chip-blocked{background:rgba(248,81,73,.18);color:#f85149}
+[data-theme="dark"] .wz-chip-divergent{background:rgba(251,191,36,.16);color:#fbbf24}
+.wz-warnbox{margin-top:12px;display:flex;flex-direction:column;gap:6px}
+.wz-warn{font-size:12px;font-weight:700;color:#b45309;background:rgba(245,158,11,.09);border-inline-start:3px solid #f59e0b;border-radius:7px;padding:7px 11px}
+/* amounts table */
+.wz-amt-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.wz-amt-table td{padding:10px 8px;border-bottom:1px solid rgba(107,114,128,.14)}
+.wz-amt-table tr:last-child td{border-bottom:none}
+.wz-amt-label{font-weight:700}
+.wz-amt-val{text-align:end;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wz-amt-state{text-align:end;width:1%;padding-inline-start:14px}
+/* pay sections */
+.wz-pay{display:flex;flex-direction:column;gap:12px}
+.wz-paysec{border:1.5px solid var(--border-color,#d1d5db);border-radius:12px;padding:14px 16px;transition:opacity .18s, border-color .18s, box-shadow .18s;background:var(--card-bg,#fff)}
+.wz-paysec-off{opacity:.45;filter:grayscale(.6)}
+.wz-paysec-on{border-color:var(--primary,#FF6F00);box-shadow:0 0 0 3px rgba(255,111,0,.08)}
+.wz-paysec-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.wz-paysec-head label{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:800;cursor:pointer;flex:1;min-width:180px}
+.wz-paysec-head input[type=checkbox]{width:19px;height:19px;accent-color:var(--primary,#FF6F00);cursor:pointer}
+.wz-paysec-avail{font-size:12px;font-weight:700;color:var(--text-muted,#6b7280);white-space:nowrap}
+.wz-amount-row{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.wz-amount-row label{font-size:12px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--text-muted,#6b7280);min-width:110px}
+.wz-input{padding:10px 13px;border:1.5px solid var(--border-color,#d1d5db);border-radius:10px;font-size:15px;font-weight:800;background:var(--card-bg,#fff);color:inherit;width:190px;box-sizing:border-box;font-variant-numeric:tabular-nums;transition:border-color .15s, box-shadow .15s}
+.wz-input:focus{outline:none;border-color:var(--primary,#FF6F00);box-shadow:0 0 0 3px rgba(255,111,0,.12)}
+.wz-input:disabled{background:rgba(107,114,128,.08);cursor:not-allowed}
+.wz-cur{font-size:13px;font-weight:800;color:var(--text-muted,#6b7280)}
+.wz-err{display:none;font-size:12px;font-weight:700;color:#b91c1c;background:rgba(239,68,68,.1);border-radius:7px;padding:5px 9px;margin-top:8px}
+.wz-err-show{display:block}
+/* net total */
+.wz-net{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:2px solid var(--primary,#FF6F00);border-radius:14px;padding:16px 20px;background:rgba(255,111,0,.05);margin-top:4px}
+.wz-net-label{font-size:14px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.wz-net-value{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}
+.wz-net-neg{color:#b91c1c}
+/* footer */
+.wz-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-color,#d1d5db)}
+.wz-back{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--text-muted,#6b7280);text-decoration:none;padding:10px 16px;border-radius:10px;border:1.5px solid var(--border-color,#d1d5db)}
+.wz-back:hover{color:inherit;background:rgba(107,114,128,.06)}
+.wz-next{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:800;padding:12px 26px;border:none;border-radius:10px;background:var(--primary,#FF6F00);color:#fff;cursor:pointer;transition:filter .15s}
+.wz-next:hover{filter:brightness(1.08)}
+.wz-none{font-size:13px;color:var(--text-muted,#6b7280);font-style:italic}
+@media (max-width:640px){
+  .wz-footer{flex-direction:column-reverse;align-items:stretch}
+  .wz-back,.wz-next{justify-content:center}
+  .wz-input{width:100%}
+  .wz-amount-row label{min-width:100%}
+}
+.wz-late{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;font-weight:700;color:var(--text-muted,#6b7280)}
+.wz-late input{accent-color:var(--primary,#FF6F00);width:16px;height:16px;cursor:pointer}
+.wz-late input:disabled{cursor:not-allowed;opacity:.5}
+.wz-late b{color:var(--text,#111827);font-variant-numeric:tabular-nums}
+[dir="rtl"] .wz-step-arrow{transform:scaleX(-1)}
+</style>
+
+<%
+    function wzMoney(afn) {
+        var n = Number(afn);
+        if (!isFinite(n)) return '—';
+        return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + t('hr.dashboard.afghani');
+    }
+    function wzNum(afn) {
+        var n = Number(afn);
+        if (!isFinite(n)) return '0';
+        return (Math.round(n * 100) / 100).toString();
+    }
+    function wzStateChip(s) {
+        if (s === 'VERIFIED_AMOUNT') return { cls: 'wz-chip-ok', label: t('hr.addSalary.state_verified_amount') };
+        if (s === 'VALID_ZERO') return { cls: 'wz-chip-zero', label: t('hr.addSalary.state_valid_zero') };
+        if (s === 'BLOCKED') return { cls: 'wz-chip-blocked', label: t('hr.addSalary.state_blocked') };
+        if (s === 'DIVERGENT') return { cls: 'wz-chip-divergent', label: t('hr.addSalary.state_divergent') };
+        return { cls: 'wz-chip-unavail', label: t('hr.addSalary.state_unavailable') };
+    }
+    var WZ_BL = {
+        NO_SCHEDULE: 'hr.payws.bl_NO_SCHEDULE', SCHEDULE_INVALID: 'hr.payws.bl_SCHEDULE_INVALID',
+        EMPLOYMENT_DATA_INVALID: 'hr.payws.bl_EMPLOYMENT_DATA_INVALID', SALARY_HISTORY_MISSING: 'hr.payws.bl_SALARY_HISTORY_MISSING',
+        SALARY_HISTORY_INVALID: 'hr.payws.bl_SALARY_HISTORY_INVALID', SALARY_HISTORY_GAP: 'hr.payws.bl_SALARY_HISTORY_GAP',
+        SALARY_HISTORY_OVERLAP: 'hr.payws.bl_SALARY_HISTORY_OVERLAP', MISSING_CHECK_IN: 'hr.payws.bl_MISSING_CHECK_IN',
+        MISSING_ATTENDANCE: 'hr.payws.bl_MISSING_ATTENDANCE', PENDING_EXCEPTION: 'hr.payws.bl_PENDING_EXCEPTION',
+        EXCEPTION_INVALID: 'hr.payws.bl_EXCEPTION_INVALID', CORRECTED_ATTENDANCE_MISSING: 'hr.payws.bl_CORRECTED_ATTENDANCE_MISSING',
+        NO_SOURCE_ROWS: 'hr.payws.bl_NO_SOURCE_ROWS', NO_ELIGIBLE_ROWS: 'hr.payws.bl_NO_ELIGIBLE_ROWS',
+        INVALID_EARNING_MONTH: 'hr.payws.bl_INVALID_EARNING_MONTH', PRE_CUTOVER: 'hr.payws.bl_PRE_CUTOVER',
+        NO_EXPECTED_TIME: 'hr.payws.bl_NO_EXPECTED_TIME', GRACE_NOT_CONFIGURED: 'hr.payws.bl_GRACE_NOT_CONFIGURED',
+        LATENESS_CLAMPED: 'hr.payws.wl_LATENESS_CLAMPED', EMPLOYEE_NOT_FOUND: 'hr.payws.bl_EMPLOYEE_NOT_FOUND'
+    };
+    var ent = entitlement;
+    var entBlocked = ent && ent.blockers && ent.blockers.length > 0;
+    var attState = !ent ? 'UNAVAILABLE' : (entBlocked ? 'BLOCKED' : (ent.review_items && ent.review_items.length ? 'DIVERGENT' : 'VERIFIED_AMOUNT'));
+    var attChip = wzStateChip(attState);
+%>
+
+<div class="card">
+    <div class="wz-wrap">
+        <!-- Header -->
+        <div class="wz-head">
+            <div>
+                <h2 class="wz-title">💰 <%= t('hr.addSalary.title') %></h2>
+                <p class="wz-sub"><%= t('hr.addSalary.wizard_subtitle') %></p>
+            </div>
+        </div>
+
+        <!-- Step indicator -->
+        <div class="wz-steps">
+            <span class="wz-step"><span class="wz-step-num">1</span> <%= t('hr.addSalary.step1_title') %></span>
+            <span class="wz-step-arrow">→</span>
+            <span class="wz-step wz-step-active"><span class="wz-step-num">2</span> <%= t('hr.addSalary.step2_title') %></span>
+            <span class="wz-step-arrow">→</span>
+            <span class="wz-step"><span class="wz-step-num">3</span> <%= t('hr.addSalary.step3_title') %></span>
+        </div>
+
+        <!-- Employee banner -->
+        <div class="wz-banner">
+            <div>
+                <div class="wz-banner-name"><%= employee.full_name %></div>
+                <div class="wz-banner-meta">
+                    <span><%= employee.department_name || '—' %></span>
+                    <% if (employee.position) { %><span><%= employee.position %></span><% } %>
+                    <span dir="ltr"><%= periodLabel %></span>
+                    <span dir="ltr">↔ <%= paymentDate %></span>
+                </div>
+            </div>
+            <a href="/admin/hr/payroll/add-salary" style="background:rgba(255,255,255,.2);color:#fff;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:12.5px;font-weight:700">← <%= t('hr.addSalary.step1_title') %></a>
+        </div>
+
+        <form method="GET" action="/admin/hr/payroll/add-salary/step3" id="wz2Form" novalidate>
+            <input type="hidden" name="employee_id" value="<%= employee.id %>">
+            <input type="hidden" name="period_month" value="<%= period %>">
+            <input type="hidden" name="payment_date" value="<%= paymentDate %>">
+
+            <!-- Panel: Attendance summary -->
+            <div class="wz-panel">
+                <div class="wz-panel-head"><span><%= t('hr.addSalary.att_panel') %></span> <span class="wz-chip <%= attChip.cls %>"><%= attChip.label %></span></div>
+                <% if (!ent) { %>
+                    <div class="wz-none"><%= t('hr.addSalary.att_unavailable') %></div>
+                <% } else { %>
+                    <div class="wz-tiles">
+                        <div class="wz-tile"><div class="wz-tile-label"><%= t('hr.addSalary.att_scheduled') %></div><div class="wz-tile-value"><%= ent.scheduled_working_days %></div></div>
+                        <div class="wz-tile"><div class="wz-tile-label"><%= t('hr.addSalary.att_paid') %></div><div class="wz-tile-value"><%= ent.paid_working_days %></div></div>
+                        <div class="wz-tile<%= ent.unpaid_working_days > 0 ? ' wz-tile-bad' : '' %>"><div class="wz-tile-label"><%= t('hr.addSalary.att_unpaid') %></div><div class="wz-tile-value"><%= ent.unpaid_working_days %></div></div>
+                        <div class="wz-tile"><div class="wz-tile-label"><%= t('hr.addSalary.att_leave') %></div><div class="wz-tile-value"><%= ent.leave_days %></div></div>
+                        <div class="wz-tile"><div class="wz-tile-label"><%= t('hr.addSalary.att_holiday') %></div><div class="wz-tile-value"><%= ent.holiday_marker_days %></div></div>
+                        <div class="wz-tile<%= ent.missing_attendance_days > 0 ? ' wz-tile-warn' : '' %>"><div class="wz-tile-label"><%= t('hr.addSalary.att_missing') %></div><div class="wz-tile-value"><%= ent.missing_attendance_days %></div></div>
+                        <div class="wz-tile<%= ent.lateness_minutes_total > 0 ? ' wz-tile-warn' : '' %>"><div class="wz-tile-label"><%= t('hr.addSalary.att_late_minutes') %></div><div class="wz-tile-value"><%= ent.lateness_minutes_total %></div></div>
+                        <div class="wz-tile<%= ent.lateness_deduction_total > 0 ? ' wz-tile-bad' : '' %>"><div class="wz-tile-label"><%= t('hr.addSalary.att_late_deduction') %></div><div class="wz-tile-value"><%= wzMoney(ent.lateness_deduction_total) %></div></div>
+                    </div>
+                    <% if (entBlocked) { %>
+                        <div class="wz-warnbox">
+                            <% ent.blockers.forEach(function(b) { %>
+                                <div class="wz-warn"><%= (WZ_BL[b.code] ? t(WZ_BL[b.code]) : b.code) %></div>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                <% } %>
+            </div>
+
+            <!-- Panel: Amounts -->
+            <div class="wz-panel">
+                <div class="wz-panel-head"><span><%= t('hr.addSalary.amounts_panel') %></span></div>
+                <table class="wz-amt-table">
+                    <tr>
+                        <td class="wz-amt-label"><%= t('hr.addSalary.amt_real_salary') %></td>
+                        <td class="wz-amt-val"><%= salary ? wzMoney(salary.basic_salary) : '—' %></td>
+                        <td class="wz-amt-state"></td>
+                    </tr>
+                    <tr>
+                        <td class="wz-amt-label"><%= t('hr.addSalary.amt_salary_due') %></td>
+                        <td class="wz-amt-val"><%= prefill.salaryDue !== null ? wzMoney(prefill.salaryDue) : '—' %></td>
+                        <td class="wz-amt-state"></td>
+                    </tr>
+                    <tr>
+                        <td class="wz-amt-label"><%= t('hr.addSalary.amt_total_salaries') %></td>
+                        <td class="wz-amt-val"><%= prefill.salaryOutstanding !== null ? wzMoney(prefill.salaryOutstanding) : '—' %></td>
+                        <td class="wz-amt-state"><span class="wz-chip <%= wzStateChip(prefill.salaryOutState).cls %>"><%= wzStateChip(prefill.salaryOutState).label %></span></td>
+                    </tr>
+                    <tr>
+                        <td class="wz-amt-label"><%= t('hr.addSalary.amt_total_ot') %></td>
+                        <td class="wz-amt-val"><%= prefill.ot !== null ? wzMoney(prefill.ot) : '—' %></td>
+                        <td class="wz-amt-state"><span class="wz-chip <%= wzStateChip(prefill.otState).cls %>"><%= wzStateChip(prefill.otState).label %></span></td>
+                    </tr>
+                    <tr>
+                        <td class="wz-amt-label"><%= t('hr.addSalary.amt_total_adv') %></td>
+                        <td class="wz-amt-val"><%= prefill.advance !== null ? wzMoney(prefill.advance) : '—' %></td>
+                        <td class="wz-amt-state"><span class="wz-chip <%= wzStateChip(prefill.advState).cls %>"><%= wzStateChip(prefill.advState).label %></span></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Panel: What to pay -->
+            <div class="wz-panel">
+                <div class="wz-panel-head"><span><%= t('hr.addSalary.pay_panel') %></span></div>
+                <div class="wz-pay">
+                    <!-- Salary -->
+                    <div class="wz-paysec wz-paysec-off" id="sec-salary">
+                        <div class="wz-paysec-head">
+                            <label for="pay_salary"><input type="checkbox" id="pay_salary" name="pay_salary" value="1"> <%= t('hr.addSalary.pay_salary') %></label>
+                            <span class="wz-paysec-avail"><%= prefill.salaryMax !== null ? '← ' + wzMoney(prefill.salaryMax) : '' %></span>
+                        </div>
+                        <div class="wz-amount-row">
+                            <label for="salary_amount"><%= t('hr.addSalary.lbl_amount_to_pay') %></label>
+                            <input type="text" inputmode="decimal" id="salary_amount" name="salary_amount" class="wz-input" dir="ltr"
+                                   value="<%= wzNum(prefill.salaryDue !== null ? prefill.salaryDue : 0) %>" data-max="<%= prefill.salaryMax !== null ? prefill.salaryMax : '' %>" disabled>
+                            <span class="wz-cur"><%= t('hr.dashboard.afghani') %></span>
+                        </div>
+                        <% if (lateDeduction !== null) { %>
+                        <div class="wz-late">
+                            <input type="checkbox" id="deduct_late" checked>
+                            <label for="deduct_late"><%= t('hr.addSalary.lbl_deduct_late') %></label>
+                            <b dir="ltr">− <%= wzMoney(lateDeduction) %></b>
+                        </div>
+                        <% } %>
+                        <input type="hidden" name="deduct_late" id="deduct_late_flag" value="<%= lateDeduction !== null ? '1' : '' %>">
+                        <div class="wz-err" id="err-salary"></div>
+                    </div>
+                    <!-- Overtime -->
+                    <div class="wz-paysec wz-paysec-off" id="sec-ot">
+                        <div class="wz-paysec-head">
+                            <label for="pay_ot"><input type="checkbox" id="pay_ot" name="pay_ot" value="1"> <%= t('hr.addSalary.pay_ot') %></label>
+                            <span class="wz-paysec-avail"><%= prefill.ot !== null ? '← ' + wzMoney(prefill.ot) : '' %></span>
+                        </div>
+                        <div class="wz-amount-row">
+                            <label for="ot_amount"><%= t('hr.addSalary.lbl_amount_to_pay') %></label>
+                            <input type="text" inputmode="decimal" id="ot_amount" name="ot_amount" class="wz-input" dir="ltr"
+                                   value="<%= wzNum(prefill.ot !== null ? prefill.ot : 0) %>" data-max="<%= prefill.ot !== null ? prefill.ot : '' %>" disabled>
+                            <span class="wz-cur"><%= t('hr.dashboard.afghani') %></span>
+                        </div>
+                        <div class="wz-err" id="err-ot"></div>
+                    </div>
+                    <!-- Advance -->
+                    <div class="wz-paysec wz-paysec-off" id="sec-adv">
+                        <div class="wz-paysec-head">
+                            <label for="pay_advance"><input type="checkbox" id="pay_advance" name="pay_advance" value="1"> <%= t('hr.addSalary.pay_advance') %></label>
+                            <span class="wz-paysec-avail"><%= prefill.advance !== null ? '← ' + wzMoney(prefill.advance) : '' %></span>
+                        </div>
+                        <div class="wz-amount-row">
+                            <label for="advance_amount"><%= t('hr.addSalary.lbl_amount_to_pay') %></label>
+                            <input type="text" inputmode="decimal" id="advance_amount" name="advance_amount" class="wz-input" dir="ltr"
+                                   value="<%= wzNum(prefill.advance !== null ? prefill.advance : 0) %>" data-max="<%= prefill.advance !== null ? prefill.advance : '' %>" disabled>
+                            <span class="wz-cur"><%= t('hr.dashboard.afghani') %></span>
+                        </div>
+                        <div class="wz-err" id="err-adv"></div>
+                    </div>
+                </div>
+
+                <!-- Net total -->
+                <div class="wz-net">
+                    <span class="wz-net-label"><%= t('hr.addSalary.net_total') %></span>
+                    <span class="wz-net-value" id="wz-net-value" dir="ltr">0.00</span>
+                </div>
+                <div class="wz-err" id="err-form" style="margin-top:10px"></div>
+            </div>
+
+            <div class="wz-footer">
+                <a href="/admin/hr/payroll/add-salary" class="wz-back">← <%= t('hr.addSalary.step1_title') %></a>
+                <button type="submit" class="wz-next"><%= t('hr.addSalary.continue') %> →</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var MESSAGES = {
+        selectOne: <%- JSON.stringify(t('hr.addSalary.err_select_one')) %>,
+        over: <%- JSON.stringify(t('hr.addSalary.err_amount_over')) %>,
+        invalid: <%- JSON.stringify(t('hr.addSalary.err_amount_invalid')) %>,
+        afghani: <%- JSON.stringify(t('hr.dashboard.afghani')) %>
+    };
+    var SECTIONS = [
+        { cb: 'pay_salary', input: 'salary_amount', sec: 'sec-salary', err: 'err-salary' },
+        { cb: 'pay_ot',     input: 'ot_amount',     sec: 'sec-ot',     err: 'err-ot' },
+        { cb: 'pay_advance',input: 'advance_amount',sec: 'sec-adv',    err: 'err-adv' }
+    ];
+
+    function num(v) { var n = parseFloat(String(v).replace(/,/g, '')); return isFinite(n) ? n : NaN; }
+    function fmt(n) { return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+    function refresh() {
+        var net = 0;
+        SECTIONS.forEach(function (s) {
+            var checked = document.getElementById(s.cb).checked;
+            var sec = document.getElementById(s.sec);
+            var input = document.getElementById(s.input);
+            sec.classList.toggle('wz-paysec-on', checked);
+            sec.classList.toggle('wz-paysec-off', !checked);
+            input.disabled = !checked;
+            var v = num(input.value);
+            if (checked) {
+                var amt = isFinite(v) ? v : 0;
+                if (s.cb === 'pay_advance') { net -= amt; } else { net += amt; }
+            }
+        });
+        var netEl = document.getElementById('wz-net-value');
+        netEl.textContent = fmt(net) + ' ' + MESSAGES.afghani;
+        netEl.classList.toggle('wz-net-neg', net < 0);
+    }
+
+    SECTIONS.forEach(function (s) {
+        document.getElementById(s.cb).addEventListener('change', refresh);
+        document.getElementById(s.input).addEventListener('input', function () {
+            document.getElementById(s.err).classList.remove('wz-err-show');
+            refresh();
+        });
+    });
+
+    // Late-minutes deduction checkbox (rendered only when there IS late money).
+    // Checked (default) = box keeps the engine figure (penalty applied).
+    // Unchecked = the late money is added back (forgiven); step 3 warns.
+    var lateBox = document.getElementById('deduct_late');
+    if (lateBox) {
+        var lateFlag = document.getElementById('deduct_late_flag');
+        var lateCents = <%- JSON.stringify(Math.round((lateDeduction !== null ? lateDeduction : 0) * 100)) %>;
+        var lateBaseCents = <%- JSON.stringify(Math.round((prefill.salaryDue !== null ? prefill.salaryDue : 0) * 100)) %>;
+        lateBox.addEventListener('change', function () {
+            var input = document.getElementById('salary_amount');
+            var v = num(input.value);
+            var cents = isFinite(v)
+                ? Math.round(v * 100) + (lateBox.checked ? -lateCents : lateCents)
+                : lateBaseCents + (lateBox.checked ? 0 : lateCents);
+            input.value = (cents / 100).toString();
+            lateFlag.value = lateBox.checked ? '1' : '';
+            document.getElementById('err-salary').classList.remove('wz-err-show');
+            refresh();
+        });
+        lateBox.disabled = !document.getElementById('pay_salary').checked;
+        document.getElementById('pay_salary').addEventListener('change', function () {
+            lateBox.disabled = !this.checked;
+        });
+    }
+
+    document.getElementById('wz2Form').addEventListener('submit', function (e) {
+        var ok = true;
+        var anyChecked = false;
+        SECTIONS.forEach(function (s) {
+            var checked = document.getElementById(s.cb).checked;
+            var input = document.getElementById(s.input);
+            var errEl = document.getElementById(s.err);
+            errEl.classList.remove('wz-err-show');
+            if (!checked) return;
+            anyChecked = true;
+            var v = num(input.value);
+            if (!isFinite(v) || v <= 0) {
+                errEl.textContent = MESSAGES.invalid; errEl.classList.add('wz-err-show'); ok = false; return;
+            }
+            var max = input.getAttribute('data-max');
+            if (max !== '' && isFinite(parseFloat(max)) && v > parseFloat(max) + 0.001) {
+                errEl.textContent = MESSAGES.over; errEl.classList.add('wz-err-show'); ok = false;
+            }
+        });
+        var formErr = document.getElementById('err-form');
+        formErr.classList.remove('wz-err-show');
+        if (!anyChecked) {
+            formErr.textContent = MESSAGES.selectOne; formErr.classList.add('wz-err-show'); ok = false;
+        }
+        if (!ok) { e.preventDefault(); }
+    });
+
+    refresh();
+})();
+</script>
+
+<%- include('../partials/footer') %>

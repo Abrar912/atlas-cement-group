@@ -1,0 +1,942 @@
+<%- include('../partials/header') %>
+
+<style>
+/* ============================================
+   EMPLOYEE EDIT — PAGE-SCOPED DESIGN SYSTEM
+   ============================================ */
+
+/* --- Spacing Tokens --- */
+:root {
+    --empedit-space-xs: 4px;
+    --empedit-space-sm: 8px;
+    --empedit-space-md: 16px;
+    --empedit-space-lg: 24px;
+    --empedit-space-xl: 32px;
+    --empedit-radius-sm: 6px;
+    --empedit-radius-md: 10px;
+    --empedit-radius-lg: 14px;
+    --empedit-radius-full: 9999px;
+    --empedit-shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --empedit-shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+    --empedit-shadow-lg: 0 8px 24px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05);
+    --empedit-transition: 0.2s ease;
+}
+
+/* --- Page Container --- */
+.empedit-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 8px;
+}
+
+/* --- Employee Hero --- */
+.empedit-hero {
+    display: flex;
+    align-items: center;
+    gap: var(--empedit-space-lg);
+    padding: var(--empedit-space-lg) var(--empedit-space-xl);
+    border-radius: var(--empedit-radius-lg);
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--empedit-shadow-md);
+    margin-bottom: var(--empedit-space-lg);
+    flex-wrap: wrap;
+}
+
+.empedit-hero-photo {
+    width: 110px;
+    height: 110px;
+    border-radius: var(--empedit-radius-full);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #E65100));
+    border: 3px solid rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: var(--empedit-shadow-md);
+    transition: transform var(--empedit-transition), box-shadow var(--empedit-transition);
+}
+
+.empedit-hero-photo:hover {
+    transform: scale(1.03);
+    box-shadow: var(--empedit-shadow-lg);
+}
+
+.empedit-hero-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.empedit-hero-info {
+    flex: 1;
+    min-width: 200px;
+}
+
+.empedit-hero-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0 0 4px 0;
+    line-height: 1.3;
+}
+
+.empedit-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.empedit-hero-meta span {
+    font-size: 13px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.empedit-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: var(--empedit-radius-full);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.empedit-badge--active {
+    background: rgba(5,150,105,0.12);
+    color: var(--status-success);
+}
+
+.empedit-badge--leave {
+    background: rgba(245,158,11,0.12);
+    color: var(--status-warning, #d97706);
+}
+
+.empedit-badge--former {
+    background: rgba(207,34,46,0.1);
+    color: var(--status-error);
+}
+
+.empedit-hero-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+}
+
+.empedit-hero-actions .empedit-photo-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+/* --- Section Card --- */
+.empedit-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--empedit-radius-lg);
+    padding: var(--empedit-space-lg);
+    margin-bottom: var(--empedit-space-md);
+    box-shadow: var(--empedit-shadow-sm);
+    transition: box-shadow var(--empedit-transition);
+}
+
+.empedit-section:hover {
+    box-shadow: var(--empedit-shadow-md);
+}
+
+.empedit-section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: var(--empedit-space-md);
+    padding-bottom: var(--empedit-space-sm);
+    border-bottom: 2px solid var(--border-color);
+}
+
+.empedit-section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--empedit-radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.empedit-section-icon--personal { background: rgba(59,130,246,0.1); }
+.empedit-section-icon--employment { background: rgba(16,185,129,0.1); }
+.empedit-section-icon--emergency { background: rgba(245,158,11,0.1); }
+.empedit-section-icon--documents { background: rgba(139,92,246,0.1); }
+.empedit-section-icon--departure { background: rgba(239,68,68,0.1); }
+
+.empedit-section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-main);
+    margin: 0;
+}
+
+/* --- Form Grid --- */
+.empedit-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--empedit-space-md);
+}
+
+.empedit-form-grid .empedit-full-width {
+    grid-column: 1 / -1;
+}
+
+/* --- Form Fields --- */
+.empedit-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.empedit-field label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 5px;
+}
+
+.empedit-field .form-control {
+    transition: border-color var(--empedit-transition), box-shadow var(--empedit-transition);
+    border-radius: var(--empedit-radius-sm);
+}
+
+.empedit-field .form-control:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+
+.empedit-field-help {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* --- Departure Section Variant --- */
+.empedit-section--departure {
+    background: rgba(239,68,68,0.04);
+    border-color: rgba(239,68,68,0.18);
+}
+
+.empedit-section--departure .empedit-section-header {
+    border-bottom-color: rgba(239,68,68,0.18);
+}
+
+.empedit-section--departure .empedit-section-title {
+    color: var(--status-error);
+}
+
+/* --- Document Cards --- */
+.empedit-doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--empedit-space-md);
+}
+
+.empedit-doc-card {
+    border-radius: var(--empedit-radius-md);
+    padding: var(--empedit-space-md);
+    border: 1px solid var(--border-color);
+    transition: border-color var(--empedit-transition), box-shadow var(--empedit-transition), background var(--empedit-transition);
+}
+
+.empedit-doc-card:hover {
+    box-shadow: var(--empedit-shadow-sm);
+}
+
+.empedit-doc-card--uploaded {
+    background: rgba(5,150,105,0.04);
+    border-color: rgba(5,150,105,0.22);
+}
+
+.empedit-doc-card--uploaded:hover {
+    border-color: rgba(5,150,105,0.4);
+}
+
+.empedit-doc-card--no-file {
+    background: rgba(245,158,11,0.04);
+    border-color: rgba(245,158,11,0.22);
+}
+
+.empedit-doc-card--no-file:hover {
+    border-color: rgba(245,158,11,0.4);
+}
+
+.empedit-doc-card--empty {
+    background: var(--card-bg);
+    border-style: dashed;
+    border-color: var(--border-color);
+}
+
+.empedit-doc-card--empty:hover {
+    border-color: var(--accent-blue);
+    background: rgba(59,130,246,0.02);
+}
+
+.empedit-doc-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: var(--empedit-space-sm);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.empedit-doc-status {
+    font-size: 11px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.empedit-doc-status--ok { background: var(--status-success); }
+.empedit-doc-status--warn { background: var(--status-warning, #d97706); }
+.empedit-doc-status--empty { background: var(--text-muted); opacity: 0.5; }
+
+.empedit-doc-filename {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: var(--empedit-space-sm);
+    word-break: break-all;
+}
+
+.empedit-doc-actions {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* --- Buttons --- */
+.empedit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    padding: 7px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: var(--empedit-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background var(--empedit-transition), border-color var(--empedit-transition), color var(--empedit-transition), box-shadow var(--empedit-transition), transform 0.1s ease;
+    white-space: nowrap;
+    line-height: 1.3;
+}
+
+.empedit-btn:active {
+    transform: scale(0.97);
+}
+
+.empedit-btn--primary {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.empedit-btn--primary:hover {
+    background: var(--primary-dark, #E65100);
+    box-shadow: var(--empedit-shadow-sm);
+}
+
+.empedit-btn--view {
+    background: var(--accent-blue);
+    color: #fff;
+}
+
+.empedit-btn--view:hover {
+    background: #2563eb;
+    box-shadow: var(--empedit-shadow-sm);
+}
+
+.empedit-btn--secondary {
+    background: var(--bg-color);
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+
+.empedit-btn--secondary:hover {
+    background: var(--border-color);
+}
+
+.empedit-btn--danger {
+    background: rgba(239,68,68,0.08);
+    border-color: rgba(239,68,68,0.25);
+    color: var(--status-error);
+}
+
+.empedit-btn--danger:hover {
+    background: rgba(239,68,68,0.15);
+    border-color: rgba(239,68,68,0.4);
+}
+
+.empedit-btn--accent {
+    background: var(--primary);
+    color: #fff;
+}
+
+.empedit-btn--accent:hover {
+    background: var(--primary-dark, #E65100);
+    box-shadow: var(--empedit-shadow-sm);
+}
+
+.empedit-btn--small {
+    padding: 5px 10px;
+    font-size: 11px;
+}
+
+/* --- Action Bar --- */
+.empedit-actions {
+    display: flex;
+    gap: var(--empedit-space-sm);
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--empedit-space-md) 0 var(--empedit-space-xl);
+}
+
+.empedit-actions .empedit-btn--primary {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: var(--empedit-radius-md);
+}
+
+/* --- Photo Upload Area --- */
+.empedit-photo-area {
+    display: flex;
+    align-items: center;
+    gap: var(--empedit-space-md);
+}
+
+.empedit-photo-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: var(--empedit-radius-full);
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark, #E65100));
+    border: 3px solid rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    overflow: hidden;
+    box-shadow: var(--empedit-shadow-sm);
+}
+
+.empedit-photo-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .empedit-hero {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--empedit-space-md);
+    }
+
+    .empedit-hero-actions {
+        align-items: center;
+    }
+
+    .empedit-hero-meta {
+        justify-content: center;
+    }
+
+    .empedit-hero-name {
+        font-size: 20px;
+    }
+
+    .empedit-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .empedit-photo-area {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .empedit-photo-circle {
+        width: 90px;
+        height: 90px;
+        font-size: 30px;
+    }
+
+    .empedit-doc-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .empedit-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .empedit-actions .empedit-btn {
+        justify-content: center;
+    }
+
+    .empedit-actions .empedit-btn--primary {
+        order: -1;
+    }
+}
+
+@media (max-width: 480px) {
+    .empedit-hero {
+        padding: var(--empedit-space-sm) var(--empedit-space-md);
+    }
+
+    .empedit-section {
+        padding: var(--empedit-space-md);
+    }
+
+    .empedit-hero-name {
+        font-size: 18px;
+    }
+}
+</style>
+
+<div class="empedit-page">
+    <div class="card" style="padding: 0; border: none; background: transparent; box-shadow: none;">
+        <form method="POST" action="/admin/hr/employees/<%= employee.id %>/edit" enctype="multipart/form-data">
+
+            <!-- =============================================
+                 EMPLOYEE HERO
+                 ============================================= -->
+            <div class="empedit-hero">
+                <div class="empedit-hero-photo">
+                    <% if (employee.photo_path) { %>
+                        <img id="heroPhotoImg" src="/<%= employee.photo_path %>" alt="">
+                        <span id="heroPhotoIcon" style="display:none;"><%= employee.full_name.charAt(0).toUpperCase() %></span>
+                    <% } else { %>
+                        <span id="heroPhotoIcon"><%= employee.full_name.charAt(0).toUpperCase() %></span>
+                        <img id="heroPhotoImg" src="" alt="" style="display:none;">
+                    <% } %>
+                </div>
+
+                <div class="empedit-hero-info">
+                    <h2 class="empedit-hero-name"><%= employee.full_name %></h2>
+                    <div class="empedit-hero-meta">
+                        <span dir="ltr"><%= employee.employee_id || '' %></span>
+                        <% if (employee.position) { %>
+                            <span>|</span>
+                            <span><%= employee.position %></span>
+                        <% } %>
+                        <% if (employee.employment_status) { %>
+                            <span>|</span>
+                            <span class="empedit-badge empedit-badge--<%= employee.employment_status === 'Active' ? 'active' : employee.employment_status === 'On Leave' ? 'leave' : 'former' %>">
+                                <%= employee.employment_status === 'Active' ? t('hr.employees.active') : employee.employment_status === 'On Leave' ? t('hr.employees.on_leave') : t('hr.employees.former') %>
+                            </span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="empedit-hero-actions">
+                    <input type="file" name="employee_photo" id="employeePhotoInput" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewEmployeePhoto(this)">
+                    <button type="button" onclick="document.getElementById('employeePhotoInput').click();" class="empedit-btn empedit-btn--secondary">
+                        <%= t('hr.employees.change_photo') %>
+                    </button>
+                    <div class="empedit-photo-hint"><%= t('hr.employees.photo_hint') %></div>
+                </div>
+            </div>
+
+            <!-- Hidden photo preview elements (referenced by JS) -->
+            <div style="display:none;">
+                <div id="photoPreviewContainer">
+                    <div id="photoPreviewCircle">
+                        <% if (employee.photo_path) { %>
+                            <img id="photoPreviewImg" src="/<%= employee.photo_path %>" alt="">
+                            <span id="photoPreviewIcon" style="display:none;"><%= employee.full_name.charAt(0).toUpperCase() %></span>
+                        <% } else { %>
+                            <span id="photoPreviewIcon"><%= employee.full_name.charAt(0).toUpperCase() %></span>
+                            <img id="photoPreviewImg" src="" alt="" style="display:none;">
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 PERSONAL INFORMATION
+                 ============================================= -->
+            <div class="empedit-section">
+                <div class="empedit-section-header">
+                    <div class="empedit-section-icon empedit-section-icon--personal">&#128100;</div>
+                    <h3 class="empedit-section-title"><%= t('hr.employees.personal_info') %></h3>
+                </div>
+
+                <div class="empedit-form-grid">
+                    <div class="empedit-field">
+                        <label for="employee_id"><%= t('hr.employees.employee_id') %></label>
+                        <input type="text" name="employee_id" class="form-control" value="<%= employee.employee_id || '' %>" readonly dir="ltr" id="employee_id">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="full_name"><%= t('hr.employees.full_name') %> *</label>
+                        <input type="text" name="full_name" class="form-control" value="<%= employee.full_name %>" required dir="rtl" id="full_name">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="father_name"><%= t('hr.employees.father_name') %></label>
+                        <input type="text" name="father_name" class="form-control" value="<%= employee.father_name || '' %>" dir="rtl" id="father_name">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="gender"><%= t('hr.employees.gender') %></label>
+                        <select name="gender" class="form-control" id="gender">
+                            <option value=""><%= t('forms.select') %></option>
+                            <option value="Male" <%= employee.gender === 'Male' ? 'selected' : '' %>><%= t('hr.employees.male') %></option>
+                            <option value="Female" <%= employee.gender === 'Female' ? 'selected' : '' %>><%= t('hr.employees.female') %></option>
+                        </select>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="date_of_birth"><%= t('hr.employees.date_of_birth') %></label>
+                        <input type="text" id="date_of_birth" name="date_of_birth" class="form-control" value="<%= employee.date_of_birth || '' %>" data-datepicker="jalali" data-datepicker-allow-manual="true" placeholder="YYYY/MM/DD" dir="ltr">
+                        <small class="empedit-field-help">فرمت: سال/ماه/روز (مثلاً ۱۳۷۵/۰۵/۲۰) - کلیک برای تقویم یا تایپ دستی</small>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="phone"><%= t('hr.employees.phone') %> *</label>
+                        <input type="tel" name="phone" class="form-control" value="<%= employee.phone %>" required dir="ltr" id="phone">
+                    </div>
+
+                    <div class="empedit-field empedit-full-width">
+                        <label for="address"><%= t('hr.employees.address') %></label>
+                        <textarea name="address" class="form-control" rows="2" dir="rtl" id="address"><%= employee.address || '' %></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 EMPLOYMENT INFORMATION
+                 ============================================= -->
+            <div class="empedit-section">
+                <div class="empedit-section-header">
+                    <div class="empedit-section-icon empedit-section-icon--employment">&#128188;</div>
+                    <h3 class="empedit-section-title"><%= t('hr.employees.employment_info') %></h3>
+                </div>
+
+                <div class="empedit-form-grid">
+                    <div class="empedit-field">
+                        <label for="position"><%= t('hr.employees.position') %> *</label>
+                        <input type="text" name="position" class="form-control" value="<%= employee.position %>" required dir="rtl" id="position">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="department_id"><%= t('hr.employees.department') %></label>
+                        <select name="department_id" class="form-control" id="department_id">
+                            <option value=""><%= t('hr.employees.select_department') %></option>
+                            <% if (departments && departments.length > 0) { %>
+                                <% departments.forEach(function(dept) { %>
+                                    <option value="<%= dept.id %>" <%= employee.department_id === dept.id ? 'selected' : '' %>><%= dept.name %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="hire_date"><%= t('hr.employees.hire_date') %> *</label>
+                        <input type="text" id="hire_date" name="hire_date" class="form-control" value="<%= employee.hire_date %>" required data-datepicker="jalali" data-datepicker-allow-manual="true" placeholder="YYYY/MM/DD" dir="ltr">
+                        <small class="empedit-field-help">فرمت: سال/ماه/روز (مثلاً ۱۴۰۳/۰۱/۰۱) - کلیک برای تقویم یا تایپ دستی</small>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="employment_status"><%= t('hr.employees.employment_status') %></label>
+                        <select name="employment_status" class="form-control" id="employment_status">
+                            <option value="Active" <%= employee.employment_status === 'Active' ? 'selected' : '' %>><%= t('hr.employees.active') %></option>
+                            <option value="On Leave" <%= employee.employment_status === 'On Leave' ? 'selected' : '' %>><%= t('hr.employees.on_leave') %></option>
+                            <option value="Former" <%= employee.employment_status === 'Former' ? 'selected' : '' %>><%= t('hr.employees.former') %></option>
+                        </select>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="work_location"><%= t('hr.employees.work_location') %></label>
+                        <input type="text" name="work_location" class="form-control" value="<%= employee.work_location || '' %>" dir="rtl" id="work_location">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="contract_type"><%= t('hr.employees.contract_type') %></label>
+                        <select name="contract_type" class="form-control" id="contract_type">
+                            <option value=""><%= t('forms.select') %></option>
+                            <option value="Permanent" <%= employee.contract_type === 'Permanent' ? 'selected' : '' %>><%= t('hr.employees.permanent') %></option>
+                            <option value="Temporary" <%= employee.contract_type === 'Temporary' ? 'selected' : '' %>><%= t('hr.employees.temporary') %></option>
+                            <option value="Contract" <%= employee.contract_type === 'Contract' ? 'selected' : '' %>><%= t('hr.employees.contract') %></option>
+                            <option value="Daily Worker" <%= employee.contract_type === 'Daily Worker' ? 'selected' : '' %>><%= t('hr.employees.daily_worker') %></option>
+                        </select>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="payment_method"><%= t('hr.employees.payment_method') %></label>
+                        <select name="payment_method" class="form-control" id="payment_method">
+                            <option value=""><%= t('forms.select') %></option>
+                            <option value="Cash" <%= employee.payment_method === 'Cash' ? 'selected' : '' %>><%= t('hr.employees.cash') %></option>
+                            <option value="Bank Transfer" <%= employee.payment_method === 'Bank Transfer' ? 'selected' : '' %>><%= t('hr.employees.bank_transfer') %></option>
+                            <option value="Other" <%= employee.payment_method === 'Other' ? 'selected' : '' %>><%= t('hr.employees.other') %></option>
+                        </select>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="salary"><%= t('hr.employees.amount_of_salary') %></label>
+                        <input type="number" name="salary" class="form-control" placeholder="0" min="0" step="0.01" dir="ltr" value="<%= currentSalary ? currentSalary.basic_salary : '' %>" id="salary">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="work_schedule_id"><%= t('hr.employees.work_schedule') %></label>
+                        <select name="work_schedule_id" class="form-control" id="work_schedule_id">
+                            <option value=""><%= t('hr.employees.no_schedule') %></option>
+                            <% if (workSchedules && workSchedules.length > 0) { %>
+                                <% workSchedules.forEach(function(sch) { %>
+                                    <option value="<%= sch.id %>" <%= employee.work_schedule_id === sch.id ? 'selected' : '' %>><%= sch.name %> &mdash; <%= sch.expected_check_in %>&ndash;<%= sch.expected_check_out %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="salary_effective_date"><%= t('hr.employees.salary_effective_date') %></label>
+                        <input type="text" name="salary_effective_date" class="form-control" data-datepicker="jalali" placeholder="<%= getCurrentJalaliDate() %>" dir="ltr" value="<%= getCurrentJalaliDate() %>" id="salary_effective_date">
+                        <small class="empedit-field-help"><%= t('hr.employees.salary_effective_date_help') %></small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 EMERGENCY CONTACT
+                 ============================================= -->
+            <div class="empedit-section">
+                <div class="empedit-section-header">
+                    <div class="empedit-section-icon empedit-section-icon--emergency">&#128680;</div>
+                    <h3 class="empedit-section-title"><%= t('hr.employees.emergency_contact') %></h3>
+                </div>
+
+                <div class="empedit-form-grid">
+                    <div class="empedit-field">
+                        <label for="emergency_contact_name"><%= t('hr.employees.emergency_contact_name') %></label>
+                        <input type="text" name="emergency_contact_name" class="form-control" value="<%= employee.emergency_contact_name || '' %>" dir="rtl" id="emergency_contact_name">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="emergency_contact_phone"><%= t('hr.employees.emergency_contact_phone') %></label>
+                        <input type="tel" name="emergency_contact_phone" class="form-control" value="<%= employee.emergency_contact_phone || '' %>" dir="ltr" id="emergency_contact_phone">
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="emergency_contact_relationship"><%= t('hr.employees.emergency_contact_relationship') %></label>
+                        <input type="text" name="emergency_contact_relationship" class="form-control" value="<%= employee.emergency_contact_relationship || '' %>" dir="rtl" id="emergency_contact_relationship">
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 DEPARTURE INFORMATION
+                 ============================================= -->
+            <div class="empedit-section empedit-section--departure">
+                <div class="empedit-section-header">
+                    <div class="empedit-section-icon empedit-section-icon--departure">&#128682;</div>
+                    <h3 class="empedit-section-title"><%= t('hr.employees.departure_info') %></h3>
+                </div>
+
+                <div class="empedit-form-grid">
+                    <div class="empedit-field">
+                        <label for="employment_end_date"><%= t('hr.employees.employment_end_date') %></label>
+                        <input type="text" id="employment_end_date" name="employment_end_date" class="form-control" value="<%= employee.employment_end_date || '' %>" data-datepicker="jalali" data-datepicker-allow-manual="true" placeholder="YYYY/MM/DD" dir="ltr">
+                        <small class="empedit-field-help">فرمت: سال/ماه/روز (مثلاً ۱۴۰۳/۰۱/۰۱) - کلیک برای تقویم یا تایپ دستی</small>
+                    </div>
+
+                    <div class="empedit-field">
+                        <label for="departure_reason"><%= t('hr.employees.departure_reason') %></label>
+                        <select name="departure_reason" class="form-control" id="departure_reason">
+                            <option value=""><%= t('forms.select') %></option>
+                            <option value="Resigned" <%= employee.departure_reason === 'Resigned' ? 'selected' : '' %>><%= t('hr.employees.resigned') %></option>
+                            <option value="Terminated" <%= employee.departure_reason === 'Terminated' ? 'selected' : '' %>><%= t('hr.employees.terminated') %></option>
+                            <option value="Contract Completed" <%= employee.departure_reason === 'Contract Completed' ? 'selected' : '' %>><%= t('hr.employees.contract_completed') %></option>
+                            <option value="Retirement" <%= employee.departure_reason === 'Retirement' ? 'selected' : '' %>><%= t('hr.employees.retirement') %></option>
+                            <option value="Other" <%= employee.departure_reason === 'Other' ? 'selected' : '' %>><%= t('hr.employees.other') %></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- =============================================
+                 ACTION BAR
+                 ============================================= -->
+            <div class="empedit-actions">
+                <button type="submit" class="empedit-btn empedit-btn--primary"><%= t('hr.employees.update_employee') %></button>
+                <a href="/admin/hr/employees/<%= employee.id %>" class="empedit-btn empedit-btn--secondary"><%= t('hr.employees.cancel') %></a>
+                <a href="/admin/hr/employees" class="empedit-btn empedit-btn--secondary"><%= t('hr.employees.back_to_list') %></a>
+            </div>
+
+        </form>
+
+            <!-- =============================================
+                 EMPLOYEE DOCUMENTS
+                 ============================================= -->
+            <div class="empedit-section">
+                <div class="empedit-section-header">
+                    <div class="empedit-section-icon empedit-section-icon--documents">&#128196;</div>
+                    <h3 class="empedit-section-title"><%= t('hr.employees.documents') %></h3>
+                </div>
+                <p class="empedit-field-help" style="margin-bottom: var(--empedit-space-md);"><%= t('hr.employees.doc_hint') %></p>
+
+                <div class="empedit-doc-grid">
+                    <% var catKeys = ['tazkira_passport','cv','degrees_certificates','other']; %>
+                    <% var catLabels = [t('hr.employees.doc_tazkira_passport'), t('hr.employees.doc_cv'), t('hr.employees.doc_degrees_certificates'), t('hr.employees.doc_other')]; %>
+                    <% var catIds = ['tazkira','cv','degrees','other']; %>
+                    <% var catTypeIds = [4, 7, 2, 3]; %>
+                    <% for (var ci = 0; ci < catKeys.length; ci++) { %>
+                    <% var cat = docCategories[catKeys[ci]]; %>
+                    <div class="empedit-doc-card <%= (cat && cat.file_path) ? 'empedit-doc-card--uploaded' : cat ? 'empedit-doc-card--no-file' : 'empedit-doc-card--empty' %>">
+                        <div class="empedit-doc-label">
+                            <span class="empedit-doc-status <%= (cat && cat.file_path) ? 'empedit-doc-status--ok' : cat ? 'empedit-doc-status--warn' : 'empedit-doc-status--empty' %>"></span>
+                            <%= catLabels[ci] %>
+                        </div>
+                        <% if (cat && cat.file_path) { %>
+                            <div class="empedit-doc-filename"><%= cat.original_filename || 'document.pdf' %></div>
+                            <div class="empedit-doc-actions">
+                                <a href="/admin/hr/employees/<%= employee.id %>/documents/<%= cat.id %>/view" target="_blank" class="empedit-btn empedit-btn--view empedit-btn--small"><%= t('hr.employees.doc_view') %></a>
+                                <form method="POST" action="/admin/hr/employees/<%= employee.id %>/documents/<%= cat.id %>/replace" enctype="multipart/form-data" style="display:inline;">
+                                    <input type="file" name="file" accept=".pdf" style="display:none;" id="replace_<%= catIds[ci] %>" onchange="if(this.files[0]&&this.files[0].size>10*1024*1024){alert('<%= t("hr.employees.doc_too_large") %>');this.value='';}else if(this.files[0]&&!this.files[0].name.toLowerCase().endsWith('.pdf')){alert('<%= t("hr.employees.doc_invalid_type") %>');this.value='';}else{this.form.submit();}">
+                                    <button type="button" onclick="document.getElementById('replace_<%= catIds[ci] %>').click();" class="empedit-btn empedit-btn--secondary empedit-btn--small"><%= t('hr.employees.doc_replace') %></button>
+                                </form>
+                                <form method="POST" action="/admin/hr/employees/<%= employee.id %>/documents/<%= cat.id %>/remove" style="display:inline;" onsubmit="return confirm('<%= t('hr.employees.doc_remove_confirm') %>');">
+                                    <button type="submit" class="empedit-btn empedit-btn--danger empedit-btn--small"><%= t('hr.employees.doc_remove') %></button>
+                                </form>
+                            </div>
+                        <% } else if (cat) { %>
+                            <div class="empedit-doc-filename"><%= t('hr.employees.doc_no_file') %></div>
+                            <div class="empedit-field-help"><%= t('hr.employees.document_number') %>: <%= cat.document_number || '-' %></div>
+                            <div class="empedit-doc-actions">
+                                <form method="POST" action="/admin/hr/employees/<%= employee.id %>/documents/<%= cat.id %>/replace" enctype="multipart/form-data" style="display:inline;">
+                                    <input type="file" name="file" accept=".pdf,application/pdf" style="display:none;" id="attach_<%= catIds[ci] %>_<%= employee.id %>" onchange="if(this.files[0]&&this.files[0].size>10*1024*1024){alert('<%= t("hr.employees.doc_too_large") %>');this.value='';}else if(this.files[0]&&!this.files[0].name.toLowerCase().endsWith('.pdf')){alert('<%= t("hr.employees.doc_invalid_type") %>');this.value='';}else{this.form.submit();}">
+                                    <button type="button" onclick="document.getElementById('attach_<%= catIds[ci] %>_<%= employee.id %>').click();" class="empedit-btn empedit-btn--accent empedit-btn--small"><%= t('hr.employees.doc_add') %></button>
+                                </form>
+                            </div>
+                        <% } else { %>
+                            <div class="empedit-doc-filename"><%= t('hr.employees.doc_none') %></div>
+                            <div class="empedit-doc-actions">
+                                <form method="POST" action="/admin/hr/employees/<%= employee.id %>/documents" enctype="multipart/form-data" style="display:inline;">
+                                    <input type="hidden" name="employee_id" value="<%= employee.id %>">
+                                    <input type="hidden" name="document_type_id" value="<%= catTypeIds[ci] %>">
+                                    <input type="file" name="file" accept=".pdf,application/pdf" style="display:none;" id="add_<%= catIds[ci] %>_<%= employee.id %>" onchange="if(this.files[0]&&this.files[0].size>10*1024*1024){alert('<%= t('hr.employees.doc_too_large') %>');this.value='';}else if(this.files[0]&&!this.files[0].name.toLowerCase().endsWith('.pdf')){alert('<%= t('hr.employees.doc_invalid_type') %>');this.value='';}else{this.form.submit();}">
+                                    <button type="button" onclick="document.getElementById('add_<%= catIds[ci] %>_<%= employee.id %>').click();" class="empedit-btn empedit-btn--accent empedit-btn--small"><%= t('hr.employees.doc_add') %></button>
+                                </form>
+                            </div>
+                        <% } %>
+                    </div>
+                    <% } %>
+                </div>
+            </div>
+
+    </div>
+</div>
+
+<%- include('../partials/footer') %>
+
+<script>
+function previewEmployeePhoto(input) {
+    if (input.files && input.files[0]) {
+        var file = input.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File too large. Maximum size is 5MB.');
+            input.value = '';
+            return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var heroImg = document.getElementById('heroPhotoImg');
+            var heroIcon = document.getElementById('heroPhotoIcon');
+            if (heroImg) { heroImg.src = e.target.result; heroImg.style.display = 'block'; }
+            if (heroIcon) { heroIcon.style.display = 'none'; }
+            var previewImg = document.getElementById('photoPreviewImg');
+            var previewIcon = document.getElementById('photoPreviewIcon');
+            if (previewImg) { previewImg.src = e.target.result; previewImg.style.display = 'block'; }
+            if (previewIcon) { previewIcon.style.display = 'none'; }
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function validateJalaliDate(dateStr) {
+    if (!dateStr) return { valid: true };
+    const regex = /^\d{4}\/\d{2}\/\d{2}$/;
+    if (!regex.test(dateStr)) {
+        return { valid: false, error: 'فرمت نامعتبر. استفاده از فرمت سال/ماه/روز (مثلاً ۱۳۸۵/۰۳/۲۵)' };
+    }
+    const parts = dateStr.split('/');
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    const day = parseInt(parts[2], 10);
+    if (month < 1 || month > 12) {
+        return { valid: false, error: 'ماه باید بین ۰۱ تا ۱۲ باشد' };
+    }
+    const daysInMonth = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 30];
+    const isLeapYear = (year * 31) % 128 < 31;
+    const maxDays = (month === 12) ? (isLeapYear ? 30 : 29) : daysInMonth[month - 1];
+    if (day < 1 || day > maxDays) {
+        return { valid: false, error: 'روز نامعتبر برای این ماه. حداکثر ' + maxDays + ' روز' };
+    }
+    return { valid: true };
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[action="/admin/hr/employees/<%= employee.id %>/edit"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const dateOfBirth = document.getElementById('date_of_birth').value;
+            const hireDate = document.getElementById('hire_date').value;
+            const employmentEndDate = document.getElementById('employment_end_date').value;
+
+            if (hireDate) {
+                const validation = validateJalaliDate(hireDate);
+                if (!validation.valid) {
+                    e.preventDefault();
+                    alert('خطا در تاریخ استخدام: ' + validation.error);
+                    document.getElementById('hire_date').focus();
+                    return;
+                }
+            }
+
+            if (dateOfBirth) {
+                const validation = validateJalaliDate(dateOfBirth);
+                if (!validation.valid) {
+                    e.preventDefault();
+                    alert('خطا در تاریخ تولد: ' + validation.error);
+                    document.getElementById('date_of_birth').focus();
+                    return;
+                }
+            }
+
+            if (employmentEndDate) {
+                const validation = validateJalaliDate(employmentEndDate);
+                if (!validation.valid) {
+                    e.preventDefault();
+                    alert('خطا در تاریخ پایان استخدام: ' + validation.error);
+                    document.getElementById('employment_end_date').focus();
+                    return;
+                }
+            }
+        });
+    }
+});
+</script>

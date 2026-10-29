@@ -1,0 +1,1379 @@
+<%- include('../partials/header') %>
+
+<style>
+.pay-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px}
+.pay-head-actions{display:flex;gap:10px;flex-wrap:wrap}
+.pay-page-title{font-size:21px;font-weight:700;margin:0;letter-spacing:-.2px}
+.pay-page-sub{font-size:13px;color:var(--text-muted,#6b7280);margin:6px 0 0 0}
+.pay-panel{border:1px solid var(--border-color,#d1d5db);border-radius:12px;padding:16px 18px;background:var(--bg-color,#fafafa);margin-top:16px}
+.pay-panel-head{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:700;margin-bottom:14px}
+.pay-panel-head::after{content:"";flex:1;height:1px;background:var(--border-color,#d1d5db)}
+.pay-form-footer{justify-content:space-between;border-top:1px solid var(--border-color,#d1d5db);margin-top:18px;padding-top:16px}
+.pay-req{color:var(--status-error,#cf222e);font-weight:700}
+.pay-stat{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0 18px 0}
+.pay-stat-item{flex:1;min-width:132px;border:1px solid var(--border-color,#d1d5db);border-radius:10px;padding:12px 14px;background:var(--bg-color,#fafafa);text-align:start}
+.pay-stat-value{font-size:17px;font-weight:800}
+.pay-stat-label{font-size:11.5px;color:var(--text-muted,#6b7280);margin-top:4px}
+.pay-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;letter-spacing:.2px}
+.pay-badge-green{background:rgba(16,185,129,.15);color:#047857}
+.pay-badge-amber{background:rgba(245,158,11,.15);color:#b45309}
+.pay-badge-blue{background:rgba(59,130,246,.15);color:#1d4ed8}
+[data-theme="dark"] .pay-badge-green{background:rgba(16,185,129,.2);color:#3fb950}
+[data-theme="dark"] .pay-badge-amber{background:rgba(245,158,11,.2);color:#fbbf24}
+[data-theme="dark"] .pay-badge-blue{background:rgba(59,130,246,.2);color:#60a5fa}
+.pay-chip{display:inline-block;font-family:monospace;font-size:11px;padding:2px 7px;border-radius:6px;background:rgba(239,68,68,.12);color:#b91c1c;margin:2px}
+.pay-chip-warn{background:rgba(245,158,11,.14);color:#b45309}
+.pay-error-box{border-inline-start:4px solid #ef4444;background:rgba(239,68,68,.08);padding:11px 14px;border-radius:10px;font-size:12.5px;margin-bottom:16px;font-weight:600}
+.pay-warning{border-inline-start:4px solid #f59e0b;background:rgba(245,158,11,.08);padding:11px 14px;border-radius:10px;font-size:12.5px;margin-bottom:16px}
+.pay-note{font-size:12px;color:var(--text-muted,#6b7280);margin-top:6px}
+.pay-label{display:block;margin-bottom:5px;font-size:13px;font-weight:600}
+.pay-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+.pay-emp{font-weight:700;font-size:13.5px}
+.pay-sub{font-size:11.5px;color:var(--text-muted,#6b7280)}
+.pay-key{display:inline-block;font-family:monospace;font-size:10.5px;padding:2px 6px;border-radius:6px;background:rgba(107,114,128,.12);color:inherit}
+.pay-empty{padding:22px 18px;border:1px dashed var(--border-color,#d1d5db);border-radius:12px;font-size:13px;color:var(--text-muted,#6b7280);background:var(--bg-color,#fafafa);text-align:center}
+.pay-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.pay-inline{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.pay-readonly{font-weight:700;font-size:13.5px;padding:8px 10px;border:1px solid var(--border-color,#d1d5db);border-radius:8px;background:rgba(107,114,128,.08)}
+.pay-sec{margin-top:20px;padding-top:14px;border-top:1px solid var(--border-color,#d1d5db)}
+.pay-filters{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;padding:14px 16px;border:1px solid var(--border-color,#d1d5db);border-radius:12px;background:var(--bg-color,#fafafa)}
+.pay-filters>div{min-width:160px;flex:1}
+.pay-filters .pay-actions{margin-top:0;gap:8px}
+.pay-list-table th{font-size:12px;white-space:nowrap}
+.pay-list-table td{vertical-align:middle}
+.pay-num{text-align:end;white-space:nowrap}
+.pay-create-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:20px;align-items:start;margin-top:16px}
+.pay-create-main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.pay-create-rail{min-width:0;display:flex;flex-direction:column;gap:16px;position:sticky;top:14px}
+.pay-create-sec{border:1px solid var(--border-color,#d1d5db);border-radius:14px;padding:16px 18px 18px;background:var(--bg-color,#fafafa);box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.pay-create-sec-head{display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.pay-create-sec-no{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;flex:none;border-radius:7px;background:rgba(59,130,246,.14);color:#1d4ed8;font-size:11.5px;font-weight:800}
+.pay-create-sec-title{font-size:13.5px;font-weight:700}
+.pay-sum-card{border:1px solid var(--border-color,#d1d5db);border-radius:14px;padding:16px 18px;background:var(--bg-color,#fafafa);box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.pay-sum-head{font-size:11.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted,#6b7280);margin-bottom:12px}
+.pay-sum-hero{padding:14px 16px;border-radius:12px;border:1px solid rgba(16,185,129,.35);background:rgba(16,185,129,.09)}
+.pay-sum-hero-label{font-size:12px;font-weight:700;color:var(--text-muted,#6b7280)}
+.pay-sum-hero-value{font-size:30px;font-weight:800;letter-spacing:-.5px;margin-top:3px;font-variant-numeric:tabular-nums}
+.pay-sum-rows{margin-top:12px;padding-top:10px;border-top:1px dashed var(--border-color,#d1d5db);display:flex;flex-direction:column;gap:8px}
+.pay-sum-list{display:flex;flex-direction:column;gap:8px}
+.pay-sum-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:13px}
+.pay-sum-row-label{color:var(--text-muted,#6b7280);font-weight:600}
+.pay-sum-row-value{font-weight:700;font-variant-numeric:tabular-nums}
+.pay-sum-warn{margin:12px 0 0 0}
+.pay-create-dup{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:11px 14px;border:1px dashed var(--border-color,#d1d5db);border-radius:10px;background:rgba(245,158,11,.07)}
+.pay-create-dup-label{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;margin:0}
+.pay-create-submit{padding:10px 24px;font-weight:700}
+.pay-create-rail .pay-empty{padding:14px 12px;text-align:start}
+[data-theme="dark"] .pay-create-sec-no{background:rgba(96,165,250,.18);color:#60a5fa}
+[data-theme="dark"] .pay-sum-hero{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.13)}
+[data-theme="dark"] .pay-create-sec,[data-theme="dark"] .pay-sum-card{box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.pay-tech{margin-top:6px}
+.pay-tech summary{cursor:pointer;font-size:11.5px;font-weight:700;color:var(--text-muted,#6b7280);letter-spacing:.2px}
+.pay-tech[open] summary{margin-bottom:4px}
+.pay-tech .pay-key{margin:2px 4px 2px 0}
+.pay-chip-row{margin-top:6px}
+.pay-chip-float{float:inline-end}
+@media (max-width:960px){
+.pay-create-grid{grid-template-columns:1fr}
+.pay-create-rail{position:static}
+}
+@media screen{
+.pay-list-table tbody tr:nth-child(even) td{background:rgba(107,114,128,.045)}
+[data-theme="dark"] .pay-list-table tbody tr:nth-child(even) td{background:rgba(163,173,188,.05)}
+.pay-form-grid .form-control:user-invalid{border-color:var(--status-error,#cf222e)}
+}
+@media (max-width:600px){
+.pay-head{flex-direction:column;align-items:flex-start}
+.pay-head-actions{width:100%}
+.pay-page-title{font-size:19px}
+.pay-form-footer{flex-direction:column;align-items:flex-start}
+.pay-stat-item{min-width:110px}
+}
+.pc-tabbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.pc-tab{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:9px;font-size:13px;font-weight:700;color:var(--text-muted,#6b7280);border:1px solid var(--border-color,#e5e7eb);background:transparent;text-decoration:none;cursor:pointer}
+.pc-tab:hover{background:rgba(107,114,128,.08);color:inherit}
+.pc-tab-active{background:var(--primary,#FF6F00);color:#fff;border-color:var(--primary,#FF6F00)}
+.pc-tab-active:hover{background:var(--primary,#FF6F00);color:#fff}
+.wiz-prog{border:1px solid var(--border-color,#d1d5db);border-radius:12px;padding:14px 16px;background:var(--bg-color,#fafafa);margin-bottom:16px}
+.wiz-prog-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.wiz-prog-title{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.wiz-prog-pct{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}
+.wiz-track{height:8px;border-radius:999px;background:rgba(107,114,128,.14);overflow:hidden;margin-bottom:12px}
+.wiz-fill{height:100%;border-radius:999px;background:var(--primary,#FF6F00);transition:width .25s ease}
+.wiz-steps{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.wiz-step{flex:1;min-width:96px;display:flex;flex-direction:column;gap:4px;padding:8px 10px;border-radius:9px;border:1px solid var(--border-color,#e5e7eb);font-size:11.5px;color:var(--text-muted,#6b7280)}
+.wiz-step-no{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:999px;background:rgba(107,114,128,.14);font-size:10.5px;font-weight:800}
+.wiz-step-label{font-weight:700}
+.wiz-step-pct{font-size:10.5px;font-weight:700;opacity:.85}
+.wiz-step-done{border-color:rgba(16,185,129,.4)}
+.wiz-step-done .wiz-step-no{background:rgba(16,185,129,.18);color:#047857}
+.wiz-step-current{border-color:var(--primary,#FF6F00);background:rgba(255,111,0,.06)}
+.wiz-step-current .wiz-step-no{background:var(--primary,#FF6F00);color:#fff}
+.wiz-step-blocked{border-color:rgba(239,68,68,.55);background:rgba(239,68,68,.06)}
+.wiz-step-blocked .wiz-step-no{background:rgba(239,68,68,.18);color:#b91c1c}
+.wiz-step-blocked-tag{display:inline-flex;align-items:center;align-self:flex-start;font-size:10px;font-weight:800;letter-spacing:.3px;padding:1px 7px;border-radius:999px;background:rgba(239,68,68,.16);color:#b91c1c}
+.wiz-stage{display:none}
+.wiz-stage-active{display:block}
+.wiz-nav{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.wiz-obl-remedy{border-inline-start:4px solid #ef4444;background:rgba(239,68,68,.08);padding:12px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-top:10px}
+.wiz-done{border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.08);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.wiz-done-head{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:800;margin-bottom:6px}
+[data-theme="dark"] .wiz-step-done{border-color:rgba(63,185,80,.4)}
+[data-theme="dark"] .wiz-step-done .wiz-step-no{background:rgba(63,185,80,.2);color:#3fb950}
+[data-theme="dark"] .wiz-obl-remedy{background:rgba(239,68,68,.14)}
+[data-theme="dark"] .wiz-done{background:rgba(63,185,80,.14);border-color:rgba(63,185,80,.4)}
+</style>
+<%
+var CODE_T = {
+    BLOCKED: 'hr.payments.err_blocked', DUPLICATE_SUBMIT: 'hr.payments.err_duplicate_submit',
+    DUPLICATE_PAYMENT_NOT_CONFIRMED: 'hr.payments.err_dup_not_confirmed', IDEMPOTENCY_KEY_REQUIRED: 'hr.payments.err_idem_required',
+    INVALID_IDEMPOTENCY_KEY: 'hr.payments.err_idem_invalid', EMPLOYEE_NOT_FOUND: 'hr.payments.err_employee',
+    INVALID_PERIOD: 'hr.payments.err_period', INVALID_PAYMENT_DATE: 'hr.payments.err_date', INVALID_INPUT: 'hr.payments.err_input',
+    INVALID_ADDITIONAL_AMOUNT: 'hr.payments.err_input', INVALID_ADDITIONAL_REASON: 'hr.payments.err_input',
+    INVALID_ZERO_REASON: 'hr.payments.err_zero_reason_invalid', PAYMENT_NOT_FOUND: 'hr.payments.err_not_found',
+    NOT_DRAFT: 'hr.payments.err_not_draft', BLOCKERS: 'hr.payments.err_blocked', OVER_ALLOCATION: 'hr.payments.err_over_allocation',
+    OBLIGATION_NOT_FOUND: 'hr.payments.err_obligation', OBLIGATION_FULLY_PAID: 'hr.payments.err_obligation_paid',
+    ZERO_PAYMENT_REASON_REQUIRED: 'hr.payments.err_zero_reason', INVALID_OVERPAYMENT_CENTS: 'hr.payments.err_overpayment',
+    SALARY_OVER_OBLIGATION: 'hr.payments.err_salary_over', OVERTIME_ALLOCATION_INVALID: 'hr.payments.err_ot_invalid',
+    ADVANCE_ALLOCATION_INVALID: 'hr.payments.err_adv_invalid', ADVANCE_DISPUTED: 'hr.payments.err_adv_invalid',
+    ADVANCE_SETTLEMENT_EXCEEDS_BALANCE: 'hr.payments.err_adv_balance', RECOVERY_ALREADY_EXISTS: 'hr.payments.err_recovery_exists',
+    FINANCIAL_RECORD_IMMUTABLE: 'hr.payments.err_immutable', PAYMENT_NOT_DRAFT: 'hr.payments.err_not_draft',
+    INITIAL_STATUS_MUST_BE_DRAFT: 'hr.payments.err_not_draft', INVALID_STATUS_TRANSITION: 'hr.payments.err_not_draft',
+    SERIAL_ALLOCATION_FAILED: 'hr.payments.err_internal'
+};
+var BL_T = {
+    OBLIGATION_NOT_FOUND: 'hr.payws.bl_OBLIGATION_NOT_FOUND', OBLIGATION_FULLY_PAID: 'hr.payws.bl_OBLIGATION_FULLY_PAID',
+    SOURCE_UNAVAILABLE: 'hr.payws.bl_SOURCE_UNAVAILABLE', OT_NOT_ELIGIBLE: 'hr.payws.bl_OT_NOT_ELIGIBLE',
+    ADVANCE_NOT_ELIGIBLE: 'hr.payws.bl_ADVANCE_NOT_ELIGIBLE', OVER_ALLOCATION: 'hr.payws.bl_OVER_ALLOCATION',
+    INVALID_MANUAL_SELECTION: 'hr.payws.bl_INVALID_MANUAL_SELECTION', RESERVATION_CONFLICT: 'hr.payws.bl_RESERVATION_CONFLICT',
+    INCONSISTENT_BALANCE: 'hr.payws.bl_INCONSISTENT_BALANCE', INVALID_REQUESTED_AMOUNT: 'hr.payws.bl_INVALID_REQUESTED_AMOUNT',
+    INVALID_EARNING_MONTH: 'hr.payws.bl_INVALID_EARNING_MONTH', EMPLOYEE_NOT_FOUND: 'hr.payws.bl_EMPLOYEE_NOT_FOUND',
+    NO_SCHEDULE: 'hr.payws.bl_NO_SCHEDULE', SCHEDULE_INVALID: 'hr.payws.bl_SCHEDULE_INVALID',
+    EMPLOYMENT_DATA_INVALID: 'hr.payws.bl_EMPLOYMENT_DATA_INVALID', SALARY_HISTORY_MISSING: 'hr.payws.bl_SALARY_HISTORY_MISSING',
+    SALARY_HISTORY_INVALID: 'hr.payws.bl_SALARY_HISTORY_INVALID', SALARY_HISTORY_GAP: 'hr.payws.bl_SALARY_HISTORY_GAP',
+    SALARY_HISTORY_OVERLAP: 'hr.payws.bl_SALARY_HISTORY_OVERLAP', MISSING_CHECK_IN: 'hr.payws.bl_MISSING_CHECK_IN',
+    MISSING_ATTENDANCE: 'hr.payws.bl_MISSING_ATTENDANCE', PENDING_EXCEPTION: 'hr.payws.bl_PENDING_EXCEPTION',
+    EXCEPTION_INVALID: 'hr.payws.bl_EXCEPTION_INVALID', CORRECTED_ATTENDANCE_MISSING: 'hr.payws.bl_CORRECTED_ATTENDANCE_MISSING',
+    NO_SOURCE_ROWS: 'hr.payws.bl_NO_SOURCE_ROWS', NO_ELIGIBLE_ROWS: 'hr.payws.bl_NO_ELIGIBLE_ROWS',
+    NOT_APPROVED: 'hr.payws.bl_NOT_APPROVED', LINKED_TO_PAYROLL: 'hr.payws.bl_LINKED_TO_PAYROLL',
+    PRE_CUTOVER: 'hr.payws.bl_PRE_CUTOVER', STORED_REMAINDER_DIVERGENT: 'hr.payws.bl_STORED_REMAINDER_DIVERGENT',
+    NEGATIVE_SALARY_REMAINING: 'hr.payws.bl_NEGATIVE_SALARY_REMAINING', NEGATIVE_OT_REMAINING: 'hr.payws.bl_NEGATIVE_OT_REMAINING',
+    NEGATIVE_ADVANCE_AVAILABLE: 'hr.payws.bl_NEGATIVE_ADVANCE_AVAILABLE', NEGATIVE_ADVANCE_BALANCE: 'hr.payws.bl_NEGATIVE_ADVANCE_BALANCE',
+    ROWS_SUM_ZERO: 'hr.payws.bl_ROWS_SUM_ZERO', SUM_COUNT_MISMATCH: 'hr.payws.bl_SUM_COUNT_MISMATCH',
+    NON_INTEGER_ARITHMETIC: 'hr.payws.bl_NON_INTEGER_ARITHMETIC', NON_SELECT_STATEMENT_BLOCKED: 'hr.payws.bl_NON_SELECT_STATEMENT_BLOCKED',
+    SOURCE_QUERY_FAILED: 'hr.payws.bl_SOURCE_QUERY_FAILED', SOURCE_TABLE_MISSING: 'hr.payws.bl_SOURCE_TABLE_MISSING',
+    UNKNOWN_FIGURE_CODE: 'hr.payws.bl_UNKNOWN_FIGURE_CODE', UNKNOWN_STATE: 'hr.payws.bl_UNKNOWN_STATE'
+};
+var WL_T = {
+    PARTIAL_SALARY: 'hr.payws.wl_PARTIAL_SALARY', PARTIAL_OT: 'hr.payws.wl_PARTIAL_OT',
+    PARTIAL_ADVANCE: 'hr.payws.wl_PARTIAL_ADVANCE', ADDITIONAL_PAYMENT: 'hr.payws.wl_ADDITIONAL_PAYMENT',
+    OVERPAYMENT_REVIEW: 'hr.payws.wl_OVERPAYMENT_REVIEW', ATTENDANCE_REVIEW_CONTEXT: 'hr.payws.wl_ATTENDANCE_REVIEW_CONTEXT',
+    DRAFT_RESERVATION_SALARY_UNGUARDED: 'hr.payws.wl_DRAFT_RESERVATION_SALARY_UNGUARDED',
+    GRACE_NOT_CONFIGURED: 'hr.payws.wl_GRACE_NOT_CONFIGURED', NO_EXPECTED_TIME: 'hr.payws.wl_NO_EXPECTED_TIME',
+    LATENESS_CLAMPED: 'hr.payws.wl_LATENESS_CLAMPED', STORED_LATE_MINUTES_IGNORED: 'hr.payws.wl_STORED_LATE_MINUTES_IGNORED'
+};
+var ACT_T = {
+    CREATE: 'hr.payws.act_CREATE', DRAFT_EDIT: 'hr.payws.act_DRAFT_EDIT', FINALIZE: 'hr.payws.act_FINALIZE',
+    CORRECT: 'hr.payws.act_CORRECT', REALLOC_SALARY: 'hr.payws.act_REALLOC_SALARY', REALLOC_OT: 'hr.payws.act_REALLOC_OT',
+    REALLOC_ADV: 'hr.payws.act_REALLOC_ADV', OBLIGATION_CREATED: 'hr.payws.act_OBLIGATION_CREATED',
+    OBLIGATION_CORRECTED: 'hr.payws.act_OBLIGATION_CORRECTED', BLOCKED: 'hr.payws.act_BLOCKED',
+    DUPLICATE_SUBMIT: 'hr.payws.act_DUPLICATE_SUBMIT', ZERO_PAID: 'hr.payws.act_ZERO_PAID',
+    DRAFT_DELETE: 'hr.payws.act_DRAFT_DELETE', DATA_WARNING: 'hr.payws.act_DATA_WARNING',
+    LEGACY_FENCE: 'hr.payws.act_LEGACY_FENCE', OVERPAYMENT_CREATED: 'hr.payws.act_OVERPAYMENT_CREATED',
+    ADV_REPAY_MANUAL: 'hr.payws.act_ADV_REPAY_MANUAL', DISPUTE_OPENED: 'hr.payws.act_DISPUTE_OPENED',
+    DISPUTE_RESOLVED: 'hr.payws.act_DISPUTE_RESOLVED'
+};
+var STATE_T = {
+    VERIFIED_AMOUNT: 'hr.addSalary.state_verified_amount', VALID_ZERO: 'hr.addSalary.state_valid_zero',
+    UNAVAILABLE: 'hr.addSalary.state_unavailable', BLOCKED: 'hr.addSalary.state_blocked',
+    DIVERGENT: 'hr.addSalary.state_divergent'
+};
+function codeLabel(map, c) { return (c && map[c]) ? t(map[c]) : t('hr.payws.code_generic'); }
+function balStateLabel(s) {
+    if (s === 'UNAVAILABLE' || !s) { return t('hr.payws.bal_state_na'); }
+    return (s && STATE_T[s]) ? t(STATE_T[s]) : t('hr.payws.bal_state_na');
+}
+var STATUS_T = { "OPEN": 'hr.payments.st_open', "PARTIAL": 'hr.payments.st_partial', "PAID": 'hr.payments.st_paid' };
+function statusLabel(s) { return (s && STATUS_T[s]) ? t(STATUS_T[s]) : s; }
+%>
+
+<div class="card">
+<%
+var _payTab = (mode === 'create' || mode === 'edit' || mode === 'detail') ? 'pay' : (mode === 'list' ? 'list' : '');
+%>
+<nav class="pc-tabbar" aria-label="Payroll">
+  <a href="/admin/hr/payroll" class="pc-tab<%= _payTab === '' ? ' pc-tab-active' : '' %>"><%= t('hr.payroll.title') %></a>
+  <a href="/admin/hr/payments/create" class="pc-tab<%= _payTab === 'pay' ? ' pc-tab-active' : '' %>"><%= t('hr.payments.page_title_pay') %></a>
+  <a href="/admin/hr/payments/history-report" class="pc-tab<%= _payTab === 'history' ? ' pc-tab-active' : '' %>"><%= t('hr.payments.page_title_history') %></a>
+</nav>
+<% if (mode === 'list') { %>
+<style>
+.pl-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-color,#d1d5db)}
+.pl-head-main{min-width:0}
+.pl-title{font-size:22px;font-weight:800;margin:0;letter-spacing:-.3px}
+.pl-sub{font-size:13px;color:var(--text-muted,#6b7280);margin:5px 0 0}
+.pl-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pl-create{padding:9px 18px;font-weight:700;box-shadow:0 1px 2px rgba(15,23,42,.08)}
+.pl-quiet{color:var(--text-muted,#6b7280)}
+.pl-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:12px;padding:14px 16px;border:1px solid var(--border-color,#d1d5db);border-radius:14px;background:var(--bg-color,#fafafa);box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.pl-field{flex:1;min-width:170px}
+.pl-label{display:block;margin-bottom:5px;font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.pl-toolbar-actions{display:flex;gap:8px;align-items:center;padding-bottom:1px}
+.pl-chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px;padding:10px 14px;border:1px dashed rgba(59,130,246,.45);border-radius:10px;background:rgba(59,130,246,.06);font-size:12px}
+.pl-chips-label{font-weight:800}
+.pl-chip{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;padding:3px 8px;border-radius:7px;background:rgba(107,114,128,.12);color:inherit}
+.pl-empty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:40px 20px;border:1px dashed var(--border-color,#d1d5db);border-radius:14px;background:var(--bg-color,#fafafa);text-align:center}
+.pl-empty-text{margin:0;font-size:14px;font-weight:600;color:var(--text-muted,#6b7280)}
+.pl-table-wrap{border:1px solid var(--border-color,#d1d5db);border-radius:14px;background:var(--bg-color,#fafafa);overflow:hidden}
+.pl-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.pl-table thead th{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280);background:rgba(107,114,128,.07);padding:11px 10px;border-bottom:1px solid var(--border-color,#d1d5db);text-align:start;white-space:nowrap}
+.pl-table tbody td{padding:12px 10px;border-bottom:1px solid rgba(107,114,128,.14);vertical-align:middle}
+.pl-table tbody tr:last-child td{border-bottom:none}
+.pl-table tbody tr:hover td{background:rgba(59,130,246,.05)}
+.pl-num{font-variant-numeric:tabular-nums;font-weight:700}
+.pl-net{font-weight:800}
+.pl-serial{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;font-weight:700;padding:3px 8px;border-radius:7px;background:rgba(107,114,128,.1)}
+.pl-serial-fallback{background:rgba(107,114,128,.06);color:var(--text-muted,#6b7280)}
+.pl-dup{display:block;width:max-content;margin-top:5px;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:6px;background:rgba(245,158,11,.15);color:#b45309}
+.pl-emp{display:block;font-weight:700;font-size:13.5px}
+.pl-dept{display:block;font-size:11.5px;color:var(--text-muted,#6b7280);margin-top:2px}
+.pl-date{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+.pl-status{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:800;letter-spacing:.4px;white-space:nowrap}
+.pl-status::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.85}
+.pl-status-draft{background:rgba(59,130,246,.13);color:#1d4ed8}
+.pl-status-finalized{background:rgba(16,185,129,.15);color:#047857}
+.pl-status-corrected{background:rgba(245,158,11,.16);color:#b45309}
+.pl-view{display:inline-flex;align-items:center;gap:5px;padding:6px 10px;border:1px solid var(--border-color,#d1d5db);border-radius:9px;background:var(--bg-color,#fafafa);font-size:12.5px;font-weight:700;color:inherit;text-decoration:none}
+.pl-view::after{content:"\2192";font-size:12px;opacity:.7}
+.pl-view:hover{border-color:rgba(59,130,246,.5);background:rgba(59,130,246,.06)}
+.pl-create:focus-visible,.pl-view:focus-visible,.pl-quiet:focus-visible{outline:2px solid rgba(59,130,246,.65);outline-offset:2px}
+[data-theme="dark"] .pl-head{border-bottom-color:rgba(163,173,188,.2)}
+[data-theme="dark"] .pl-title{color:#e6edf3}
+[data-theme="dark"] .pl-toolbar,[data-theme="dark"] .pl-table-wrap,[data-theme="dark"] .pl-empty,[data-theme="dark"] .pl-view{box-shadow:0 1px 2px rgba(0,0,0,.35)}
+[data-theme="dark"] .pl-create{box-shadow:0 1px 2px rgba(0,0,0,.4)}
+[data-theme="dark"] .pl-chips{border-color:rgba(96,165,250,.45);background:rgba(96,165,250,.08)}
+[data-theme="dark"] .pl-table thead th{background:rgba(163,173,188,.08);color:#9fb0c3}
+[data-theme="dark"] .pl-table tbody td{border-bottom-color:rgba(163,173,188,.14)}
+[data-theme="dark"] .pl-table tbody tr:hover td{background:rgba(96,165,250,.08)}
+[data-theme="dark"] .pl-status-draft{background:rgba(96,165,250,.16);color:#60a5fa}
+[data-theme="dark"] .pl-status-finalized{background:rgba(63,185,80,.16);color:#3fb950}
+[data-theme="dark"] .pl-status-corrected{background:rgba(251,191,36,.16);color:#fbbf24}
+[data-theme="dark"] .pl-dup{background:rgba(251,191,36,.16);color:#fbbf24}
+[dir="rtl"] .pl-view::after{content:"\2190"}
+@media (max-width:600px){
+.pl-head{flex-direction:column;align-items:stretch}
+.pl-actions{width:100%}
+.pl-actions .pl-create{flex:1;text-align:center}
+.pl-title{font-size:18px}
+.pl-field{min-width:140px}
+.pl-toolbar-actions{width:100%}
+.pl-table thead th,.pl-table tbody td{padding:9px 10px}
+}
+</style>
+    <div class="pl-head">
+        <div class="pl-head-main">
+            <h2 class="pl-title"><%= t('hr.payments.title') %></h2>
+            <p class="pl-sub"><%= t('hr.payments.subtitle') %></p>
+        </div>
+        <div class="pl-actions">
+            <a href="/admin/hr/payments/create" class="btn btn-primary pl-create"><%= t('hr.payments.new_payment') %></a>
+            <a href="/admin/hr/payments/history-report" class="btn pl-quiet"><%= t('hr.payment_report.btn_history') %></a>
+            <a href="/admin/hr/payroll" class="btn pl-quiet"><%= t('hr.payroll_period.back_to_payroll') %></a>
+        </div>
+    </div>
+    <form method="GET" action="/admin/hr/payments" class="pl-toolbar">
+        <div class="pl-field">
+            <label class="pl-label"><%= t('hr.correction.filter_employee') %></label>
+            <select name="employee_id" class="form-control">
+                <option value="">—</option>
+                <% (employees || []).forEach(function(e) { %>
+                    <option value="<%= e.id %>" <%= filters && String(filters.employee_id) === String(e.id) ? 'selected' : '' %>><%= e.full_name %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="pl-field">
+            <label class="pl-label"><%= t('hr.correction.filter_period') %></label>
+            <input type="text" name="period_month" class="form-control" dir="ltr" pattern="\d{4}/\d{2}/01" value="<%= filters && filters.period_month ? filters.period_month : '' %>">
+        </div>
+        <div class="pl-field">
+            <label class="pl-label"><%= t('hr.correction.filter_status') %></label>
+            <select name="status" class="form-control">
+                <option value="">—</option>
+                <option value="DRAFT" <%= filters && filters.status === 'DRAFT' ? 'selected' : '' %>><%= t('hr.payments.status_draft') %></option>
+                <option value="FINALIZED" <%= filters && filters.status === 'FINALIZED' ? 'selected' : '' %>><%= t('hr.payments.status_finalized') %></option>
+                <option value="CORRECTED" <%= filters && filters.status === 'CORRECTED' ? 'selected' : '' %>><%= t('hr.payments.status_corrected') %></option>
+            </select>
+        </div>
+        <div class="pl-toolbar-actions">
+            <button type="submit" class="btn btn-secondary"><%= t('hr.correction.filter_apply') %></button>
+            <a href="/admin/hr/payments" class="btn btn-secondary"><%= t('hr.correction.filter_clear') %></a>
+        </div>
+    </form>
+    <% if (filters && (filters.employee_id !== undefined || filters.period_month !== undefined || filters.status !== undefined)) { %>
+        <div class="pl-chips">
+            <span class="pl-chips-label"><%= t('hr.correction.filter_active') %>:</span>
+            <% if (filters.employee_id !== undefined) { %>
+                <span class="pl-chip"><%= t('hr.correction.filter_employee') %>: <%= (employees || []).filter(function(e) { return String(e.id) === String(filters.employee_id); }).map(function(e) { return e.full_name; }).join('') || ('#' + filters.employee_id) %></span>
+            <% } %>
+            <% if (filters.period_month !== undefined) { %><span class="pl-chip" dir="ltr"><%= t('hr.correction.filter_period') %>: <%= filters.period_month %></span><% } %>
+            <% if (filters.status !== undefined) { %><span class="pl-chip"><%= t('hr.correction.filter_status') %>: <%= t('hr.payments.status_' + (filters.status === 'FINALIZED' ? 'finalized' : filters.status === 'CORRECTED' ? 'corrected' : 'draft')) %></span><% } %>
+        </div>
+    <% } %>
+    <% if (!payments || payments.length === 0) { %>
+        <div class="pl-empty">
+            <p class="pl-empty-text"><%= t('hr.payments.list_empty') %></p>
+            <a href="/admin/hr/payments/create" class="btn btn-primary pl-create"><%= t('hr.payments.new_payment') %></a>
+        </div>
+    <% } else { %>
+        <div class="table-responsive pl-table-wrap">
+            <table class="pl-table">
+                <thead>
+                    <tr>
+                        <th scope="col"><%= t('hr.payments.col_serial') %></th>
+                        <th scope="col"><%= t('hr.payments.col_employee') %></th>
+                        <th scope="col"><%= t('hr.payments.col_period') %></th>
+                        <th scope="col"><%= t('hr.payments.col_date') %></th>
+                        <th scope="col"><%= t('hr.payments.col_status') %></th>
+                        <th scope="col"><%= t('hr.payments.col_earnings') %></th>
+                        <th scope="col"><%= t('hr.payments.col_advance') %></th>
+                        <th scope="col"><%= t('hr.payments.col_net') %></th>
+                        <th scope="col"><%= t('hr.payments.col_actions') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% payments.forEach(function(p) { %>
+                        <tr>
+                            <td dir="ltr">
+                                <% if (p.payment_serial) { %><span class="pl-serial"><%= p.payment_serial %></span>
+                                <% } else { %><span class="pl-serial pl-serial-fallback">#<%= p.id %></span><% } %>
+                                <% if (p.duplicate_confirmed) { %><span class="pl-dup"><%= t('hr.payments.dup_flag') %></span><% } %>
+                            </td>
+                            <td>
+                                <span class="pl-emp"><%= p.employee_name || '—' %></span>
+                                <span class="pl-dept"><%= p.department_name || '' %></span>
+                            </td>
+                            <td dir="ltr" class="pl-date"><%= p.period_month %></td>
+                            <td dir="ltr" class="pl-date"><%= p.payment_date %></td>
+                            <td>
+                                <span class="pl-status <%= p.status === 'FINALIZED' ? 'pl-status-finalized' : p.status === 'CORRECTED' ? 'pl-status-corrected' : 'pl-status-draft' %>">
+                                    <%= t('hr.payments.status_' + (p.status === 'FINALIZED' ? 'finalized' : p.status === 'CORRECTED' ? 'corrected' : 'draft')) %>
+                                </span>
+                            </td>
+                            <td class="pay-num pl-num" dir="ltr"><%= (Number(p.earnings_total) / 100).toFixed(2) %></td>
+                            <td class="pay-num pl-num" dir="ltr"><%= (Number(p.advance_deduction_total) / 100).toFixed(2) %></td>
+                            <td class="pay-num pl-num pl-net" dir="ltr"><%= (Number(p.net_cash_paid) / 100).toFixed(2) %></td>
+                            <td><a href="/admin/hr/payments/<%= p.id %>" class="pl-view"><%= t('hr.payments.view') %></a></td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        </div>
+    <% } %>
+<% } %>
+<% if (mode === 'create' || mode === 'edit') { %>
+<% var inc = (typeof includes !== 'undefined' && includes && typeof includes.salary !== 'undefined')
+    ? includes : { salary: true, overtime: true, advance: true, controlled: false }; %>
+<% if (mode === 'create') { %>
+    <div class="pay-head">
+        <div>
+            <h2 class="pay-page-title"><%= t('hr.payments.page_title_pay') %></h2>
+            <p class="pay-page-sub"><%= t('hr.payments.page_desc_pay') %></p>
+        </div>
+        <div class="pay-head-actions">
+            <a href="/admin/hr/payments" class="btn btn-secondary"><%= t('hr.payments.btn_cancel') %></a>
+        </div>
+    </div>
+
+    <%
+    var wInc = (typeof includes !== 'undefined' && includes && typeof includes.salary !== 'undefined')
+        ? includes : { salary: true, overtime: true, advance: true, controlled: false };
+    var wEng = (typeof engine !== 'undefined' && engine) ? engine : ((typeof preview !== 'undefined' && preview && preview.engine) ? preview.engine : null);
+    var wS1 = !!(form.employee_id && typeof preview !== 'undefined' && preview && preview.employee);
+    var wOblMissing = (typeof refusal !== 'undefined' && refusal === 'OBLIGATION_NOT_FOUND') ||
+        (typeof blockers !== 'undefined' && blockers && blockers.length && blockers.indexOf('OBLIGATION_NOT_FOUND') !== -1) ||
+        (wEng && wEng.blockers && wEng.blockers.length && wEng.blockers.indexOf('OBLIGATION_NOT_FOUND') !== -1);
+    var wBlocked = !!(wEng && wEng.blockers && wEng.blockers.length);
+    var wS2 = !!(wS1 && wEng && !wOblMissing);
+    var wS3 = !!(wS2 && (wInc.salary || wInc.overtime || wInc.advance));
+    var wDupBlock = (typeof refusal !== 'undefined' && (refusal === 'DUPLICATE_PAYMENT_NOT_CONFIRMED' || refusal === 'DUPLICATE_SUBMIT'));
+    var wS4 = !!(wS3 && !wDupBlock);
+    var wizDone = 0;
+    if (wS1) wizDone = 1;
+    if (wS2) wizDone = 2;
+    if (wS3) wizDone = 3;
+    if (wS4) wizDone = 4;
+    var wizPct = wizDone * 20;
+    var wizStage = wizDone < 4 ? wizDone + 1 : 4;
+    var wizSteps = [
+        { n: 1, label: t('hr.payws.wiz_s1'), pct: 20 },
+        { n: 2, label: t('hr.payws.wiz_s2'), pct: 40 },
+        { n: 3, label: t('hr.payws.wiz_s3'), pct: 60 },
+        { n: 4, label: t('hr.payws.wiz_s4'), pct: 80 },
+        { n: 5, label: t('hr.payws.wiz_s5'), pct: 100 }
+    ];
+    %>
+    <div class="wiz-prog" id="payWizard" data-max="<%= wizDone %>" data-stage="<%= wizStage %>" data-blocked="<%= wBlocked ? '1' : '0' %>">
+        <div class="wiz-prog-top">
+            <span class="wiz-prog-title"><%= t('hr.payws.wiz_progress') %></span>
+            <span class="wiz-prog-pct" id="wizPct"><%= t('hr.payws.wiz_step') %> <%= wizStage %> <%= t('hr.payws.wiz_of') %> <%= wizSteps.length %> · <%= wizPct %>%</span>
+        </div>
+        <div class="wiz-track"><div class="wiz-fill" id="wizFill" style="width:<%= wizPct %>%"></div></div>
+        <ol class="wiz-steps">
+            <% wizSteps.forEach(function(ws) { %>
+            <li class="wiz-step<%= ws.n <= wizDone ? ' wiz-step-done' : '' %><%= ws.n === wizStage ? ' wiz-step-current' : '' %><%= (ws.n === wizStage && wBlocked) ? ' wiz-step-blocked' : '' %>" data-step="<%= ws.n %>">
+                <span class="wiz-step-no"><%= ws.n %></span>
+                <span class="wiz-step-label"><%= ws.label %></span>
+                <span class="wiz-step-pct"><%= ws.pct %>%</span>
+                <% if (ws.n === wizStage && wBlocked) { %><span class="wiz-step-blocked-tag"><%= t('hr.payws.wiz_blocked') %></span><% } %>
+            </li>
+            <% }); %>
+        </ol>
+    </div>
+
+    <% if (wOblMissing) { %>
+        <div class="wiz-obl-remedy">
+            <div><%= t('hr.payws.wiz_obl_remedy') %></div>
+            <div style="margin-top:8px;"><a class="btn btn-primary" href="/admin/hr/payroll/periods/open?month=<%= encodeURIComponent(form.period_month) %>"><%= t('hr.payws.wiz_obl_link') %></a></div>
+            <div class="pay-note" style="margin-top:8px;"><%= t('hr.payws.wiz_obl_adv_note') %></div>
+        </div>
+    <% } %>
+
+    <% if (typeof preview !== 'undefined' && preview && preview.mode_preview) { %>
+        <div class="pay-warning"><span class="pay-badge pay-badge-amber"><%= t('hr.payws.preview_badge') %></span> <strong><%= t('hr.payws.preview_title') %></strong> — <%= t('hr.payws.preview_note') %></div>
+    <% } %>
+
+    <% if (typeof refusal !== 'undefined' && refusal) { %>
+        <div class="pay-error-box">
+            <%= t('hr.payments.err_generic') %> — <%= codeLabel(CODE_T, refusal) %>
+            <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><span class="pay-key" dir="ltr"><%= refusal %></span></details>
+            <% if (typeof blockers !== 'undefined' && blockers && blockers.length) { %>
+                <div class="pay-chip-row">
+                    <% blockers.forEach(function(b) { %><span class="pay-chip"><%= codeLabel(BL_T, b) %></span><% }); %>
+                </div>
+                <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><% blockers.forEach(function(b) { %><span class="pay-key" dir="ltr"><%= b %></span><% }); %></details>
+            <% } %>
+        </div>
+    <% } %>
+    <% var chipEng = (typeof engine !== 'undefined' && engine) ? engine : ((typeof preview !== 'undefined' && preview && preview.mode_preview && preview.engine) ? preview.engine : null); %>
+    <% if (chipEng) { %>
+        <% if (chipEng.blockers && chipEng.blockers.length) { %>
+            <div class="pay-error-box">
+                <%= t('hr.payments.blockers') %>:
+                <% chipEng.blockers.forEach(function(b) { %><span class="pay-chip"><%= codeLabel(BL_T, b) %></span><% }); %>
+                <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><% chipEng.blockers.forEach(function(b) { %><span class="pay-key" dir="ltr"><%= b %></span><% }); %></details>
+            </div>
+        <% } %>
+        <% if (chipEng.warnings && chipEng.warnings.length) { %>
+            <div class="pay-warning">
+                <%= t('hr.payments.warnings') %>:
+                <% chipEng.warnings.forEach(function(w) { %><span class="pay-chip pay-chip-warn"><%= codeLabel(WL_T, w) %></span><% }); %>
+                <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><% chipEng.warnings.forEach(function(w) { %><span class="pay-key" dir="ltr"><%= w %></span><% }); %></details>
+            </div>
+        <% } %>
+    <% } %>
+    <% var eng = (typeof engine !== 'undefined' && engine) ? engine : ((typeof preview !== 'undefined' && preview && preview.engine) ? preview.engine : null); %>
+
+    <form method="POST" action="<%= mode === 'create' ? '/admin/hr/payments' : '/admin/hr/payments/' + payment.id + '/edit' %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="idempotency_key" value="<%= form.idempotency_key %>">
+        <input type="hidden" name="mode" value="FIFO">
+        <div class="pay-create-grid">
+            <div class="pay-create-main">
+                <div class="pay-create-sec wiz-stage" data-stage="1">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">1</span><span class="pay-create-sec-title"><%= t('hr.payments.step_who') %></span></div>
+                    <div class="pay-form-grid">
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.form_employee') %> <span class="pay-req">*</span></label>
+                            <select name="employee_id" class="form-control" required>
+                                <option value="">—</option>
+                                <% (employees || []).forEach(function(e) { %>
+                                    <option value="<%= e.id %>" <%= String(form.employee_id) === String(e.id) ? 'selected' : '' %>>
+                                        <%= e.full_name %> — <%= e.department_name || '' %>
+                                    </option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.form_period') %> <span class="pay-req">*</span></label>
+                            <input type="text" name="period_month" class="form-control" dir="ltr" required pattern="\d{4}/\d{2}/01" value="<%= form.period_month %>">
+                        </div>
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.form_date') %> <span class="pay-req">*</span></label>
+                            <input type="text" name="payment_date" class="form-control" dir="ltr" required pattern="\d{4}/\d{2}/\d{2}" value="<%= form.payment_date %>">
+                        </div>
+                    </div>
+                    <div class="pay-note"><%= t('hr.payments.hint_immutable') %></div>
+                    <% if (typeof preview !== 'undefined' && preview && preview.employee) { %>
+                        <% var wse = preview.employee; %>
+                        <div class="pay-label" style="margin-top:12px;"><%= t('hr.payws.emp_card') %></div>
+                        <div class="pay-sum-list">
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_code') %></span><span class="pay-sum-row-value" dir="ltr"><%= wse.employee_code || '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_department') %></span><span class="pay-sum-row-value"><%= wse.department_name || '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_position') %></span><span class="pay-sum-row-value"><%= wse.position || '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_contract') %></span><span class="pay-sum-row-value"><%= wse.contract_type || '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_salary') %></span><span class="pay-sum-row-value" dir="ltr"><%= (wse.basic_salary !== null && wse.basic_salary !== undefined) ? Number(wse.basic_salary).toFixed(2) : '—' %></span></div>
+                            <% if (wse.basic_salary_from) { %>
+                                <div class="pay-note"><%= t('hr.payws.emp_salary_asof') %> <span dir="ltr"><%= wse.basic_salary_from %></span></div>
+                            <% } %>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_dob') %></span><span class="pay-sum-row-value" dir="ltr"><%= wse.date_of_birth || '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_phone') %></span><span class="pay-sum-row-value" dir="ltr"><%= wse.phone || '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_hired') %></span><span class="pay-sum-row-value" dir="ltr"><%= wse.hire_date || '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_status') %></span><span class="pay-sum-row-value"><%= wse.employment_status || '—' %></span></div>
+                        </div>
+                    <% } else if (typeof preview !== 'undefined' && preview) { %>
+                        <div class="pay-note"><%= t('hr.payws.emp_none') %></div>
+                    <% } %>
+                </div>
+
+                <% if (typeof preview !== 'undefined' && preview && preview.attendance) { %>
+                <% var att = preview.attendance;
+                   var blockLabelMap = {
+                     NO_SCHEDULE: 'hr.payws.block_NO_SCHEDULE',
+                     MISSING_ATTENDANCE: 'hr.payws.block_MISSING_ATTENDANCE',
+                     MISSING_CHECK_IN: 'hr.payws.block_MISSING_CHECK_IN'
+                   }; %>
+                <div class="pay-create-sec wiz-stage" data-stage="2">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">2</span><span class="pay-create-sec-title"><%= t('hr.payws.att_title') %></span></div>
+                    <% if (att.status === 'BLOCKED') { %>
+                        <div class="pay-error-box">
+                            <%= t('hr.payws.att_blocked') %>:
+                            <% (att.blockers || []).forEach(function(b) { %><span class="pay-chip"><%= (b && b.code && blockLabelMap[b.code]) ? t(blockLabelMap[b.code]) : t('hr.payws.code_generic') %></span><% }); %>
+                            <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary>
+                                <% (att.blockers || []).forEach(function(b) { %><span class="pay-key" dir="ltr"><%= b && b.code ? b.code : '' %></span><span class="pay-sub"><%= b && b.message ? b.message : '' %></span><% }); %>
+                            </details>
+                        </div>
+                    <% } else { %>
+                        <div class="pay-stat">
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= att.calendar_days %></div><div class="pay-stat-label"><%= t('hr.payws.att_calendar') %></div></div>
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= att.scheduled_working_days %></div><div class="pay-stat-label"><%= t('hr.payws.att_scheduled') %></div></div>
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= att.paid_working_days %></div><div class="pay-stat-label"><%= t('hr.payws.att_paid') %></div></div>
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= att.leave_days %></div><div class="pay-stat-label"><%= t('hr.payws.att_leave') %></div></div>
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= att.unpaid_working_days %></div><div class="pay-stat-label"><%= t('hr.payws.att_unpaid') %></div></div>
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= att.missing_attendance_days %></div><div class="pay-stat-label"><%= t('hr.payws.att_missing') %></div></div>
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= att.lateness_minutes_total %></div><div class="pay-stat-label"><%= t('hr.payws.att_late') %></div></div>
+                            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= Number(att.salary_entitlement).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payws.att_entitlement') %></div></div>
+                        </div>
+                        <div class="pay-sum-card" style="margin-top:8px;">
+                            <div class="pay-sum-head"><%= t('hr.payws.ent_rates_title') %></div>
+                            <div class="pay-sum-list">
+                                <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.ent_grace') %></span><span class="pay-sum-row-value" dir="ltr"><%= (att.grace_period_minutes !== null && att.grace_period_minutes !== undefined) ? att.grace_period_minutes : '—' %></span></div>
+                                <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.ent_late_deduction') %></span><span class="pay-sum-row-value" dir="ltr"><%= (att.lateness_deduction_total !== null && att.lateness_deduction_total !== undefined) ? Number(att.lateness_deduction_total).toFixed(2) : '—' %></span></div>
+                                <% if (att.salary_segments && att.salary_segments.length) { %>
+                                    <% att.salary_segments.forEach(function(seg) { %>
+                                        <% if (att.salary_segments.length > 1 && (seg.effective_from || seg.effective_to)) { %>
+                                            <div class="pay-note"><span dir="ltr"><%= seg.effective_from || '' %><%= (seg.effective_from && seg.effective_to) ? ' – ' : '' %><%= seg.effective_to || '' %></span></div>
+                                        <% } %>
+                                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.emp_salary') %></span><span class="pay-sum-row-value" dir="ltr"><%= (seg.basic_salary !== null && seg.basic_salary !== undefined) ? Number(seg.basic_salary).toFixed(2) : '—' %></span></div>
+                                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.ent_daily') %></span><span class="pay-sum-row-value" dir="ltr"><%= seg.rates && seg.rates.daily !== null && seg.rates.daily !== undefined ? Number(seg.rates.daily).toFixed(2) : '—' %></span></div>
+                                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.ent_hourly') %></span><span class="pay-sum-row-value" dir="ltr"><%= seg.rates && seg.rates.hourly !== null && seg.rates.hourly !== undefined ? Number(seg.rates.hourly).toFixed(2) : '—' %></span></div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.ent_daily') %></span><span class="pay-sum-row-value" dir="ltr">—</span></div>
+                                    <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.ent_hourly') %></span><span class="pay-sum-row-value" dir="ltr">—</span></div>
+                                <% } %>
+                            </div>
+                            <div class="pay-note"><%= t('hr.payws.ent_divisor_note') %></div>
+                            <div class="pay-note"><%= t('hr.payws.ent_grace_note') %></div>
+                        </div>
+                        <% if (att.unpaid_dates && att.unpaid_dates.length) { %>
+                            <div class="pay-note"><%= t('hr.payws.att_unpaid_dates') %>: <span dir="ltr"><%= att.unpaid_dates.join(', ') %></span></div>
+                        <% } %>
+                        <% if (att.unpaid_working_days > 0 || (att.unpaid_dates && att.unpaid_dates.length)) { %>
+                            <div class="pay-note"><span class="pay-badge pay-badge-amber"><%= t('hr.payws.att_unpaid_resolved') %></span></div>
+                        <% } %>
+                    <% } %>
+                    <% if (att.review_items && att.review_items.length) { %>
+                        <%
+                        var _riGroups = []; var _riSeen = {};
+                        att.review_items.forEach(function(ri) {
+                            var _c = (ri && ri.code) ? ri.code : String(ri);
+                            if (_riSeen[_c]) { _riSeen[_c].count++; _riSeen[_c].items.push(ri); }
+                            else { _riSeen[_c] = { code: _c, count: 1, items: [ri] }; _riGroups.push(_riSeen[_c]); }
+                        });
+                        %>
+                        <div class="pay-chip-row">
+                            <% _riGroups.forEach(function(g) { %><span class="pay-chip pay-chip-warn"><%= codeLabel(WL_T, g.code) %><% if (g.count > 1) { %> (<%= g.count %>)<% } %></span><% }); %>
+                            <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><% _riGroups.forEach(function(g) { g.items.forEach(function(ri) { %><span class="pay-key" dir="ltr"><%= (ri && ri.code) ? ri.code : String(ri) %></span><span class="pay-sub"><%= (ri && ri.date) ? ri.date : '' %> <%= (ri && ri.message) ? ri.message : '' %></span><% }); }); %></details>
+                        </div>
+                    <% } %>
+                    <div class="pay-note"><%= t('hr.payws.att_note') %></div>
+                </div>
+                <% } %>
+
+                <% var owe = (typeof preview !== 'undefined' && preview && preview.obligation) ? preview.obligation : null; %>
+                <% if (owe) { %>
+                <div class="pay-create-sec wiz-stage" data-stage="2">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">2</span><span class="pay-create-sec-title"><%= t('hr.payments.step_howmuch') %></span></div>
+                    <div class="pay-sum-card">
+                        <div class="pay-sum-head"><%= t('hr.payments.amount_owed_title') %></div>
+                        <div class="pay-sum-list">
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.amount_owed_total') %></span><span class="pay-sum-row-value" dir="ltr"><%= (Number(owe.salary_earned) / 100).toFixed(2) %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.amount_owed_paid') %></span><span class="pay-sum-row-value" dir="ltr"><%= (Number(owe.salary_paid) / 100).toFixed(2) %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.amount_owed_payable') %></span><span class="pay-sum-row-value" dir="ltr"><%= (Number(owe.salary_remaining) / 100).toFixed(2) %></span></div>
+                        </div>
+                    </div>
+                </div>
+                <% } %>
+
+                <div class="pay-create-sec wiz-stage" data-stage="3">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">3</span><span class="pay-create-sec-title"><%= t('hr.payws.inc_legend') %></span></div>
+                    <input type="hidden" name="include_controls" value="1">
+                    <div>
+                        <label class="pay-create-dup-label" style="margin-inline-end:16px;">
+                            <input type="checkbox" name="include_salary" value="1" <%= inc.salary ? 'checked' : '' %>> <%= t('hr.payws.manual_salary') %>
+                        </label>
+                        <label class="pay-create-dup-label" style="margin-inline-end:16px;">
+                            <input type="checkbox" name="include_overtime" value="1" <%= inc.overtime ? 'checked' : '' %>> <%= t('hr.payws.manual_ot') %>
+                        </label>
+                        <label class="pay-create-dup-label">
+                            <input type="checkbox" name="include_advance" value="1" <%= inc.advance ? 'checked' : '' %>> <%= t('hr.payws.manual_adv') %>
+                        </label>
+                    </div>
+                    <div class="pay-note"><%= t('hr.payws.inc_note') %></div>
+                    <div class="pay-form-grid">
+                        <%# HR-31: mode selector removed; legacy allocation-mode option retired (value="MANUAL") %>
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.form_method') %></label>
+                            <select name="payment_method" class="form-control">
+                                <option value="CASH" <%= form.payment_method === 'CASH' ? 'selected' : '' %>><%= t('hr.payments.method_cash') %></option>
+                                <option value="BANK" <%= form.payment_method === 'BANK' ? 'selected' : '' %>><%= t('hr.payments.method_bank') %></option>
+                                <option value="OTHER" <%= form.payment_method === 'OTHER' ? 'selected' : '' %>><%= t('hr.payments.method_other') %></option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.amount_now_label') %></label>
+                            <input type="text" name="requested_amount" class="form-control" dir="ltr" inputmode="decimal" value="<%= form.requested_amount %>">
+                            <div class="pay-note"><%= t('hr.payments.amount_now_hint') %></div>
+                        </div>
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.form_reference') %></label>
+                            <input type="text" name="payment_reference" class="form-control" maxlength="200" value="<%= form.payment_reference %>">
+                        </div>
+                    </div>
+                    <% if (typeof preview !== 'undefined' && preview && preview.sources) { %>
+                    <% var msrc = preview.sources; var mout = preview.engine; var mvals = form.manual_values || {};
+                       var disp = msrc.uncurated || msrc; var mobl = disp.obligation; %>
+                    <div class="pay-label" style="margin-top:12px;"><%= t('hr.payws.manual_title') %></div>
+                    <div class="pay-note"><%= t('hr.payws.manual_hint') %></div>
+                    <div class="pay-sum-card">
+                        <div class="pay-sum-head"><%= t('hr.payws.manual_salary') %></div>
+                        <% if (mobl) { %>
+                            <div class="pay-sum-row">
+                                <% var salCapCents = (mout && mout.salary && typeof mout.salary.remaining_before === 'number') ? mout.salary.remaining_before : Number(mobl.salary_remaining); %>
+                                <span class="pay-sum-row-label"><%= t('hr.payws.manual_cap') %> <span dir="ltr">(<%= (salCapCents / 100).toFixed(2) %>)</span></span>
+                                <input type="text" class="form-control pay-sum-row-value" style="max-width:160px;" name="msal_<%= mobl.id %>" dir="ltr" inputmode="decimal" value="<%= mvals['msal_' + mobl.id] || '' %>">
+                            </div>
+                        <% } else { %>
+                            <div class="pay-empty"><%= t('hr.payws.manual_no_salary') %></div>
+                        <% } %>
+                    </div>
+                    <div class="pay-sum-card">
+                        <div class="pay-sum-head"><%= t('hr.payws.manual_ot') %></div>
+                        <% if (disp.ot_candidates && disp.ot_candidates.length) { %>
+                            <% disp.ot_candidates.forEach(function(ot) { %>
+                                <% var otEng = (mout && mout.overtime) ? mout.overtime.find(function(x) { return x.id === ot.id; }) : null; %>
+                                <% var otCapCents = otEng && typeof otEng.available_before === 'number' ? otEng.available_before : Number(ot.remaining_cents); %>
+                                <div class="pay-sum-row">
+                                    <span class="pay-sum-row-label"><span dir="ltr">#<%= ot.id %> · <%= ot.overtime_date || '—' %></span> · <%= t('hr.payws.manual_cap') %> <span dir="ltr">(<%= (otCapCents / 100).toFixed(2) %>)</span></span>
+                                    <input type="text" class="form-control pay-sum-row-value" style="max-width:160px;" name="mot_<%= ot.id %>" dir="ltr" inputmode="decimal" value="<%= mvals['mot_' + ot.id] || '' %>">
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="pay-empty"><%= t('hr.payws.manual_no_ot') %></div>
+                        <% } %>
+                    </div>
+                    <div class="pay-sum-card">
+                        <div class="pay-sum-head"><%= t('hr.payws.manual_adv') %></div>
+                        <% if (disp.advance_candidates && disp.advance_candidates.length) { %>
+                            <% disp.advance_candidates.forEach(function(ad) { %>
+                                <% var adEng = (mout && mout.advance) ? mout.advance.find(function(x) { return x.id === ad.id; }) : null; %>
+                                <% var adCapCents = adEng && typeof adEng.available_before === 'number' ? adEng.available_before
+                                    : (typeof ad.available_cents === 'number' ? ad.available_cents : Number(ad.original_amount_cents)); %>
+                                <div class="pay-sum-row">
+                                    <span class="pay-sum-row-label"><span dir="ltr">#<%= ad.id %> · <%= ad.date || '—' %></span> · <%= t('hr.payws.manual_cap') %> <span dir="ltr">(<%= (adCapCents / 100).toFixed(2) %>)</span></span>
+                                    <input type="text" class="form-control pay-sum-row-value" style="max-width:160px;" name="madv_<%= ad.id %>" dir="ltr" inputmode="decimal" value="<%= mvals['madv_' + ad.id] || '' %>">
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <div class="pay-empty"><%= t('hr.payws.manual_no_adv') %></div>
+                        <% } %>
+                    </div>
+                    <div class="pay-note"><%= t('hr.payws.manual_server_note') %></div>
+                    <% } %>
+                </div>
+
+                <div class="pay-create-sec wiz-stage" data-stage="3">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">3</span><span class="pay-create-sec-title"><%= t('hr.payments.additional_section') %></span></div>
+                    <div class="pay-form-grid">
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.additional_amount') %></label>
+                            <input type="text" name="additional_amount" class="form-control" dir="ltr" inputmode="decimal" value="<%= form.additional_amount %>">
+                        </div>
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.additional_reason') %></label>
+                            <select name="additional_reason" class="form-control">
+                                <option value="">—</option>
+                                <% [['BONUS_APPROVED','ar_bonus'],['RETENTION_INCENTIVE','ar_retention'],['CORRECTION_PRIOR_PERIOD','ar_correction'],['ALLOWANCE_UNCLASSIFIED','ar_allowance'],['GOODWILL_PAYMENT','ar_goodwill'],['REIMBURSEMENT','ar_reimbursement'],['OTHER_APPROVED','ar_other']].forEach(function(r) { %>
+                                    <option value="<%= r[0] %>" <%= form.additional_reason === r[0] ? 'selected' : '' %>><%= t('hr.payments.' + r[1]) %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.additional_note') %></label>
+                            <input type="text" name="additional_note" class="form-control" maxlength="500" value="<%= form.additional_note %>">
+                        </div>
+                    </div>
+                    <div class="pay-note"><%= t('hr.payments.additional_hint') %></div>
+                </div>
+
+                <div class="pay-create-sec wiz-stage" data-stage="4">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">4</span><span class="pay-create-sec-title"><%= t('hr.payments.form_notes') %></span></div>
+                    <div class="pay-form-grid">
+                        <div>
+                            <label class="pay-label"><%= t('hr.payments.form_notes') %></label>
+                            <input type="text" name="notes" class="form-control" maxlength="1000" value="<%= form.notes %>">
+                        </div>
+                    </div>
+                    <div class="pay-warning"><%= t('hr.payments.dup_confirm_warning') %></div>
+                    <div class="pay-create-dup">
+                        <label class="pay-create-dup-label">
+                            <input type="checkbox" name="duplicate_confirmed" value="1" <%= form.duplicate_confirmed ? 'checked' : '' %>>
+                            <%= t('hr.payments.form_duplicate') %>
+                        </label>
+                    </div>
+                    <div class="pay-note"><%= t('hr.payments.form_duplicate_hint') %></div>
+                </div>
+
+                <% if (typeof preview !== 'undefined' && preview && preview.openObligations) { %>
+                <div class="pay-create-sec wiz-stage" data-stage="4">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">4</span><span class="pay-create-sec-title"><%= t('hr.payws.obl_title') %></span></div>
+                    <% if (preview.openObligations.length) { %>
+                        <div class="table-responsive">
+                            <table class="table table-sm pay-list-table">
+                                <thead>
+                                    <tr>
+                                        <th><%= t('hr.payws.obl_month') %></th>
+                                        <th><%= t('hr.payments.obl_earned') %></th>
+                                        <th><%= t('hr.payments.obl_paid') %></th>
+                                        <th><%= t('hr.payments.obl_remaining') %></th>
+                                        <th><%= t('hr.payments.obl_status') %></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% preview.openObligations.forEach(function(o) { %>
+                                        <tr>
+                                            <td dir="ltr"><%= o.earning_month %></td>
+                                            <td dir="ltr"><%= (Number(o.salary_earned) / 100).toFixed(2) %></td>
+                                            <td dir="ltr"><%= (Number(o.salary_paid) / 100).toFixed(2) %></td>
+                                            <td dir="ltr"><%= (Number(o.salary_remaining) / 100).toFixed(2) %></td>
+                                            <td><%= statusLabel(o.status) %></td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="pay-empty"><%= t('hr.payws.obl_none') %></div>
+                    <% } %>
+                    <div class="pay-note"><%= t('hr.payws.obl_note') %></div>
+                </div>
+                <% } %>
+
+                <% if (typeof preview !== 'undefined' && preview && preview.history) { %>
+                <div class="pay-create-sec wiz-stage" data-stage="4">
+                    <div class="pay-create-sec-head"><span class="pay-create-sec-no">4</span><span class="pay-create-sec-title"><%= t('hr.payws.hist_title') %></span></div>
+                    <% if (preview.history.length) { %>
+                        <div class="table-responsive">
+                            <table class="table table-sm pay-list-table">
+                                <thead>
+                                    <tr>
+                                        <th><%= t('hr.payments.col_serial') %></th>
+                                        <th><%= t('hr.payments.form_period') %></th>
+                                        <th><%= t('hr.payments.form_date') %></th>
+                                        <th><%= t('hr.payments.col_status') %></th>
+                                        <th><%= t('hr.payments.t_salary') %></th>
+                                        <th><%= t('hr.payments.t_net') %></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% preview.history.forEach(function(p) { %>
+                                        <tr>
+                                            <td dir="ltr"><%= p.id %></td>
+                                            <td dir="ltr"><%= p.period_month %></td>
+                                            <td dir="ltr"><%= p.payment_date %></td>
+                                            <td><%= p.status === 'DRAFT' ? t('hr.payments.status_draft') : (p.status === 'CORRECTED' ? t('hr.payments.status_corrected') : t('hr.payments.status_finalized')) %></td>
+                                            <td dir="ltr"><%= (Number(p.salary_total) / 100).toFixed(2) %></td>
+                                            <td dir="ltr"><%= (Number(p.net_cash_paid) / 100).toFixed(2) %></td>
+                                        </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                    <% } else { %>
+                        <div class="pay-empty"><%= t('hr.payws.hist_none') %></div>
+                    <% } %>
+                </div>
+                <% } %>
+            </div>
+
+            <aside class="pay-create-rail">
+                <div class="pay-sum-card">
+                    <div class="pay-sum-head"><%= t('hr.payments.totals_title') %></div>
+                    <div class="pay-sum-hero">
+                        <div class="pay-sum-hero-label"><%= t('hr.payments.t_net') %></div>
+                        <div class="pay-sum-hero-value" dir="ltr"><%= eng ? (eng.totals.net_cents / 100).toFixed(2) : '—' %></div>
+                    </div>
+                    <div class="pay-sum-rows">
+                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.t_salary') %></span><span class="pay-sum-row-value" dir="ltr"><%= eng ? (eng.totals.salary_total / 100).toFixed(2) : '—' %></span></div>
+                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.t_overtime') %></span><span class="pay-sum-row-value" dir="ltr"><%= eng ? (eng.totals.overtime_total / 100).toFixed(2) : '—' %></span></div>
+                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.t_advance') %></span><span class="pay-sum-row-value" dir="ltr"><%= eng ? (eng.totals.advance_deduction_total / 100).toFixed(2) : '—' %></span></div>
+                    </div>
+                    <% if (typeof preview !== 'undefined' && preview && preview.mode_preview && preview.after) { %>
+                        <div class="pay-label" style="margin-top:10px;"><%= t('hr.payws.after_title') %></div>
+                        <div class="pay-sum-rows">
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.after_salary') %></span><span class="pay-sum-row-value" dir="ltr"><%= (preview.includes && preview.includes.salary === false) ? '—' : (eng && typeof eng.salary_remaining_after === 'number' ? (eng.salary_remaining_after / 100).toFixed(2) : '—') %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.after_ot') %></span><span class="pay-sum-row-value" dir="ltr"><%= (preview.includes && preview.includes.overtime === false) ? '—' : (typeof preview.after.otRemaining === 'number' ? (preview.after.otRemaining / 100).toFixed(2) : '—') %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.after_adv') %></span><span class="pay-sum-row-value" dir="ltr"><%= (preview.includes && preview.includes.advance === false) ? '—' : (typeof preview.after.advRemaining === 'number' ? (preview.after.advRemaining / 100).toFixed(2) : '—') %></span></div>
+                        </div>
+                    <% } %>
+                    <% if (eng && eng.unexplained_excess_cents > 0) { %>
+                        <div class="pay-warning pay-sum-warn"><%= t('hr.payments.excess_hint') %> (<span dir="ltr"><%= (eng.unexplained_excess_cents / 100).toFixed(2) %></span>)</div>
+                    <% } %>
+                </div>
+                <% if (typeof preview !== 'undefined' && preview && preview.balances) { %>
+                <% var bal = preview.balances;
+                   var bfmt = function(f) { return (f && f.value_cents !== null && f.value_cents !== undefined) ? (Number(f.value_cents) / 100).toFixed(2) : '—'; };
+                   var bstate = function(f) { return (f && f.state) ? f.state : '—'; }; %>
+                <div class="pay-sum-card">
+                    <div class="pay-sum-head"><%= t('hr.payws.bal_title') %></div>
+                    <div class="pay-sum-list">
+                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.bal_co_salary') %></span><span class="pay-sum-row-value"><span dir="ltr"><%= bfmt(bal.company_owed.salary_outstanding) %></span> <span class="pay-chip"><%= balStateLabel(bstate(bal.company_owed.salary_outstanding)) %></span></span></div>
+                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.bal_co_ot') %></span><span class="pay-sum-row-value"><span dir="ltr"><%= bfmt(bal.company_owed.ot_eligible_remaining) %></span> <span class="pay-chip"><%= balStateLabel(bstate(bal.company_owed.ot_eligible_remaining)) %></span></span></div>
+                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.bal_em_adv') %></span><span class="pay-sum-row-value"><span dir="ltr"><%= bfmt(bal.employee_owed.advance_owed) %></span> <span class="pay-chip"><%= balStateLabel(bstate(bal.employee_owed.advance_owed)) %></span></span></div>
+                        <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.bal_em_alloc') %></span><span class="pay-sum-row-value"><span dir="ltr"><%= bfmt(bal.employee_owed.advance_allocatable) %></span> <span class="pay-chip"><%= balStateLabel(bstate(bal.employee_owed.advance_allocatable)) %></span></span></div>
+                    </div>
+                    <% if (typeof preview !== 'undefined' && preview && preview.balTotals) { %>
+                        <div class="pay-label" style="margin-top:10px;"><%= t('hr.payws.bal_tot_note') %></div>
+                        <div class="pay-sum-list">
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.bal_tot_company') %></span><span class="pay-sum-row-value" dir="ltr"><%= preview.balTotals.company !== null && preview.balTotals.company !== undefined ? (preview.balTotals.company / 100).toFixed(2) : '—' %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payws.bal_tot_employee') %></span><span class="pay-sum-row-value" dir="ltr"><%= preview.balTotals.employee !== null && preview.balTotals.employee !== undefined ? (preview.balTotals.employee / 100).toFixed(2) : '—' %></span></div>
+                        </div>
+                    <% } %>
+                    <div class="pay-note">
+                        <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary>
+                            <span class="pay-key" dir="ltr"><%= bstate(bal.company_owed.salary_outstanding) %></span>
+                            <span class="pay-key" dir="ltr"><%= bstate(bal.company_owed.ot_eligible_remaining) %></span>
+                            <span class="pay-key" dir="ltr"><%= bstate(bal.employee_owed.advance_owed) %></span>
+                            <span class="pay-key" dir="ltr"><%= bstate(bal.employee_owed.advance_allocatable) %></span>
+                        </details>
+                    </div>
+                    <div class="pay-note"><%= t('hr.payws.bal_note') %></div>
+                </div>
+                <% } %>
+                <% if (typeof preview !== 'undefined' && preview) { %>
+                <div class="pay-sum-card">
+                    <div class="pay-sum-head"><%= t('hr.payments.obligation_title') %></div>
+                    <% if (preview.obligation) { %>
+                        <div class="pay-sum-list">
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.obl_earned') %></span><span class="pay-sum-row-value" dir="ltr"><%= (Number(preview.obligation.salary_earned) / 100).toFixed(2) %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.obl_paid') %></span><span class="pay-sum-row-value" dir="ltr"><%= (Number(preview.obligation.salary_paid) / 100).toFixed(2) %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.obl_remaining') %></span><span class="pay-sum-row-value" dir="ltr"><%= (Number(preview.obligation.salary_remaining) / 100).toFixed(2) %></span></div>
+                            <div class="pay-sum-row"><span class="pay-sum-row-label"><%= t('hr.payments.obl_status') %></span><span class="pay-sum-row-value"><%= statusLabel(preview.obligation.status) %></span></div>
+                        </div>
+                    <% } else { %>
+                        <div class="pay-empty"><%= t('hr.payments.obl_none') %></div>
+                    <% } %>
+                </div>
+                <% } %>
+            </aside>
+        </div>
+
+        <div class="pay-actions pay-form-footer">
+            <details class="pay-tech"><summary><%= t('hr.payments.more_options') %></summary>
+                <% if (form.idempotency_key) { %>
+                    <span class="pay-note"><%= t('hr.payments.key_label') %>: <span class="pay-key"><%= form.idempotency_key %></span></span>
+                <% } %>
+            </details>
+            <% if (wBlocked) { %>
+                <div class="pay-warning" style="margin:0;"><%= t('hr.payws.wiz_blocked_note') %></div>
+            <% } %>
+            <div class="wiz-nav">
+                <button type="button" class="btn btn-secondary" id="wizBack"><%= t('hr.payws.wiz_back') %></button>
+                <button type="button" class="btn btn-primary" id="wizNext" <%= wBlocked ? 'disabled' : '' %>><%= t('hr.payws.wiz_continue') %></button>
+            </div>
+            <button type="submit" class="btn btn-secondary" name="preview" value="1" formmethod="GET" formaction="/admin/hr/payments/create"><%= t('hr.payments.btn_preview') %></button>
+            <button type="submit" class="btn btn-primary pay-create-submit" id="wizCreate" <%= wBlocked ? 'disabled' : '' %>><%= t('hr.payments.btn_create') %></button>
+        </div>
+    </form>
+    <script>
+    (function(){
+      var root=document.getElementById('payWizard');
+      if(!root)return;
+      var maxStage=parseInt(root.getAttribute('data-max'),10)||0;
+      var cur=parseInt(root.getAttribute('data-stage'),10)||1;
+      var blocked=root.getAttribute('data-blocked')==='1';
+      var back=document.getElementById('wizBack');
+      var next=document.getElementById('wizNext');
+      var stageEls=document.querySelectorAll('.wiz-stage');
+      var stepEls=document.querySelectorAll('.wiz-step');
+      function render(){
+        var i;
+        for(i=0;i<stageEls.length;i++){var sn=parseInt(stageEls[i].getAttribute('data-stage'),10);if(sn===cur)stageEls[i].classList.add('wiz-stage-active');else stageEls[i].classList.remove('wiz-stage-active');}
+        for(i=0;i<stepEls.length;i++){var sn2=parseInt(stepEls[i].getAttribute('data-step'),10);if(sn2===cur)stepEls[i].classList.add('wiz-step-current');else stepEls[i].classList.remove('wiz-step-current');}
+        if(back)back.disabled=(cur<=1);
+        if(next){next.style.display=(cur>=4)?'none':'';if(blocked)next.disabled=true;}
+      }
+      if(back)back.addEventListener('click',function(){if(cur>1){cur--;render();}});
+      if(next)next.addEventListener('click',function(){
+        if(blocked)return;
+        if(cur>=4)return;
+        if(cur<maxStage){cur++;render();return;}
+        var pv=next.form?next.form.querySelector('button[name="preview"]'):null;
+        if(pv)pv.click();
+      });
+      render();
+    })();
+    </script>
+<% } else { %>
+    <div class="pay-head">
+        <div>
+            <h2 class="pay-page-title">
+                <%= t(mode === 'create' ? 'hr.payments.create_title' : 'hr.payments.edit_title') %>
+                <% if (mode === 'edit' && payment) { %><span class="pay-sub">#<%= payment.id %></span><% } %>
+            </h2>
+        </div>
+        <a href="/admin/hr/payments" class="btn btn-secondary"><%= t('hr.payments.btn_cancel') %></a>
+    </div>
+
+    <% if (typeof refusal !== 'undefined' && refusal) { %>
+        <div class="pay-error-box">
+            <%= t('hr.payments.err_generic') %> — <%= codeLabel(CODE_T, refusal) %>
+            <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><span class="pay-key" dir="ltr"><%= refusal %></span></details>
+            <% if (typeof blockers !== 'undefined' && blockers && blockers.length) { %>
+                <div class="pay-chip-row">
+                    <% blockers.forEach(function(b) { %><span class="pay-chip"><%= codeLabel(BL_T, b) %></span><% }); %>
+                </div>
+                <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><% blockers.forEach(function(b) { %><span class="pay-key" dir="ltr"><%= b %></span><% }); %></details>
+            <% } %>
+        </div>
+    <% } %>
+    <% if (typeof engine !== 'undefined' && engine) { %>
+        <% if (engine.blockers && engine.blockers.length) { %>
+            <div class="pay-error-box">
+                <%= t('hr.payments.blockers') %>:
+                <% engine.blockers.forEach(function(b) { %><span class="pay-chip"><%= codeLabel(BL_T, b) %></span><% }); %>
+                <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><% engine.blockers.forEach(function(b) { %><span class="pay-key" dir="ltr"><%= b %></span><% }); %></details>
+            </div>
+        <% } %>
+        <% if (engine.warnings && engine.warnings.length) { %>
+            <div class="pay-warning">
+                <%= t('hr.payments.warnings') %>:
+                <% engine.warnings.forEach(function(w) { %><span class="pay-chip pay-chip-warn"><%= codeLabel(WL_T, w) %></span><% }); %>
+                <details class="pay-tech"><summary><%= t('hr.payws.tech_details') %></summary><% engine.warnings.forEach(function(w) { %><span class="pay-key" dir="ltr"><%= w %></span><% }); %></details>
+            </div>
+        <% } %>
+        <% if (engine.unexplained_excess_cents > 0) { %>
+            <div class="pay-warning"><%= t('hr.payments.excess_hint') %> (<span dir="ltr"><%= (engine.unexplained_excess_cents / 100).toFixed(2) %></span>)</div>
+        <% } %>
+        <div class="pay-stat">
+            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (engine.totals.salary_total / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_salary') %></div></div>
+            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (engine.totals.overtime_total / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_overtime') %></div></div>
+            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (engine.totals.advance_deduction_total / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_advance') %></div></div>
+            <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (engine.totals.net_cents / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_net') %></div></div>
+        </div>
+    <% } %>
+
+    <form method="POST" action="<%= mode === 'create' ? '/admin/hr/payments' : '/admin/hr/payments/' + payment.id + '/edit' %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <input type="hidden" name="mode" value="FIFO">
+        <% if (mode === 'create') { %>
+            <input type="hidden" name="idempotency_key" value="<%= form.idempotency_key %>">
+        <% } %>
+        <div class="pay-panel pay-panel-main">
+        <div class="pay-form-grid">
+            <div>
+                <label class="pay-label"><%= t('hr.payments.form_employee') %> <span class="pay-req">*</span></label>
+                <% if (mode === 'edit') { %>
+                    <div class="pay-readonly"><%= payment.employee_name %> <span dir="ltr">(<%= payment.employee_id %>)</span></div>
+                <% } else { %>
+                    <select name="employee_id" class="form-control" required>
+                        <option value="">—</option>
+                        <% (employees || []).forEach(function(e) { %>
+                            <option value="<%= e.id %>" <%= String(form.employee_id) === String(e.id) ? 'selected' : '' %>>
+                                <%= e.full_name %> — <%= e.department_name || '' %>
+                            </option>
+                        <% }); %>
+                    </select>
+                <% } %>
+            </div>
+            <div>
+                <label class="pay-label"><%= t('hr.payments.form_period') %> <span class="pay-req">*</span></label>
+                <% if (mode === 'edit') { %>
+                    <div class="pay-readonly" dir="ltr"><%= payment.period_month %></div>
+                    <div class="pay-note"><%= t('hr.payments.hint_immutable') %></div>
+                <% } else { %>
+                    <input type="text" name="period_month" class="form-control" dir="ltr" required pattern="\d{4}/\d{2}/01" value="<%= form.period_month %>">
+                <% } %>
+            </div>
+            <div>
+                <label class="pay-label"><%= t('hr.payments.form_date') %> <span class="pay-req">*</span></label>
+                <input type="text" name="payment_date" class="form-control" dir="ltr" required pattern="\d{4}/\d{2}/\d{2}" value="<%= form.payment_date %>">
+            </div>
+            <div>
+                <label class="pay-label"><%= t('hr.payments.form_requested') %></label>
+                <input type="text" name="requested_amount" class="form-control" dir="ltr" inputmode="decimal" value="<%= form.requested_amount %>">
+                <div class="pay-note"><%= t('hr.payments.form_requested_hint') %></div>
+            </div>
+            <div>
+                <%# HR-31: mode selector removed; legacy allocation-mode option retired (value="MANUAL") %>
+                <label class="pay-label"><%= t('hr.payments.form_method') %></label>
+                <select name="payment_method" class="form-control">
+                    <option value="CASH" <%= form.payment_method === 'CASH' ? 'selected' : '' %>><%= t('hr.payments.method_cash') %></option>
+                    <option value="BANK" <%= form.payment_method === 'BANK' ? 'selected' : '' %>><%= t('hr.payments.method_bank') %></option>
+                    <option value="OTHER" <%= form.payment_method === 'OTHER' ? 'selected' : '' %>><%= t('hr.payments.method_other') %></option>
+                </select>
+            </div>
+            <div>
+                <label class="pay-label"><%= t('hr.payments.form_reference') %></label>
+                <input type="text" name="payment_reference" class="form-control" maxlength="200" value="<%= form.payment_reference %>">
+            </div>
+                <div>
+                    <label class="pay-label"><%= t('hr.payments.form_notes') %></label>
+                    <input type="text" name="notes" class="form-control" maxlength="1000" value="<%= form.notes %>">
+                </div>
+        </div>
+        <% if (mode === 'edit') { %>
+            <div class="pay-label" style="margin-top:8px;"><%= t('hr.payws.inc_legend') %></div>
+            <input type="hidden" name="include_controls" value="1">
+            <div>
+                <label class="pay-create-dup-label" style="margin-inline-end:16px;">
+                    <input type="checkbox" name="include_salary" value="1" <%= inc.salary ? 'checked' : '' %>> <%= t('hr.payws.manual_salary') %>
+                </label>
+                <label class="pay-create-dup-label" style="margin-inline-end:16px;">
+                    <input type="checkbox" name="include_overtime" value="1" <%= inc.overtime ? 'checked' : '' %>> <%= t('hr.payws.manual_ot') %>
+                </label>
+                <label class="pay-create-dup-label">
+                    <input type="checkbox" name="include_advance" value="1" <%= inc.advance ? 'checked' : '' %>> <%= t('hr.payws.manual_adv') %>
+                </label>
+            </div>
+            <div class="pay-note"><%= t('hr.payws.inc_note') %></div>
+        <% } %>
+        </div>
+
+        <div class="pay-panel">
+            <div class="pay-panel-head"><span><%= t('hr.payments.additional_section') %></span></div>
+            <div class="pay-form-grid">
+                <div>
+                    <label class="pay-label"><%= t('hr.payments.additional_amount') %></label>
+                    <input type="text" name="additional_amount" class="form-control" dir="ltr" inputmode="decimal" value="<%= form.additional_amount %>">
+                </div>
+                <div>
+                    <label class="pay-label"><%= t('hr.payments.additional_reason') %></label>
+                    <select name="additional_reason" class="form-control">
+                        <option value="">—</option>
+                        <% [['BONUS_APPROVED','ar_bonus'],['RETENTION_INCENTIVE','ar_retention'],['CORRECTION_PRIOR_PERIOD','ar_correction'],['ALLOWANCE_UNCLASSIFIED','ar_allowance'],['GOODWILL_PAYMENT','ar_goodwill'],['REIMBURSEMENT','ar_reimbursement'],['OTHER_APPROVED','ar_other']].forEach(function(r) { %>
+                            <option value="<%= r[0] %>" <%= form.additional_reason === r[0] ? 'selected' : '' %>><%= t('hr.payments.' + r[1]) %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div>
+                    <label class="pay-label"><%= t('hr.payments.additional_note') %></label>
+                    <input type="text" name="additional_note" class="form-control" maxlength="500" value="<%= form.additional_note %>">
+                </div>
+            </div>
+            <div class="pay-note"><%= t('hr.payments.additional_hint') %></div>
+        </div>
+
+        <% if (mode === 'create') { %>
+            <div class="pay-panel">
+                <label style="display:flex;gap:8px;align-items:center;font-size:13px;font-weight:600;">
+                    <input type="checkbox" name="duplicate_confirmed" value="1" <%= form.duplicate_confirmed ? 'checked' : '' %>>
+                    <%= t('hr.payments.form_duplicate') %>
+                </label>
+                <div class="pay-note"><%= t('hr.payments.form_duplicate_hint') %></div>
+            </div>
+        <% } else if (payment && payment.duplicate_confirmed) { %>
+            <div class="pay-note"><%= t('hr.payments.dup_flag') %></div>
+        <% } %>
+
+        <div class="pay-actions pay-form-footer">
+            <button type="submit" class="btn btn-primary"><%= t(mode === 'create' ? 'hr.payments.btn_create' : 'hr.payments.btn_save') %></button>
+            <% if (mode === 'create' && form.idempotency_key) { %>
+                <span class="pay-note"><%= t('hr.payments.key_label') %>: <span class="pay-key"><%= form.idempotency_key %></span></span>
+            <% } %>
+        </div>
+    </form>
+
+    <% if (mode === 'create' && typeof preview !== 'undefined' && preview) { %>
+        <div class="pay-sec">
+            <div class="pay-label"><%= t('hr.payments.obligation_title') %></div>
+            <% if (preview.obligation) { %>
+                <div class="pay-stat">
+                    <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(preview.obligation.salary_earned) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_earned') %></div></div>
+                    <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(preview.obligation.salary_paid) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_paid') %></div></div>
+                    <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(preview.obligation.salary_remaining) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_remaining') %></div></div>
+                    <div class="pay-stat-item"><div class="pay-stat-value"><%= statusLabel(preview.obligation.status) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_status') %></div></div>
+                </div>
+            <% } else { %>
+                <div class="pay-empty"><%= t('hr.payments.obl_none') %></div>
+            <% } %>
+        </div>
+    <% } %>
+    <% } %>
+<% } %>
+<% if (mode === 'detail') { %>
+    <div class="pay-head">
+        <div>
+            <h2 class="pay-page-title">
+                <%= t('hr.payments.detail_title') %>
+                <% if (payment.payment_serial) { %><span class="pay-key"><%= payment.payment_serial %></span>
+                <% } else { %><span class="pay-sub">#<%= payment.id %></span><% } %>
+                <span class="pay-badge <%= payment.status === 'FINALIZED' ? 'pay-badge-green' : payment.status === 'CORRECTED' ? 'pay-badge-amber' : 'pay-badge-blue' %>">
+                    <%= t('hr.payments.status_' + (payment.status === 'FINALIZED' ? 'finalized' : payment.status === 'CORRECTED' ? 'corrected' : 'draft')) %>
+                </span>
+            </h2>
+            <p class="pay-page-sub">
+                <span class="pay-emp"><%= payment.employee_name %></span>
+                <span class="pay-sub"><%= payment.department_name || '' %> <%= payment.position || '' %></span>
+            </p>
+        </div>
+        <div class="pay-head-actions">
+            <a href="/admin/hr/payments" class="btn btn-secondary"><%= t('hr.payments.title') %></a>
+            <a href="/admin/hr/payments/<%= payment.id %>/receipt?lang=<%= lang %>" class="btn no-print"><%= t('hr.payment_report.btn_receipt') %></a>
+            <% if (payment.status === 'DRAFT') { %>
+                <a href="/admin/hr/payments/create" class="btn btn-primary"><%= t('hr.payments.new_payment') %></a>
+            <% } %>
+        </div>
+    </div>
+
+    <% if (typeof message !== 'undefined' && message && message.type === 'success' && message.text === t('hr.payments.ok_created') + ' #' + payment.id) { %>
+        <div class="wiz-prog" id="payWizard" data-max="4" data-stage="4">
+            <div class="wiz-prog-top">
+                <span class="wiz-prog-title"><%= t('hr.payws.wiz_progress') %></span>
+                <span class="wiz-prog-pct">100%</span>
+            </div>
+            <div class="wiz-track"><div class="wiz-fill" style="width:100%"></div></div>
+            <ol class="wiz-steps">
+                <li class="wiz-step wiz-step-done"><span class="wiz-step-no">1</span><span class="wiz-step-label"><%= t('hr.payws.wiz_s1') %></span><span class="wiz-step-pct">20%</span></li>
+                <li class="wiz-step wiz-step-done"><span class="wiz-step-no">2</span><span class="wiz-step-label"><%= t('hr.payws.wiz_s2') %></span><span class="wiz-step-pct">40%</span></li>
+                <li class="wiz-step wiz-step-done"><span class="wiz-step-no">3</span><span class="wiz-step-label"><%= t('hr.payws.wiz_s3') %></span><span class="wiz-step-pct">60%</span></li>
+                <li class="wiz-step wiz-step-done"><span class="wiz-step-no">4</span><span class="wiz-step-label"><%= t('hr.payws.wiz_s4') %></span><span class="wiz-step-pct">80%</span></li>
+                <li class="wiz-step wiz-step-done wiz-step-current"><span class="wiz-step-no">5</span><span class="wiz-step-label"><%= t('hr.payws.wiz_s5') %></span><span class="wiz-step-pct">100%</span></li>
+            </ol>
+        </div>
+        <div class="wiz-done">
+            <div class="wiz-done-head"><span class="pay-badge pay-badge-green"><%= t('hr.payments.status_draft') %></span> <%= t('hr.payments.ok_created') %></div>
+            <p class="pay-sub"><%= t('hr.payments.finalize_title') %>: <%= t('hr.payments.finalize_confirm') %></p>
+            <% if (payment.status === 'DRAFT') { %>
+                <a href="#wizFinalize" class="btn btn-primary"><%= t('hr.payments.btn_finalize') %></a>
+            <% } %>
+        </div>
+    <% } %>
+
+    <div class="pay-stat">
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= payment.period_month %></div><div class="pay-stat-label"><%= t('hr.payments.col_period') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= payment.payment_date %></div><div class="pay-stat-label"><%= t('hr.payments.col_date') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value"><%= t('hr.payments.method_' + (payment.payment_method === 'BANK' ? 'bank' : payment.payment_method === 'OTHER' ? 'other' : 'cash')) %></div><div class="pay-stat-label"><%= t('hr.payments.form_method') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(payment.net_cash_paid) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_net') %></div></div>
+    </div>
+
+    <div class="pay-label"><%= t('hr.payments.totals_title') %></div>
+    <div class="pay-stat">
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(payment.salary_total) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_salary') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(payment.overtime_total) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_overtime') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(payment.additional_total) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_additional') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(payment.advance_deduction_total) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_advance') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(payment.entered_total) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_entered') %></div></div>
+        <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(payment.net_cash_paid) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.t_net') %></div></div>
+    </div>
+
+    <div class="pay-sec">
+        <div class="pay-label"><%= t('hr.payments.components_title') %> (<%= components.length %>)</div>
+        <% if (!components.length) { %>
+            <div class="pay-empty"><%= t('hr.payments.comp_empty') %></div>
+        <% } else { %>
+            <div class="table-responsive">
+                <table class="pay-list-table">
+                    <thead>
+                        <tr>
+                            <th><%= t('hr.payments.col_type') %></th>
+                            <th><%= t('hr.payments.col_amount') %></th>
+                            <th><%= t('hr.payments.col_target') %></th>
+                            <th><%= t('hr.payments.col_reason') %></th>
+                            <th><%= t('hr.payments.col_seq') %></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% components.forEach(function(c) { %>
+                            <tr>
+                                <td><%= t('hr.payments.type_' + (c.type === 'OVERTIME' ? 'overtime' : c.type === 'ADVANCE' ? 'advance' : c.type === 'ADDITIONAL' ? 'additional' : 'salary')) %></td>
+                                <td class="pay-num" dir="ltr"><%= (Number(c.amount) / 100).toFixed(2) %></td>
+                                <td dir="ltr"><%= c.target_month || (c.overtime_id ? 'OT#' + c.overtime_id : c.advance_id ? 'ADV#' + c.advance_id : '—') %></td>
+                                <td>
+                                    <% if (c.reason_code) { %>
+                                        <details class="pay-tech"><summary><%= codeLabel(BL_T, c.reason_code) %></summary><span class="pay-key" dir="ltr"><%= c.reason_code %></span></details>
+                                    <% } else { %>—<% } %>
+                                </td>
+                                <td dir="ltr"><%= c.seq %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="pay-sec">
+        <div class="pay-label"><%= t('hr.payments.obligation_title') %></div>
+        <% if (obligation) { %>
+            <div class="pay-stat">
+                <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(obligation.salary_earned) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_earned') %></div></div>
+                <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(obligation.salary_paid) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_paid') %></div></div>
+                <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(obligation.salary_remaining) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_remaining') %></div></div>
+                <div class="pay-stat-item"><div class="pay-stat-value"><%= obligation.status === 'PAID' ? t('hr.payments.st_paid') : obligation.status === 'PARTIAL' ? t('hr.payments.st_partial') : t('hr.payments.st_open') %></div><div class="pay-stat-label"><%= t('hr.payments.obl_status') %></div></div>
+            </div>
+        <% } else { %>
+            <div class="pay-empty"><%= t('hr.payments.obl_none') %></div>
+        <% } %>
+    </div>
+
+    <% if (payment.status === 'DRAFT') { %>
+        <div class="pay-sec" id="wizFinalize">
+            <div class="pay-label"><%= t('hr.payments.finalize_title') %></div>
+            <% if (payment.earnings_total === 0) { %>
+                <div class="pay-warning"><%= t('hr.payments.zero_required_hint') %></div>
+            <% } %>
+            <form method="POST" action="/admin/hr/payments/<%= payment.id %>/finalize" onsubmit="return confirm('<%= t('hr.payments.finalize_confirm') %>');">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="pay-form-grid">
+                    <div>
+                        <label class="pay-label"><%= t('hr.payments.finalize_overpayment') %></label>
+                        <input type="text" name="overpayment_amount" class="form-control" dir="ltr" inputmode="decimal" value="">
+                        <div class="pay-note"><%= t('hr.payments.finalize_overpayment_hint') %></div>
+                    </div>
+                    <div>
+                        <label class="pay-label"><%= t('hr.payments.zero_reason_label') %></label>
+                        <select name="zero_reason_code" class="form-control">
+                            <option value="">—</option>
+                            <% [['NO_WORK_PERIOD','zr_no_work'],['ABSENCE_UNPAID','zr_absence'],['NEW_HIRE_NO_DUE','zr_new_hire'],['LEAVE_UNPAID','zr_leave'],['BANK_UNAVAILABLE','zr_bank'],['EMPLOYEE_ABSENT_PICKUP','zr_pickup'],['OTHER_APPROVED','zr_other']].forEach(function(r) { %>
+                                <option value="<%= r[0] %>"><%= t('hr.payments.' + r[1]) %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="pay-label"><%= t('hr.payments.zero_reason_note') %></label>
+                        <input type="text" name="zero_reason_note" class="form-control" maxlength="500">
+                    </div>
+                </div>
+                <div class="pay-actions">
+                    <button type="submit" class="btn btn-primary"><%= t('hr.payments.btn_finalize') %></button>
+                    <a href="/admin/hr/payments/<%= payment.id %>/edit" class="btn btn-secondary" onclick="event.preventDefault();location.href='/admin/hr/payments/<%= payment.id %>';"><%= t('hr.payments.btn_cancel') %></a>
+                </div>
+            </form>
+        </div>
+
+        <div class="pay-sec pay-inline">
+            <form method="POST" action="/admin/hr/payments/<%= payment.id %>/edit">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="payment_date" value="<%= payment.payment_date %>">
+                <input type="hidden" name="mode" value="FIFO">
+                <input type="hidden" name="requested_amount" value="<%= (Number(payment.entered_total) / 100).toFixed(2) %>">
+                <button type="submit" class="btn btn-primary"><%= t('hr.payments.btn_edit') %></button>
+            </form>
+            <form method="POST" action="/admin/hr/payments/<%= payment.id %>/delete" onsubmit="return confirm('<%= t('hr.payments.delete_confirm') %>');">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-danger"><%= t('hr.payments.btn_delete') %></button>
+            </form>
+        </div>
+    <% } %>
+
+    <% if (payment.status === 'FINALIZED') { %>
+        <div class="pay-sec">
+            <div class="pay-label"><%= t('hr.payments.recovery_title') %></div>
+            <% if (recovery) { %>
+                <div class="pay-stat">
+                    <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(recovery.amount) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.recovery_amount') %></div></div>
+                    <div class="pay-stat-item"><div class="pay-stat-value" dir="ltr"><%= (Number(recovery.remaining_balance) / 100).toFixed(2) %></div><div class="pay-stat-label"><%= t('hr.payments.recovery_balance') %></div></div>
+                    <div class="pay-stat-item"><div class="pay-stat-value"><%= statusLabel(recovery.status) %></div><div class="pay-stat-label"><%= t('hr.payments.obl_status') %></div></div>
+                </div>
+            <% } else { %>
+                <div class="pay-note"><%= t('hr.payments.recovery_none') %></div>
+            <% } %>
+            <% if (payment.zero_reason_code) { %>
+                <div class="pay-warning">
+                    <%= t('hr.payments.zero_reason_label') %>:
+                    <%= t('hr.payments.' + ({'NO_WORK_PERIOD':'zr_no_work','ABSENCE_UNPAID':'zr_absence','NEW_HIRE_NO_DUE':'zr_new_hire','LEAVE_UNPAID':'zr_leave','BANK_UNAVAILABLE':'zr_bank','EMPLOYEE_ABSENT_PICKUP':'zr_pickup','OTHER_APPROVED':'zr_other'})[payment.zero_reason_code]) %>
+                    <% if (payment.zero_reason_note) { %> — <%= payment.zero_reason_note %><% } %>
+                </div>
+            <% } %>
+        </div>
+
+        <div class="pay-sec">
+            <div class="pay-label"><%= t('hr.correction.correction_title') %></div>
+            <div class="pay-note"><%= t('hr.correction.correction_hint') %></div>
+            <form method="POST" action="/admin/hr/payment-correction/<%= payment.id %>" onsubmit="return confirm('<%= t('hr.correction.correct_confirm') %>');">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div style="max-width:640px;margin-top:10px;">
+                    <label class="pay-label"><%= t('hr.correction.reason_label') %> <span class="pay-req">*</span></label>
+                    <textarea name="reason" class="form-control" rows="2" required minlength="5" maxlength="1000" placeholder="<%= t('hr.correction.reason_placeholder') %>"></textarea>
+                </div>
+                <div class="pay-actions">
+                    <button type="submit" class="btn btn-danger"><%= t('hr.correction.btn_correct') %></button>
+                </div>
+            </form>
+        </div>
+    <% } %>
+
+    <% if (payment.status === 'CORRECTED') { %>
+        <div class="pay-sec">
+            <div class="pay-warning">
+                <%= t('hr.correction.corrected_note') %>
+                <%= t('hr.correction.corrected_count_label') %>: <%= payment.corrected_count %>
+            </div>
+        </div>
+    <% } %>
+
+    <div class="pay-sec">
+        <div class="pay-label"><%= t('hr.payments.audit_title') %></div>
+        <% if (!audits || audits.length === 0) { %>
+            <div class="pay-empty"><%= t('hr.payments.audit_empty') %></div>
+        <% } else { %>
+            <div class="table-responsive">
+                <table class="pay-list-table">
+                    <thead>
+                        <tr>
+                            <th><%= t('hr.payments.audit_action') %></th>
+                            <th><%= t('hr.payments.audit_field') %></th>
+                            <th><%= t('hr.payments.audit_change') %></th>
+                            <th><%= t('hr.payments.audit_reason') %></th>
+                            <th><%= t('hr.payments.audit_actor') %></th>
+                            <th><%= t('hr.payments.audit_time') %></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% audits.forEach(function(a) { %>
+                            <tr>
+                                <td><details class="pay-tech"><summary><strong><%= (a.action && ACT_T[a.action]) ? t(ACT_T[a.action]) : t('hr.payws.act_generic') %></strong></summary><span class="pay-key" dir="ltr"><%= a.action %></span></details></td>
+                                <td><%= a.field_name || '—' %></td>
+                                <td dir="ltr"><%= (a.old_value || '—') + ' → ' + (a.new_value || '—') %></td>
+                                <td style="font-size:11.5px;max-width:340px;word-break:break-word;"><%= a.reason || '—' %></td>
+                                <td dir="ltr"><%= a.actor_id %></td>
+                                <td dir="ltr" style="font-size:11px;"><%= a.created_at %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+    </div>
+
+    <div class="pay-sec">
+        <div class="pay-label"><%= t('hr.payments.key_label') %></div>
+        <span class="pay-key"><%= payment.idempotency_key || '—' %></span>
+        <% if (payment.duplicate_confirmed) { %><span class="pay-badge pay-badge-amber" style="margin-inline-start:8px;"><%= t('hr.payments.dup_flag') %></span><% } %>
+        <div class="pay-note"><%= t('hr.payments.hint_immutable') %></div>
+    </div>
+<% } %>
+</div>
+
+<%- include('../partials/footer') %>

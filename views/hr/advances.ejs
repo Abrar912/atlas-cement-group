@@ -1,0 +1,382 @@
+<%- include('../partials/header') %>
+
+<style>
+.adv-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+.adv-hero-left{display:flex;align-items:center;gap:16px}
+.adv-hero-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(255,111,0,.25)}
+.adv-hero-icon svg{width:28px;height:28px;color:#fff;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.adv-hero-title{font-size:24px;font-weight:800;color:var(--text-main);margin:0;letter-spacing:-.3px}
+.adv-hero-sub{font-size:14px;color:var(--text-muted);margin:2px 0 0}
+.adv-hero-count{display:inline-block;background:rgba(255,111,0,.1);color:var(--primary);font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;margin-inline-start:8px}
+.adv-hero-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.adv-context{background:var(--primary);color:#fff;padding:14px 20px;border-radius:10px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.adv-context-left{display:flex;align-items:center;gap:12px}
+.adv-context-avatar{width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;overflow:hidden}
+.adv-context-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.adv-context-name{font-size:16px;font-weight:600}
+.adv-context-id{font-size:12px;opacity:.8;font-family:monospace}
+.adv-context-label{font-size:13px;opacity:.9}
+.adv-context-link{background:rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;transition:background .15s}
+.adv-context-link:hover{background:rgba(255,255,255,.3)}
+.adv-form-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:14px;padding:24px;margin-bottom:24px}
+.adv-section-title{font-size:18px;font-weight:700;color:var(--text-main);margin:0 0 16px;padding-bottom:12px;border-bottom:2px solid var(--border-color);display:flex;align-items:center;gap:8px}
+.adv-section-title svg{stroke:var(--primary);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.adv-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:16px}
+.adv-form-group{display:flex;flex-direction:column;gap:6px}
+.adv-form-label{font-size:13px;font-weight:600;color:var(--text-main)}
+.adv-form-label span{color:var(--status-error);margin-inline-start:2px}
+.adv-form-select,.adv-form-input,.adv-form-textarea{width:100%;padding:10px 14px;font-size:14px;border:1px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-main);transition:border-color .15s,box-shadow .15s;font-family:inherit}
+.adv-form-select:focus,.adv-form-input:focus,.adv-form-textarea:focus{border-color:var(--accent-blue);outline:none;box-shadow:0 0 0 3px rgba(9,105,218,.12)}
+.adv-form-textarea{min-height:80px;resize:vertical}
+.adv-submit-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;border:none;background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(255,111,0,.3)}
+.adv-submit-btn:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,111,0,.4)}
+.adv-submit-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.adv-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;padding:14px 16px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px}
+.adv-search-wrap{position:relative;flex:1;min-width:200px}
+.adv-search-icon{position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);stroke:var(--text-muted);pointer-events:none}
+.adv-search-input{width:100%;padding:9px 12px;padding-inline-start:36px;font-size:13px;border:1px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-main);transition:border-color .15s}
+.adv-search-input:focus{border-color:var(--accent-blue);outline:none}
+.adv-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:16px 20px;margin-bottom:10px;transition:border-color .15s,box-shadow .15s}
+.adv-card:hover{border-color:var(--primary);box-shadow:0 2px 8px rgba(255,111,0,.08)}
+.adv-card-header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px}
+.adv-card-avatar{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px;flex-shrink:0;overflow:hidden}
+.adv-card-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.adv-card-info{flex:1;min-width:0}
+.adv-card-name{font-size:15px;font-weight:700;color:var(--text-main);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.adv-card-meta{font-size:12px;color:var(--text-muted);margin-top:2px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.adv-card-meta code{background:var(--bg-color);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--text-muted);border:1px solid var(--border-color)}
+.adv-card-badges{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.adv-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.adv-badge-active{background:rgba(207,34,46,.1);color:var(--status-error)}
+.adv-badge-partial{background:rgba(212,167,44,.15);color:var(--safety-orange)}
+.adv-badge-repaid{background:rgba(26,127,55,.1);color:var(--status-success)}
+.adv-badge-disputed{background:rgba(124,58,237,.15);color:#7c3aed}
+.adv-card-amounts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:12px}
+.adv-amount-box{background:var(--bg-color);border:1px solid var(--border-color);border-radius:8px;padding:10px 14px;text-align:center}
+.adv-amount-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.adv-amount-value{font-size:16px;font-weight:700;color:var(--text-main)}
+.adv-amount-value.afn{font-family:inherit}
+.adv-progress{height:6px;border-radius:3px;background:var(--border-color);overflow:hidden;margin-top:6px}
+.adv-progress-fill{height:100%;border-radius:3px;transition:width .4s ease}
+.adv-progress-fill.green{background:var(--status-success)}
+.adv-progress-fill.orange{background:var(--safety-orange)}
+.adv-progress-fill.red{background:var(--status-error)}
+.adv-card-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.adv-card-date{font-size:12px;color:var(--text-muted)}
+.adv-card-reason{font-size:12px;color:var(--text-muted);font-style:italic;flex:1}
+.adv-repay-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;border:none;background:var(--primary);color:#fff;box-shadow:0 2px 6px rgba(255,111,0,.2)}
+.adv-repay-btn:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.adv-repay-btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.adv-empty{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.adv-empty-icon{width:64px;height:64px;border-radius:16px;background:var(--bg-color);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.adv-empty-icon svg{width:28px;height:28px;stroke:var(--text-muted);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.adv-empty-title{font-size:16px;font-weight:600;color:var(--text-main);margin:0 0 4px}
+.adv-empty-sub{font-size:13px;color:var(--text-muted);margin:0}
+.adv-modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;padding:20px}
+.adv-modal-overlay.active{display:flex}
+.adv-modal{background:var(--card-bg);border:1px solid var(--border-color);border-radius:16px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.3);animation:advModalIn .2s ease}
+@keyframes advModalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.adv-modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border-color)}
+.adv-modal-title{font-size:17px;font-weight:700;color:var(--text-main);margin:0}
+.adv-modal-close{width:32px;height:32px;border-radius:8px;border:none;background:var(--bg-color);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-size:18px}
+.adv-modal-close:hover{background:var(--status-error);color:#fff}
+.adv-modal-body{padding:24px}
+.adv-modal-footer{padding:0 24px 24px;display:flex;gap:10px;justify-content:flex-end}
+.adv-modal-btn-cancel{padding:10px 20px;border-radius:8px;border:1px solid var(--border-color);background:var(--bg-color);color:var(--text-main);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s}
+.adv-modal-btn-cancel:hover{background:var(--border-color)}
+.adv-modal-btn-submit{padding:10px 24px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;box-shadow:0 2px 8px rgba(255,111,0,.3)}
+.adv-modal-btn-submit:hover{background:var(--primary-dark);transform:translateY(-1px)}
+.adv-modal-remaining{font-size:13px;color:var(--text-muted);margin-top:4px;display:flex;align-items:center;gap:4px}
+@media(max-width:900px){.adv-form-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}.adv-card-header{flex-direction:column;align-items:flex-start}.adv-card-amounts{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.adv-hero{flex-direction:column;align-items:flex-start}.adv-hero-actions{width:100%}.adv-toolbar{flex-direction:column}.adv-search-wrap{width:100%}.adv-card-amounts{grid-template-columns:1fr}.adv-card-footer{flex-direction:column;align-items:flex-start}}
+</style>
+
+<div class="card">
+    <% if (contextEmployee) { %>
+        <div class="adv-context">
+            <div class="adv-context-left">
+                <div class="adv-context-avatar"><% if (contextEmployee.photo_path) { %><img src="/<%= contextEmployee.photo_path %>" alt="<%= contextEmployee.full_name %>"><% } else { %><%= contextEmployee.full_name.charAt(0).toUpperCase() %><% } %></div>
+                <div>
+                    <div class="adv-context-label"><%= t('hr.employees.full_name') %></div>
+                    <div class="adv-context-name"><%= contextEmployee.full_name %></div>
+                    <div class="adv-context-id"><%= contextEmployee.employee_id || 'N/A' %></div>
+                    <% const bannerSalary = currentSalaries && currentSalaries[contextEmployee.id]; %>
+                    <div class="adv-context-id"><%= t('hr.advances.current_salary') %>: <strong><%= bannerSalary ? (bannerSalary.basic_salary + bannerSalary.allowances).toLocaleString() + ' ' + t('hr.dashboard.afghani') : '—' %></strong></div>
+                </div>
+            </div>
+            <a href="/admin/hr/employees/<%= contextEmployee.id %>" class="adv-context-link">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                <%= t('hr.employees.back_to_list') %>
+            </a>
+        </div>
+    <% } %>
+
+    <div class="adv-hero">
+        <div class="adv-hero-left">
+            <div class="adv-hero-icon">
+                <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 4v16"/><path d="M2 12h20"/></svg>
+            </div>
+            <div>
+                <h1 class="adv-hero-title"><%= t('hr.advances.title') %><% if (advances && advances.length > 0) { %><span class="adv-hero-count"><%= advances.length %></span><% } %></h1>
+                <p class="adv-hero-sub"><%= t('hr.advances.title_desc') %></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adv-form-card">
+        <h3 class="adv-section-title">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
+            <%= t('hr.advances.add_new_advance') %>
+        </h3>
+        <form method="POST" action="/admin/hr/advances">
+            <% if (contextEmployee) { %>
+                <input type="hidden" name="context_employee_id" value="<%= contextEmployee.id %>">
+            <% } %>
+            <div class="adv-form-grid">
+                <div class="adv-form-group">
+                    <label class="adv-form-label"><%= t('hr.advances.employee') %> <span>*</span></label>
+                    <select name="employee_id" class="adv-form-select" required>
+                        <option value=""><%= t('hr.leave.select_employee') %></option>
+                        <% if (employees && employees.length > 0) { %>
+                            <% employees.forEach(function(emp) { %>
+                                <option value="<%= emp.id %>" <%= contextEmployee && contextEmployee.id == emp.id ? 'selected' : '' %>><%= emp.full_name %></option>
+                            <% }); %>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="adv-form-group">
+                    <label class="adv-form-label"><%= t('hr.advances.advance_amount') %> (<%= t('hr.dashboard.afghani') %>) <span>*</span></label>
+                    <input type="number" name="amount" class="adv-form-input" required min="1">
+                </div>
+                <div class="adv-form-group">
+                    <label class="adv-form-label"><%= t('hr.advances.date') %> <span>*</span></label>
+                    <input type="text" name="date" class="adv-form-input" required data-datepicker="jalali" placeholder="<%= t('hr.advances.date_placeholder') %>" dir="ltr">
+                </div>
+                <div class="adv-form-group">
+                    <label class="adv-form-label"><%= t('hr.advances.monthly_repayment') %> (<%= t('hr.dashboard.afghani') %>)</label>
+                    <input type="number" name="repayment_amount" class="adv-form-input" min="0" value="0">
+                </div>
+            </div>
+            <div class="adv-form-group" style="margin-bottom:16px">
+                <label class="adv-form-label"><%= t('hr.leave.reason') %></label>
+                <textarea name="reason" class="adv-form-textarea" rows="2" placeholder="<%= t('hr.advances.reason_placeholder') %>" dir="rtl"></textarea>
+            </div>
+            <button type="submit" class="adv-submit-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <%= t('hr.advances.add_advance') %>
+            </button>
+        </form>
+    </div>
+
+    <div class="adv-toolbar">
+        <div class="adv-search-wrap">
+            <svg class="adv-search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="adv-search-input" id="advSearchInput" placeholder="<%= t('hr.advances.title') %>..." oninput="filterAdvances()">
+        </div>
+        <select class="adv-form-select" id="advStatusFilter" style="width:auto;padding:7px 12px;font-size:13px" onchange="filterAdvances()">
+            <option value=""><%= t('hr.advances.status') %></option>
+            <option value="Active"><%= t('hr.advances.active') %></option>
+            <option value="Partially Repaid"><%= t('hr.advances.partially_repaid') %></option>
+            <option value="Fully Repaid"><%= t('hr.advances.fully_repaid') %></option>
+            <option value="Disputed"><%= t('hr.correction.status_disputed') %></option>
+        </select>
+    </div>
+
+    <div id="advRecordsList">
+        <% if (advances && advances.length > 0) { %>
+            <% advances.forEach(function(advance) { %>
+                <div class="adv-card" data-search="<%= (advance.full_name + ' ' + (advance.employee_id || '') + ' ' + (advance.position || '') + ' ' + (advance.reason || '')).toLowerCase() %>" data-status="<%= advance.status %>">
+                    <div class="adv-card-header">
+                        <div class="adv-card-avatar"><% if (advance.photo_path) { %><img src="/<%= advance.photo_path %>" alt="<%= advance.full_name %>"><% } else { %><%= advance.full_name.charAt(0).toUpperCase() %><% } %></div>
+                        <div class="adv-card-info">
+                            <div class="adv-card-name"><%= advance.full_name %></div>
+                            <div class="adv-card-meta">
+                                <code><%= advance.employee_id || 'N/A' %></code>
+                                <span><%= advance.position %></span>
+                            </div>
+                        </div>
+                        <div class="adv-card-badges">
+                            <% if (advance.status === 'Active') { %>
+                                <span class="adv-badge adv-badge-active"><%= t('hr.advances.active') %></span>
+                            <% } else if (advance.status === 'Partially Repaid') { %>
+                                <span class="adv-badge adv-badge-partial"><%= t('hr.advances.partially_repaid') %></span>
+                            <% } else if (advance.status === 'Fully Repaid') { %>
+                                <span class="adv-badge adv-badge-repaid"><%= t('hr.advances.fully_repaid') %></span>
+                            <% } else if (advance.status === 'Disputed') { %>
+                                <span class="adv-badge adv-badge-disputed"><%= t('hr.correction.status_disputed') %></span>
+                            <% } else { %>
+                                <span class="adv-badge"><%= advance.status %></span>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="adv-card-amounts">
+                        <% const cardSalary = currentSalaries && currentSalaries[advance.advance_employee_fk]; const repaidAmount = advance.amount - advance.remaining_balance; %>
+                        <div class="adv-amount-box">
+                            <div class="adv-amount-label"><%= t('hr.advances.amount') %></div>
+                            <div class="adv-amount-value"><%= advance.amount.toLocaleString() %> <small><%= t('hr.dashboard.afghani') %></small></div>
+                        </div>
+                        <div class="adv-amount-box">
+                            <div class="adv-amount-label"><%= t('hr.advances.current_salary') %></div>
+                            <div class="adv-amount-value"><% if (cardSalary) { %><%= (cardSalary.basic_salary + cardSalary.allowances).toLocaleString() %> <small><%= t('hr.dashboard.afghani') %></small><% } else { %>—<% } %></div>
+                        </div>
+                        <div class="adv-amount-box">
+                            <div class="adv-amount-label"><%= t('hr.advances.monthly_repayment') %></div>
+                            <div class="adv-amount-value"><%= (advance.repayment_amount || 0).toLocaleString() %> <small><%= t('hr.dashboard.afghani') %></small></div>
+                        </div>
+                        <div class="adv-amount-box">
+                            <div class="adv-amount-label"><%= t('hr.advances.repaid') %></div>
+                            <div class="adv-amount-value"><%= repaidAmount.toLocaleString() %> <small><%= t('hr.dashboard.afghani') %></small></div>
+                        </div>
+                        <div class="adv-amount-box">
+                            <div class="adv-amount-label"><%= t('hr.advances.remaining') %></div>
+                            <div class="adv-amount-value"><%= advance.remaining_balance.toLocaleString() %> <small><%= t('hr.dashboard.afghani') %></small></div>
+                            <% const totalRepayment = advance.amount; const repaid = repaidAmount; const pct = totalRepayment > 0 ? Math.min(100, Math.round((repaid / totalRepayment) * 100)) : 0; %>
+                            <div class="adv-progress"><div class="adv-progress-fill <%= pct >= 100 ? 'green' : pct >= 50 ? 'orange' : 'red' %>" style="width:<%= pct %>%"></div></div>
+                        </div>
+                    </div>
+                    <div class="adv-card-footer">
+                        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;flex:1">
+                            <span class="adv-card-date"><%= t('hr.advances.date') %>: <strong><%= advance.date %></strong></span>
+                            <% if (advance.reason) { %>
+                                <span class="adv-card-reason"><%= advance.reason %></span>
+                            <% } %>
+                        </div>
+                        <% if (advance.status === 'Active' || advance.status === 'Partially Repaid') { %>
+                            <button onclick="openRepaymentModal('<%= advance.id %>', '<%= advance.remaining_balance %>')" class="adv-repay-btn">
+                                <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                <%= t('hr.advances.repay') %>
+                            </button>
+                            <button onclick="openDisputeModal('<%= advance.id %>', 'dispute')" class="adv-repay-btn" style="background:#7c3aed;">
+                                <svg viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                                <%= t('hr.correction.btn_dispute') %>
+                            </button>
+                        <% } %>
+                        <% if (advance.status === 'Disputed') { %>
+                            <button onclick="openDisputeModal('<%= advance.id %>', 'resolve')" class="adv-repay-btn" style="background:#1a7f37;">
+                                <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                <%= t('hr.correction.btn_resolve') %>
+                            </button>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="adv-empty">
+                <div class="adv-empty-icon">
+                    <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 4v16"/><path d="M2 12h20"/></svg>
+                </div>
+                <p class="adv-empty-title"><%= t('hr.advances.no_records_found') %></p>
+                <p class="adv-empty-sub"><%= t('hr.advances.add_advance') %></p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<div class="adv-modal-overlay" id="repaymentModal">
+    <div class="adv-modal">
+        <div class="adv-modal-header">
+            <h3 class="adv-modal-title"><%= t('hr.advances.record_repayment') %></h3>
+            <button class="adv-modal-close" onclick="closeRepaymentModal()">&times;</button>
+        </div>
+        <div class="adv-modal-body">
+            <form id="repaymentForm" method="POST">
+                <input type="hidden" name="advance_id" id="repaymentAdvanceId">
+                <div class="adv-form-group" style="margin-bottom:16px">
+                    <label class="adv-form-label"><%= t('hr.advances.repayment_amount') %> (<%= t('hr.dashboard.afghani') %>) <span>*</span></label>
+                    <input type="number" name="amount" id="repaymentAmount" class="adv-form-input" required min="1">
+                    <div class="adv-modal-remaining"><%= t('hr.advances.remaining') %>: <strong><span id="remainingBalanceDisplay"></span></strong> <%= t('hr.dashboard.afghani') %></div>
+                </div>
+                <div class="adv-form-group" style="margin-bottom:16px">
+                    <label class="adv-form-label"><%= t('hr.advances.payment_date') %> <span>*</span></label>
+                    <input type="text" name="payment_date" class="adv-form-input" required data-datepicker="jalali" placeholder="<%= t('hr.advances.date_placeholder') %>" dir="ltr">
+                </div>
+                <div class="adv-form-group">
+                    <label class="adv-form-label"><%= t('hr.payroll.notes') %></label>
+                    <textarea name="notes" class="adv-form-textarea" rows="2" dir="rtl"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="adv-modal-footer">
+            <button type="button" class="adv-modal-btn-cancel" onclick="closeRepaymentModal()"><%= t('forms.cancel') %></button>
+            <button type="submit" form="repaymentForm" class="adv-modal-btn-submit"><%= t('hr.advances.record_repayment') %></button>
+        </div>
+    </div>
+</div>
+
+<div class="adv-modal-overlay" id="disputeModal">
+    <div class="adv-modal">
+        <div class="adv-modal-header">
+            <h3 class="adv-modal-title" id="disputeModalTitle"></h3>
+            <button class="adv-modal-close" onclick="closeDisputeModal()">&times;</button>
+        </div>
+        <div class="adv-modal-body">
+            <form id="disputeForm" method="POST">
+                <input type="hidden" name="advance_id" id="disputeAdvanceId">
+                <% if (contextEmployee) { %>
+                    <input type="hidden" name="context_employee_id" value="<%= contextEmployee.id %>">
+                <% } %>
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                <div class="adv-form-group">
+                    <label class="adv-form-label"><%= t('hr.correction.reason_label') %> <span style="color:var(--status-error)">*</span></label>
+                    <textarea name="reason" class="adv-form-textarea" rows="3" required minlength="5" maxlength="1000" placeholder="<%= t('hr.correction.reason_placeholder') %>"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="adv-modal-footer">
+            <button type="button" class="adv-modal-btn-cancel" onclick="closeDisputeModal()"><%= t('forms.cancel') %></button>
+            <button type="submit" form="disputeForm" class="adv-modal-btn-submit" id="disputeSubmitBtn"><%= t('hr.correction.btn_dispute') %></button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openRepaymentModal(advanceId, remainingBalance) {
+    document.getElementById('repaymentAdvanceId').value = advanceId;
+    document.getElementById('remainingBalanceDisplay').textContent = remainingBalance.toLocaleString();
+    document.getElementById('repaymentAmount').max = remainingBalance;
+    document.getElementById('repaymentAmount').value = remainingBalance;
+    document.getElementById('repaymentForm').action = '/admin/hr/advances/' + advanceId + '/repay';
+    document.getElementById('repaymentModal').classList.add('active');
+}
+
+function closeRepaymentModal() {
+    document.getElementById('repaymentModal').classList.remove('active');
+}
+
+var disputeMode = 'dispute';
+function openDisputeModal(advanceId, mode) {
+    disputeMode = mode === 'resolve' ? 'resolve' : 'dispute';
+    var isResolve = disputeMode === 'resolve';
+    document.getElementById('disputeAdvanceId').value = advanceId;
+    document.getElementById('disputeModalTitle').textContent = isResolve ? '<%= t('hr.correction.resolve_title') %>' : '<%= t('hr.correction.dispute_title') %>';
+    document.getElementById('disputeSubmitBtn').textContent = isResolve ? '<%= t('hr.correction.btn_resolve') %>' : '<%= t('hr.correction.btn_dispute') %>';
+    document.getElementById('disputeForm').action = '/admin/hr/advances/' + advanceId + (isResolve ? '/dispute/resolve' : '/dispute');
+    document.getElementById('disputeForm').onsubmit = function() {
+        return confirm(isResolve ? '<%= t('hr.correction.resolve_confirm') %>' : '<%= t('hr.correction.dispute_confirm') %>');
+    };
+    document.getElementById('disputeModal').classList.add('active');
+}
+
+function closeDisputeModal() {
+    document.getElementById('disputeModal').classList.remove('active');
+}
+
+document.getElementById('disputeModal').addEventListener('click', function(e) {
+    if (e.target === this) closeDisputeModal();
+});
+
+document.getElementById('repaymentModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRepaymentModal();
+});
+
+function filterAdvances() {
+    const search = document.getElementById('advSearchInput').value.toLowerCase();
+    const status = document.getElementById('advStatusFilter').value;
+    const cards = document.querySelectorAll('.adv-card');
+    cards.forEach(function(card) {
+        const matchesSearch = !search || card.getAttribute('data-search').indexOf(search) !== -1;
+        const matchesStatus = !status || card.getAttribute('data-status') === status;
+        card.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+}
+</script>

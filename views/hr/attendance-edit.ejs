@@ -1,0 +1,85 @@
+<%- include('../partials/header') %>
+
+<div class="card">
+    <h2 style="margin-bottom: 20px; font-size: 24px;">✏ Edit Attendance</h2>
+
+    <div class="card" style="background-color: var(--bg-color); margin-bottom: 20px;">
+        <div style="margin-bottom: 15px; padding: 10px; background: var(--primary); color: white; border-radius: 6px; font-size: 13px;">
+            <strong><%= record.full_name %></strong> (<%= record.emp_code || 'N/A' %>) — <%= record.attendance_date %>
+            <% if (record.source) { %>
+                <span style="margin-left: 8px; padding: 2px 8px; border-radius: 4px; background: rgba(255,255,255,0.2); font-size: 11px;"><%= record.source %></span>
+            <% } %>
+        </div>
+
+        <form method="POST" action="/admin/hr/attendance/<%= record.id %>/edit">
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label>Employee *</label>
+                    <select name="employee_id" class="form-control" required>
+                        <% if (employees && employees.length > 0) { %>
+                            <% employees.forEach(function(emp) { %>
+                                <option value="<%= emp.id %>" <%= record.employee_id == emp.id ? 'selected' : '' %>><%= emp.full_name %></option>
+                            <% }); %>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="text" name="attendance_date" class="form-control" value="<%= record.attendance_date %>" required data-datepicker="jalali" dir="ltr">
+                </div>
+                <div class="form-group">
+                    <label>Status *</label>
+                    <select name="status" class="form-control" required>
+                        <option value="Present" <%= record.status === 'Present' ? 'selected' : '' %>>Present</option>
+                        <option value="Absent" <%= record.status === 'Absent' ? 'selected' : '' %>>Absent</option>
+                        <option value="Late" <%= record.status === 'Late' ? 'selected' : '' %>>Late</option>
+                        <option value="Half Day" <%= record.status === 'Half Day' ? 'selected' : '' %>>Half Day</option>
+                        <option value="Holiday" <%= record.status === 'Holiday' ? 'selected' : '' %>>Holiday</option>
+                        <option value="Leave" <%= record.status === 'Leave' ? 'selected' : '' %>>Leave</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Check In</label>
+                    <input type="time" name="check_in" class="form-control" value="<%= record.check_in || '' %>" <%= ['Present', 'Late', 'Half Day'].includes(record.status) ? 'required' : '' %>>
+                </div>
+                <div class="form-group">
+                    <label>Check Out</label>
+                    <input type="time" name="check_out" class="form-control" value="<%= record.check_out || '' %>">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="2" dir="rtl"><%= record.notes || '' %></textarea>
+            </div>
+
+            <!-- Auto-calculated values (read-only) -->
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 10px; padding: 10px; background: var(--border-color); border-radius: 6px;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 11px;">Late Minutes (auto)</label>
+                    <input type="text" class="form-control" value="<%= record.late_minutes || 0 %>" readonly style="background: var(--bg-color);">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 11px;">Early Departure (auto)</label>
+                    <input type="text" class="form-control" value="<%= record.early_departure_minutes || 0 %>" readonly style="background: var(--bg-color);">
+                </div>
+                <% if (record.expected_check_in) { %>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 11px;">Schedule Check-In</label>
+                    <input type="text" class="form-control" value="<%= record.expected_check_in %>" readonly style="background: var(--bg-color);">
+                </div>
+                <% } %>
+                <% if (record.expected_check_out) { %>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="font-size: 11px;">Schedule Check-Out</label>
+                    <input type="text" class="form-control" value="<%= record.expected_check_out %>" readonly style="background: var(--bg-color);">
+                </div>
+                <% } %>
+            </div>
+
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="/admin/hr/attendance" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,349 @@
+<%- include('../partials/header') %>
+
+<%
+    var empMap = {};
+    if (balances && balances.length > 0) {
+        balances.forEach(function(b) {
+            var key = b.employee_id || ('emp_' + b.id);
+            if (!empMap[key]) {
+                empMap[key] = { full_name: b.full_name, employee_id: b.employee_id, photo_path: b.photo_path, types: {} };
+            }
+            empMap[key].types[b.leave_type_id] = b;
+        });
+    }
+    var empKeys = Object.keys(empMap);
+%>
+
+<style>
+    .lb-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+    .lb-hero-left{display:flex;align-items:center;gap:16px}
+    .lb-hero-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(255,111,0,.25)}
+    .lb-hero-icon svg{width:28px;height:28px;color:#fff;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .lb-hero-title{font-size:24px;font-weight:800;color:var(--text-main);margin:0;letter-spacing:-.3px}
+    .lb-hero-sub{font-size:14px;color:var(--text-muted);margin:2px 0 0}
+    .lb-hero-year{display:inline-block;background:rgba(255,111,0,.1);color:var(--primary);font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;margin-inline-start:8px}
+    .lb-hero-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .lb-hero-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;border:none;text-decoration:none;white-space:nowrap;background:var(--card-bg);color:var(--text-main);border:1px solid var(--border-color)}
+    .lb-hero-btn:hover{border-color:var(--primary);color:var(--primary);transform:translateY(-1px)}
+    .lb-hero-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .lb-ctx{background:var(--primary);color:#fff;padding:14px 20px;border-radius:10px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+    .lb-ctx-left{display:flex;align-items:center;gap:12px}
+    .lb-ctx-avatar{width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;overflow:hidden}
+    .lb-ctx-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+    .lb-ctx-info{display:flex;flex-direction:column;gap:1px}
+    .lb-ctx-label{font-size:11px;opacity:.8;text-transform:uppercase;letter-spacing:.5px}
+    .lb-ctx-name{font-size:16px;font-weight:600}
+    .lb-ctx-id{font-size:12px;opacity:.75;font-family:monospace}
+    .lb-ctx-link{background:rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;transition:background .15s;display:inline-flex;align-items:center;gap:6px}
+    .lb-ctx-link:hover{background:rgba(255,255,255,.35)}
+    .lb-ctx-link svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .lb-section{margin-bottom:28px}
+    .lb-section-head{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid var(--border-color)}
+    .lb-section-head svg{stroke:var(--primary);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+    .lb-section-title{font-size:18px;font-weight:700;color:var(--text-main);margin:0}
+    .lb-section-sub{font-size:13px;color:var(--text-muted);margin:0}
+    .lb-legal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+    .lb-legal-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:18px 16px;display:flex;align-items:center;gap:14px;transition:transform .15s,box-shadow .15s}
+    .lb-legal-card:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+    .lb-legal-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .lb-legal-icon svg{width:18px;height:18px;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .lb-legal-icon.lt-1{background:linear-gradient(135deg,#3b82f6,#2563eb)}
+    .lb-legal-icon.lt-2{background:linear-gradient(135deg,#10b981,#059669)}
+    .lb-legal-icon.lt-3{background:linear-gradient(135deg,#f97316,#ea580c)}
+    .lb-legal-icon.lt-4{background:linear-gradient(135deg,#6b7280,#4b5563)}
+    .lb-legal-icon.lt-default{background:linear-gradient(135deg,var(--primary),var(--primary-dark))}
+    .lb-legal-info{flex:1;min-width:0}
+    .lb-legal-name{font-size:14px;font-weight:700;color:var(--text-main);margin-bottom:2px}
+    .lb-legal-desc{font-size:12px;color:var(--text-muted)}
+    .lb-legal-days{font-size:22px;font-weight:800;color:var(--primary);flex-shrink:0;line-height:1}
+    .lb-legal-days-lbl{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;text-align:center}
+    .lb-emp-group{margin-bottom:20px}
+    .lb-emp-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 14px;background:var(--bg-color);border:1px solid var(--border-color);border-radius:10px}
+    .lb-emp-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden}
+    .lb-emp-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+    .lb-emp-name{font-size:14px;font-weight:700;color:var(--text-main)}
+    .lb-emp-id{font-size:11px;color:var(--text-muted);font-family:monospace;margin-inline-start:auto}
+    .lb-bal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+    .lb-bal-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:14px;overflow:hidden;transition:transform .18s,box-shadow .18s,border-color .18s}
+    .lb-bal-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);border-color:var(--primary)}
+    .lb-bal-head{padding:14px 16px 10px;display:flex;align-items:center;gap:10px}
+    .lb-bal-type-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .lb-bal-type-icon svg{width:14px;height:14px;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .lb-bal-type-name{font-size:14px;font-weight:700;color:var(--text-main)}
+    .lb-bal-bar-wrap{padding:0 16px 10px}
+    .lb-bal-bar{height:7px;border-radius:4px;background:var(--border-color);overflow:hidden}
+    .lb-bal-bar-fill{height:100%;border-radius:4px;transition:width .4s ease}
+    .lb-bal-bar-fill.fill-ok{background:linear-gradient(90deg,#10b981,#34d399)}
+    .lb-bal-bar-fill.fill-warn{background:linear-gradient(90deg,#f97316,#fb923c)}
+    .lb-bal-bar-fill.fill-full{background:linear-gradient(90deg,#ef4444,#f87171)}
+    .lb-bal-values{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;padding:0 16px 16px}
+    .lb-bal-val{text-align:center}
+    .lb-bal-val-num{font-size:18px;font-weight:800;line-height:1.2}
+    .lb-bal-val-num.v-alloc{color:var(--primary)}
+    .lb-bal-val-num.v-used{color:var(--safety-orange)}
+    .lb-bal-val-num.v-remain-pos{color:var(--status-success)}
+    .lb-bal-val-num.v-remain-neg{color:var(--status-error)}
+    .lb-bal-val-num.v-zero{color:var(--text-muted)}
+    .lb-bal-val-lbl{font-size:10px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px}
+    .lb-empty{text-align:center;padding:60px 20px;background:var(--card-bg);border:2px dashed var(--border-color);border-radius:14px}
+    .lb-empty-icon{width:64px;height:64px;border-radius:16px;background:var(--bg-color);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+    .lb-empty-icon svg{width:28px;height:28px;stroke:var(--text-muted);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+    .lb-empty-title{font-size:16px;font-weight:600;color:var(--text-main);margin:0 0 4px}
+    .lb-empty-sub{font-size:13px;color:var(--text-muted);margin:0}
+    @media(max-width:900px){.lb-legal-grid{grid-template-columns:repeat(auto-fill,minmax(180px,1fr))}.lb-bal-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}
+    @media(max-width:640px){.lb-hero{flex-direction:column;align-items:flex-start}.lb-hero-actions{width:100%}.lb-hero-btn{width:100%;justify-content:center}.lb-legal-grid{grid-template-columns:1fr}.lb-bal-grid{grid-template-columns:1fr}.lb-ctx{flex-direction:column;align-items:flex-start}.lb-ctx-link{width:100%;justify-content:center}.lb-bal-values{gap:4px}.lb-bal-val-num{font-size:16px}.lb-emp-header{flex-wrap:wrap}.lb-emp-id{margin-inline-start:0}.lb-filter-bar{flex-direction:column;align-items:stretch}.lb-filter-group{min-width:100%}.lb-filter-btn{width:100%;justify-content:center}}
+    .lb-filter-bar{display:flex;align-items:flex-end;gap:14px;padding:16px 20px;background:var(--bg-color);border:1px solid var(--border-color);border-radius:12px;margin-bottom:24px;flex-wrap:wrap}
+    .lb-filter-form{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;width:100%}
+    .lb-filter-group{display:flex;flex-direction:column;gap:4px;min-width:160px;flex:1}
+    .lb-filter-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px}
+    .lb-filter-select{padding:9px 12px;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-main);font-size:14px;font-family:inherit;cursor:pointer;transition:border-color .15s;appearance:auto}
+    .lb-filter-select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(255,111,0,.1)}
+    .lb-filter-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;border:none;background:var(--primary);color:#fff;white-space:nowrap}
+    .lb-filter-btn:hover{opacity:.9;transform:translateY(-1px)}
+    .lb-filter-btn svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+</style>
+
+<div class="card">
+    <% if (contextEmployee) { %>
+        <div class="lb-ctx">
+            <div class="lb-ctx-left">
+                <div class="lb-ctx-avatar"><% if (contextEmployee.photo_path) { %><img src="/<%= contextEmployee.photo_path %>" alt="<%= contextEmployee.full_name %>"><% } else { %><%= contextEmployee.full_name.charAt(0).toUpperCase() %><% } %></div>
+                <div class="lb-ctx-info">
+                    <span class="lb-ctx-label"><%= t('hr.employees.full_name') %></span>
+                    <span class="lb-ctx-name"><%= contextEmployee.full_name %></span>
+                    <span class="lb-ctx-id"><%= contextEmployee.employee_id || 'N/A' %></span>
+                </div>
+            </div>
+            <a href="/admin/hr/employees/<%= contextEmployee.id %>" class="lb-ctx-link">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                <%= t('hr.employees.back_to_list') %>
+            </a>
+        </div>
+    <% } %>
+
+    <div class="lb-hero">
+        <div class="lb-hero-left">
+            <div class="lb-hero-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div>
+                <h1 class="lb-hero-title"><%= t('hr.leave.leave_balances_title') %><span class="lb-hero-year"><%= currentYear %></span></h1>
+                <p class="lb-hero-sub"><%= contextEmployee ? contextEmployee.full_name : '' %></p>
+            </div>
+        </div>
+        <div class="lb-hero-actions">
+            <a href="/admin/hr/leave-types" class="lb-hero-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <%= t('hr.leave.manage_leave_types') %>
+            </a>
+            <a href="/admin/hr/leave<%= contextEmployee ? '?employee_id=' + contextEmployee.id : '' %>" class="lb-hero-btn">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                <%= t('hr.leave.back_to_requests') %>
+            </a>
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="lb-filter-bar">
+        <form method="GET" action="/admin/hr/leave-balances" class="lb-filter-form">
+            <div class="lb-filter-group">
+                <label class="lb-filter-label" for="lb-year"><%= t('hr.leave.filter_year') %></label>
+                <select class="lb-filter-select" id="lb-year" name="year">
+                    <% if (yearOptions && yearOptions.length > 0) { yearOptions.forEach(function(y) { %>
+                        <option value="<%= y %>" <%= y === currentYear ? 'selected' : '' %>><%= y %></option>
+                    <% }); } else { %>
+                        <option value="<%= currentYear %>" selected><%= currentYear %></option>
+                    <% } %>
+                </select>
+            </div>
+            <div class="lb-filter-group">
+                <label class="lb-filter-label" for="lb-employee"><%= t('hr.leave.filter_employee') %></label>
+                <select class="lb-filter-select" id="lb-employee" name="employee_id">
+                    <option value=""><%= t('hr.leave.all_employees') %></option>
+                    <% if (employees && employees.length > 0) { employees.forEach(function(emp) { %>
+                        <option value="<%= emp.id %>" <%= String(emp.id) === String(filters.employee_id) ? 'selected' : '' %>><%= emp.full_name %></option>
+                    <% }); } %>
+                </select>
+            </div>
+            <button type="submit" class="lb-filter-btn">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <%= t('hr.leave.apply_filter') %>
+            </button>
+        </form>
+    </div>
+
+    <!-- SECTION 1: LEGAL LEAVE ALLOWANCES -->
+    <div class="lb-section">
+        <div class="lb-section-head">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <div>
+                <h2 class="lb-section-title"><%= t('hr.leave.legal_leave_allowances') || 'Legal Leave Allowances' %></h2>
+                <p class="lb-section-sub"><%= t('hr.leave.default_days_per_type') || 'Default entitlement per leave type' %></p>
+            </div>
+        </div>
+        <% if (leaveTypes && leaveTypes.length > 0) { %>
+            <div class="lb-legal-grid">
+                <% leaveTypes.forEach(function(lt) {
+                    var ltId = lt.id || 0;
+                    var iconClass = 'lt-' + ltId;
+                    if (ltId > 4 || ltId < 1) iconClass = 'lt-default';
+                %>
+                    <div class="lb-legal-card">
+                        <div class="lb-legal-icon <%= iconClass %>">
+                            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                        </div>
+                        <div class="lb-legal-info">
+                            <div class="lb-legal-name"><%= lt.name %></div>
+                            <% if (lt.description) { %>
+                                <div class="lb-legal-desc"><%= lt.description %></div>
+                            <% } %>
+                        </div>
+                        <div style="text-align:center;flex-shrink:0">
+                            <div class="lb-legal-days"><%= lt.default_days %></div>
+                            <div class="lb-legal-days-lbl"><%= t('hr.leave.days') || 'Days' %></div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="lb-empty">
+                <div class="lb-empty-icon">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                </div>
+                <p class="lb-empty-title"><%= t('hr.leave.no_leave_types') || 'No leave types configured' %></p>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- SECTION 2: ACTUAL EMPLOYEE LEAVE BALANCES -->
+    <div class="lb-section">
+        <div class="lb-section-head">
+            <svg viewBox="0 0 24 24" width="22" height="22"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            <div>
+                <h2 class="lb-section-title"><%= t('hr.leave.actual_leave_balances') || 'Actual Leave Balances' %> (<%= currentYear %>)</h2>
+                <p class="lb-section-sub"><%= t('hr.leave.balance_detail_per_employee') || 'Allocated, used, and remaining days per employee' %></p>
+            </div>
+        </div>
+
+        <% if (contextEmployee) { %>
+            <%
+                var empBalances = balances || [];
+                var ltIndex = {};
+                empBalances.forEach(function(b) { ltIndex[b.leave_type_id] = b; });
+            %>
+            <% if (leaveTypes && leaveTypes.length > 0) { %>
+                <div class="lb-bal-grid">
+                    <% leaveTypes.forEach(function(lt) {
+                        var b = ltIndex[lt.id] || null;
+                        var alloc = b ? (b.allocated_days || 0) : 0;
+                        var used = b ? (b.used_days || 0) : 0;
+                        var remain = b ? (b.remaining_days || 0) : 0;
+                        var pct = alloc > 0 ? Math.round((used / alloc) * 100) : 0;
+                        var fillClass = pct >= 90 ? 'fill-full' : pct >= 60 ? 'fill-warn' : 'fill-ok';
+                        var remainClass = remain > 0 ? 'v-remain-pos' : remain < 0 ? 'v-remain-neg' : 'v-zero';
+                        var ltId = lt.id || 0;
+                        var iconClass = 'lt-' + ltId;
+                        if (ltId > 4 || ltId < 1) iconClass = 'lt-default';
+                    %>
+                        <div class="lb-bal-card">
+                            <div class="lb-bal-head">
+                                <div class="lb-bal-type-icon <%= iconClass %>">
+                                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                                </div>
+                                <div class="lb-bal-type-name"><%= lt.name %></div>
+                            </div>
+                            <div class="lb-bal-bar-wrap">
+                                <div class="lb-bal-bar">
+                                    <div class="lb-bal-bar-fill <%= fillClass %>" style="width: <%= Math.min(pct, 100) %>%"></div>
+                                </div>
+                            </div>
+                            <div class="lb-bal-values">
+                                <div class="lb-bal-val">
+                                    <div class="lb-bal-val-num v-alloc"><%= alloc %></div>
+                                    <div class="lb-bal-val-lbl"><%= t('hr.leave.allocated_days') %></div>
+                                </div>
+                                <div class="lb-bal-val">
+                                    <div class="lb-bal-val-num v-used"><%= used %></div>
+                                    <div class="lb-bal-val-lbl"><%= t('hr.leave.used_days') %></div>
+                                </div>
+                                <div class="lb-bal-val">
+                                    <div class="lb-bal-val-num <%= remainClass %>"><%= remain %></div>
+                                    <div class="lb-bal-val-lbl"><%= t('hr.leave.remaining_days') %></div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <div class="lb-empty">
+                    <div class="lb-empty-icon">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                    </div>
+                    <p class="lb-empty-title"><%= t('hr.leave.no_balances_found') %> <%= currentYear %></p>
+                </div>
+            <% } %>
+        <% } else if (empKeys.length > 0) { %>
+            <% empKeys.forEach(function(empKey) {
+                var emp = empMap[empKey];
+            %>
+                <div class="lb-emp-group">
+                    <div class="lb-emp-header">
+                        <div class="lb-emp-avatar"><% if (emp.photo_path) { %><img src="/<%= emp.photo_path %>" alt="<%= emp.full_name %>"><% } else { %><%= emp.full_name.charAt(0).toUpperCase() %><% } %></div>
+                        <div class="lb-emp-name"><%= emp.full_name %></div>
+                        <div class="lb-emp-id"><%= emp.employee_id || 'N/A' %></div>
+                    </div>
+                    <div class="lb-bal-grid">
+                        <% if (leaveTypes && leaveTypes.length > 0) { leaveTypes.forEach(function(lt) {
+                            var b = emp.types[lt.id] || null;
+                            var alloc = b ? (b.allocated_days || 0) : 0;
+                            var used = b ? (b.used_days || 0) : 0;
+                            var remain = b ? (b.remaining_days || 0) : 0;
+                            var pct = alloc > 0 ? Math.round((used / alloc) * 100) : 0;
+                            var fillClass = pct >= 90 ? 'fill-full' : pct >= 60 ? 'fill-warn' : 'fill-ok';
+                            var remainClass = remain > 0 ? 'v-remain-pos' : remain < 0 ? 'v-remain-neg' : 'v-zero';
+                            var ltId = lt.id || 0;
+                            var iconClass = 'lt-' + ltId;
+                            if (ltId > 4 || ltId < 1) iconClass = 'lt-default';
+                        %>
+                            <div class="lb-bal-card">
+                                <div class="lb-bal-head">
+                                    <div class="lb-bal-type-icon <%= iconClass %>">
+                                        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                                    </div>
+                                    <div class="lb-bal-type-name"><%= lt.name %></div>
+                                </div>
+                                <div class="lb-bal-bar-wrap">
+                                    <div class="lb-bal-bar">
+                                        <div class="lb-bal-bar-fill <%= fillClass %>" style="width: <%= Math.min(pct, 100) %>%"></div>
+                                    </div>
+                                </div>
+                                <div class="lb-bal-values">
+                                    <div class="lb-bal-val">
+                                        <div class="lb-bal-val-num v-alloc"><%= alloc %></div>
+                                        <div class="lb-bal-val-lbl"><%= t('hr.leave.allocated_days') %></div>
+                                    </div>
+                                    <div class="lb-bal-val">
+                                        <div class="lb-bal-val-num v-used"><%= used %></div>
+                                        <div class="lb-bal-val-lbl"><%= t('hr.leave.used_days') %></div>
+                                    </div>
+                                    <div class="lb-bal-val">
+                                        <div class="lb-bal-val-num <%= remainClass %>"><%= remain %></div>
+                                        <div class="lb-bal-val-lbl"><%= t('hr.leave.remaining_days') %></div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div class="lb-empty">
+                <div class="lb-empty-icon">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
+                </div>
+                <p class="lb-empty-title"><%= t('hr.leave.no_balances_found') %> <%= currentYear %></p>
+                <p class="lb-empty-sub"><%= t('hr.leave.back_to_requests') %></p>
+            </div>
+        <% } %>
+    </div>
+</div>

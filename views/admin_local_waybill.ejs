@@ -1,0 +1,1894 @@
+<%- include('partials/header') %>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+
+<style>
+    /* A3 Print Setup with Full Page Stretch */
+    @page {
+        size: A3 portrait;
+        margin: 0; /* Hide browser-generated URL footers & date headers */
+    }
+
+    @media print {
+        html, body {
+            width: 100% !important;
+            height: 100% !important;
+            margin: 15mm !important; /* Move content padding to body instead of @page margin */
+            padding: 0 !important;
+            background: #ffffff !important;
+            font-size: 14pt !important;
+        }
+
+        body * {
+            visibility: hidden;
+        }
+
+        .waybill-print-sheet, .waybill-print-sheet * {
+            visibility: visible;
+        }
+
+        .waybill-print-sheet {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: 100% !important;
+            min-height: 98vh !important;
+            padding: 25px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+        }
+
+        .no-print {
+            display: none !important;
+        }
+
+        .eway-container {
+            border: 2px solid #000 !important;
+            padding: 25px !important;
+            height: 100% !important;
+            box-sizing: border-box !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+        }
+
+        .eway-section-header {
+            padding: 8px 12px !important;
+            font-size: 14pt !important;
+            margin-top: 15px !important;
+            margin-bottom: 8px !important;
+        }
+
+        .eway-grid-table {
+            width: 100% !important;
+            font-size: 14px !important;
+        }
+
+        .eway-grid-table td, .eway-grid-table th {
+            padding: 10px 12px !important;
+            font-size: 14pt !important;
+        }
+
+        /* Lift signature block away from bottom page border */
+        .signatures-section {
+            margin-top: 60px !important;
+            padding-bottom: 60px !important;
+        }
+
+        /* Force light theme for waybill when printing - override dark mode */
+        .eway-container {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        .eway-container > div,
+        .eway-container table,
+        .eway-container td,
+        .eway-container th,
+        .eway-container span,
+        .eway-container p,
+        .eway-container strong,
+        .eway-container h1,
+        .eway-container h3 {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        .eway-section-header {
+            background-color: #cf222e !important;
+            color: #ffffff !important;
+        }
+
+        .eway-grid-table td,
+        .eway-grid-table th {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border-color: #000000 !important;
+        }
+
+        .eway-grid-table th {
+            background-color: #f0f0f0 !important;
+        }
+
+        /* Force black text for specific colored elements */
+        #lbl_wb_serial,
+        #lbl_wb_tonnage,
+        #lbl_wb_total_freight {
+            color: #000000 !important;
+        }
+    }
+
+    .eway-container {
+        border: 2px solid #1a1a1a;
+        background: #ffffff;
+        padding: 20px;
+        font-family: 'Tahoma', 'Arial', sans-serif;
+    }
+
+    /* Dark mode for live waybill preview only (not print) */
+    html[data-theme="dark"] .eway-container {
+        background-color: #2b3440 !important;
+        border-radius: 10px;
+    }
+
+    /* Dark mode text overrides for waybill content - more specific */
+    html[data-theme="dark"] .eway-container,
+    html[data-theme="dark"] .eway-container > div,
+    html[data-theme="dark"] .eway-container table,
+    html[data-theme="dark"] .eway-container td,
+    html[data-theme="dark"] .eway-container th,
+    html[data-theme="dark"] .eway-container span,
+    html[data-theme="dark"] .eway-container p,
+    html[data-theme="dark"] .eway-container strong {
+        color: #ffffff !important;
+    }
+
+    /* Preserve red section headers in dark mode */
+    html[data-theme="dark"] .eway-section-header {
+        background-color: #cf222e !important;
+        color: #ffffff !important;
+    }
+
+    /* Preserve semantic colors in dark mode */
+    html[data-theme="dark"] #lbl_wb_serial {
+        color: #cf222e !important;
+    }
+    html[data-theme="dark"] #lbl_wb_tonnage {
+        color: #0284c7 !important;
+    }
+    html[data-theme="dark"] #lbl_wb_total_freight {
+        color: #166534 !important;
+    }
+
+    /* Fix notes area background in dark mode */
+    html[data-theme="dark"] .eway-container > div[style*="background: #fafafa"] {
+        background-color: #2d3748 !important;
+    }
+
+    /* Fix table borders in dark mode */
+    html[data-theme="dark"] .eway-grid-table td,
+    html[data-theme="dark"] .eway-grid-table th {
+        border-color: #4a5568 !important;
+    }
+
+    /* Fix table header background in dark mode */
+    html[data-theme="dark"] .eway-grid-table th {
+        background-color: #2d3748 !important;
+    }
+
+    /* Registered Waybills Table Styling */
+    .waybill-table-container {
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .waybill-table-container table {
+        border-collapse: separate;
+        border-spacing: 0;
+        font-size: 13px;
+    }
+
+    .waybill-table-container thead {
+        background-color: var(--table-header-bg, #f8f9fa);
+        border-bottom: 2px solid var(--border-color, #e1e4e8);
+    }
+
+    .waybill-table-container thead th {
+        padding: 12px 10px;
+        font-weight: 600;
+        color: var(--text-main, #24292e);
+        text-align: center;
+        border-bottom: 2px solid var(--border-color, #e1e4e8);
+        white-space: nowrap;
+        line-height: 1.4;
+    }
+
+    .waybill-table-container tbody tr {
+        border-bottom: 1px solid var(--border-color, #e1e4e8);
+        transition: background-color 0.15s ease;
+    }
+
+    .waybill-table-container tbody tr:hover {
+        background-color: var(--table-hover-bg, #f6f8fa);
+    }
+
+    .waybill-table-container tbody td {
+        padding: 10px 8px;
+        color: var(--text-main, #24292e);
+        vertical-align: middle;
+        line-height: 1.4;
+    }
+
+    /* Dark mode for waybill table */
+    html[data-theme="dark"] .waybill-table-container thead {
+        background-color: #1e293b;
+        border-bottom-color: #334155;
+    }
+
+    html[data-theme="dark"] .waybill-table-container thead th {
+        color: #e2e8f0;
+        border-bottom-color: #334155;
+    }
+
+    html[data-theme="dark"] .waybill-table-container tbody tr {
+        border-bottom-color: #334155;
+        background-color: #0f172a;
+    }
+
+    html[data-theme="dark"] .waybill-table-container tbody tr:hover {
+        background-color: #1e293b;
+    }
+
+    html[data-theme="dark"] .waybill-table-container tbody td {
+        color: #cbd5e1;
+    }
+
+    /* Sold row highlight in dark mode */
+    html[data-theme="dark"] .waybill-table-container tbody tr.waybill-row-sold {
+        background-color: #064e3b !important;
+        border-bottom-color: #065f46;
+    }
+
+    /* Sold row highlight in light mode */
+    .waybill-table-container tbody tr.waybill-row-sold {
+        background-color: #dafbe3 !important;
+        border-bottom-color: #4ac26b;
+    }
+
+    /* Status badges */
+    .waybill-status-badge {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .waybill-status-sold {
+        background-color: #1a7f37;
+        color: white;
+    }
+
+    .waybill-status-pending {
+        background-color: #0284c7;
+        color: white;
+    }
+
+    /* Action buttons */
+    .waybill-action-btn {
+        padding: 3px 8px !important;
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        min-width: auto !important;
+        line-height: 1.3 !important;
+        border-radius: 4px !important;
+        transition: all 0.15s ease !important;
+    }
+
+    .waybill-action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Pagination container */
+    .waybill-pagination-container {
+        padding-top: 16px;
+        border-top: 1px solid var(--border-color, #e1e4e8);
+    }
+
+    html[data-theme="dark"] .waybill-pagination-container {
+        border-top-color: #334155;
+    }
+
+    /* Updated Header Banner with Centered Title & Right Logo */
+    .eway-header {
+        display: grid;
+        grid-template-columns: 1fr 2fr 1fr;
+        align-items: center;
+        border-bottom: 2px solid #cf222e;
+        padding-bottom: 12px;
+        margin-bottom: 15px;
+    }
+
+    .eway-title {
+        font-size: 26px;
+        font-weight: 900;
+        color: #cf222e;
+        margin: 0;
+        text-align: center !important;
+    }
+
+    /* Dark mode override for company name */
+    html[data-theme="dark"] .eway-title {
+        color: #ffffff !important;
+    }
+
+    .eway-section-header {
+        background-color: #cf222e;
+        color: #ffffff;
+        font-weight: bold;
+        padding: 8px 12px;
+        font-size: 14px;
+        margin-top: 15px;
+        margin-bottom: 6px;
+        text-align: start !important;
+    }
+
+    .eway-grid-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .eway-grid-table td, .eway-grid-table th {
+        border: 1px solid var(--border-color);
+        padding: 8px 12px;
+        text-align: start !important;
+    }
+
+    .eway-grid-table th {
+        background-color: var(--table-header-bg);
+        font-weight: bold;
+        color: var(--text-main);
+    }
+
+    /* Force waybill document to use black text in dark mode */
+    [data-theme="dark"] .waybill-print-sheet {
+        color: #000000 !important;
+    }
+    [data-theme="dark"] .waybill-print-sheet *,
+    [data-theme="dark"] .waybill-print-sheet *::before,
+    [data-theme="dark"] .waybill-print-sheet *::after {
+        color: #000000 !important;
+    }
+
+    /* Force black text on Registered Waybills Table data cells */
+    #waybill-history-rows td {
+        color: #000000;
+    }
+
+    /* Dark mode: Light background for Registered Waybills Table rows */
+    [data-theme="dark"] #waybill-history-rows tr {
+        background-color: #d1d5db !important;
+    }
+
+    [data-theme="dark"] #waybill-history-rows td {
+        background-color: #d1d5db !important;
+        color: #000000 !important;
+    }
+
+    /* Row hover effect for Registered Waybills Table */
+    #waybill-history-rows tr:hover {
+        background-color: #ffffff !important;
+    }
+    #waybill-history-rows tr:hover td {
+        background-color: #ffffff !important;
+        color: #000000;
+    }
+/* Cement stock link: Bag Count stays gray until a cement type is selected */
+        #wb_bags:disabled {
+            background-color: #cfd4da !important;
+            color: #6c757d !important;
+            border-color: #ced4da !important;
+            cursor: not-allowed;
+            opacity: 1;
+        }
+</style>
+
+<div class="no-print" style="border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h2><%= t('waybill.title') %></h2>
+        <p style="font-size: 14px; color: var(--text-muted);"><%= t('waybill.description') %></p>
+    </div>
+    <button onclick="window.print()" class="btn btn-primary" style="background-color: #0284c7; padding: 10px 20px; font-weight: bold; font-size: 14px;">
+        🖨️ <%= t('waybill.print_button') %>
+    </button>
+</div>
+
+<div class="grid" style="grid-template-columns: 1fr 1fr;">
+    <div class="card no-print">
+        <h3><%= t('waybill.enter_info') %></h3>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label><%= t('waybill.serial_number') %></label>
+            <input type="text" id="wb_serial" class="form-control" readonly style="background-color: var(--bg-color); font-weight: bold; border-color: var(--accent-blue);">
+            <small style="color: var(--text-muted);"><%= t('waybill.serial_auto') %></small>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.loading_date') %></label>
+            <input type="text" id="wb_date" class="form-control" data-datepicker="jalali" placeholder="۱۴۰۵/۰۳/۲۳" oninput="updateWaybillSheet()">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.sent_to_agency') %></label>
+            <select id="wb_selled_to" class="form-control" oninput="updateWaybillSheet()">
+                <option value=""><%= t('waybill.select_agency') %></option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.driver_name') %></label>
+            <input type="text" id="wb_driver_name" class="form-control" placeholder="غلام علی" oninput="updateWaybillSheet()">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.driver_phone') %></label>
+            <input type="tel" id="wb_driver_phone" class="form-control" placeholder="" oninput="updateWaybillSheet()">
+            <small id="wb_driver_phone_error" style="color: #cf222e; display: none;"><%= t('waybill.phone_error') %></small>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.truck_plate') %></label>
+            <input type="text" id="wb_truck_plate" class="form-control" placeholder="کابل - ۴۵۱۲" oninput="updateWaybillSheet()">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.cement_type') %></label>
+            <select id="wb_type" class="form-control" onchange="updateWaybillSheet(); onCementTypeChange()">
+                <option value=""><%= t('waybill.select_cement_type') %></option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.bags_count') %></label>
+            <input type="number" id="wb_bags" class="form-control" placeholder="۷۰۰" min="650" max="950" disabled oninput="calculateTonnage(); updateWaybillSheet(); validateBagsCount(); validateStockCount()">
+            <small id="wb_bags_error" style="color: #cf222e; display: none;"><%= t('waybill.js_bags_validation_error') %></small>
+            <div id="wb_stock_avail" style="display: none; margin-top: 6px; padding: 7px 10px; background: var(--accent-blue); color: #fff; border-radius: 6px; font-size: 13px; font-weight: 600;"></div>
+            <small id="wb_stock_error" style="color: #cf222e; display: none;"><%= t('waybill.js_stock_insufficient_error') %></small>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.tonnage') %></label>
+            <input type="text" id="wb_tonnage" class="form-control" readonly style="font-weight: bold; border-color: #4a90e2;">
+            <input type="hidden" id="wb_calculated_tonnage_val">
+            <small style="color: #57606a;"><%= t('waybill.tonnage_formula') %></small>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.truck_type') %></label>
+            <select id="wb_truck_type" class="form-control" onchange="toggleTruckRentInput(); updateWaybillSheet();">
+                <option value="company" selected><%= t('waybill.company_truck') %></option>
+                <option value="rented"><%= t('waybill.rented_truck') %></option>
+            </select>
+        </div>
+
+        <!-- Conditional Freight per Ton Input -->
+        <div id="wb_rent_container" class="form-group" style="display: none;">
+            <label><%= t('waybill.freight_per_ton') %></label>
+            <input type="number" id="wb_freight_per_ton" class="form-control" placeholder="<%= t('waybill.freight_placeholder') %>" oninput="calculateFreightTotal(); updateWaybillSheet();">
+            <small style="color: #57606a;"><%= t('waybill.freight_formula') %></small>
+        </div>
+
+        <!-- Readonly Total Freight Display -->
+        <div id="wb_total_freight_container" class="form-group" style="display: none;">
+            <label><%= t('waybill.total_freight') %></label>
+            <input type="text" id="wb_total_freight_display" class="form-control" readonly style="background-color: #f0f7ff; font-weight: bold; color: #166534;">
+            <input type="hidden" id="wb_total_freight_val" value="0">
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.loading_location') %></label>
+            <select id="wb_loading_province" class="form-control" oninput="updateWaybillSheet()">
+                <option value=""><%= t('waybill.select_location') %></option>
+                <option value="Kabul">کابل</option>
+                <option value="Herat">هرات</option>
+                <option value="Balkh">بلخ</option>
+                <option value="Kandahar">قندهار</option>
+                <option value="Nangarhar">ننگرهار</option>
+                <option value="Khost">خوست</option>
+                <option value="Paktia">پکتیا</option>
+                <option value="Paktika">پکتیکا</option>
+                <option value="Ghazni">غزنی</option>
+                <option value="Logar">لوگر</option>
+                <option value="Laghman">لغمان</option>
+                <option value="Wardak">میدان وردک</option>
+                <option value="Parwan">پروان</option>
+                <option value="Kapisa">کاپیسا</option>
+                <option value="Panjshir">پنجشیر</option>
+                <option value="Kunar">کونر</option>
+                <option value="Nuristan">نورستان</option>
+                <option value="Badakhshan">بدخشان</option>
+                <option value="Takhar">تخار</option>
+                <option value="Baghlan">بغلان</option>
+                <option value="Kunduz">قندوز</option>
+                <option value="Samangan">سمنگان</option>
+                <option value="Jowzjan">جوزجان</option>
+                <option value="Sar-e Pol">سرپل</option>
+                <option value="Faryab">فاریاب</option>
+                <option value="Badghis">بادغیس</option>
+                <option value="Ghor">غور</option>
+                <option value="Bamyan">بامیان</option>
+                <option value="Daikundi">دایکندی</option>
+                <option value="Farah">فراه</option>
+                <option value="Nimruz">نیمروز</option>
+                <option value="Helmand">هلمند</option>
+                <option value="Zabul">زابل</option>
+                <option value="Uruzgan">ارزگان</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.unloading_location') %></label>
+            <select id="wb_unloading_province" class="form-control" oninput="updateWaybillSheet()">
+                <option value=""><%= t('waybill.select_location') %></option>
+                <option value="Kabul">کابل</option>
+                <option value="Herat">هرات</option>
+                <option value="Balkh">بلخ</option>
+                <option value="Kandahar">قندهار</option>
+                <option value="Nangarhar">ننگرهار</option>
+                <option value="Khost">خوست</option>
+                <option value="Paktia">پکتیا</option>
+                <option value="Paktika">پکتیکا</option>
+                <option value="Ghazni">غزنی</option>
+                <option value="Logar">لوگر</option>
+                <option value="Laghman">لغمان</option>
+                <option value="Wardak">میدان وردک</option>
+                <option value="Parwan">پروان</option>
+                <option value="Kapisa">کاپیسا</option>
+                <option value="Panjshir">پنجشیر</option>
+                <option value="Kunar">کونر</option>
+                <option value="Nuristan">نورستان</option>
+                <option value="Badakhshan">بدخشان</option>
+                <option value="Takhar">تخار</option>
+                <option value="Baghlan">بغلان</option>
+                <option value="Kunduz">قندوز</option>
+                <option value="Samangan">سمنگان</option>
+                <option value="Jowzjan">جوزجان</option>
+                <option value="Sar-e Pol">سرپل</option>
+                <option value="Faryab">فاریاب</option>
+                <option value="Badghis">بادغیس</option>
+                <option value="Ghor">غور</option>
+                <option value="Bamyan">بامیان</option>
+                <option value="Daikundi">دایکندی</option>
+                <option value="Farah">فراه</option>
+                <option value="Nimruz">نیمروز</option>
+                <option value="Helmand">هلمند</option>
+                <option value="Zabul">زابل</option>
+                <option value="Uruzgan">ارزگان</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label><%= t('waybill.remarks') %></label>
+            <textarea id="wb_remarks" class="form-control" rows="3" placeholder="<%= t('waybill.remarks_placeholder') %>" oninput="updateWaybillSheet()"></textarea>
+        </div>
+
+
+        <button onclick="saveWaybill()" class="btn btn-primary" style="width: 100%; background-color: #4a90e2; padding: 12px; font-size: 15px; margin-top: 10px;">
+            💾 <%= t('waybill.save_button') %>
+        </button>
+    </div>
+
+    <!-- Live Preview & Printable Sheet -->
+    <div class="card waybill-print-sheet">
+        <div class="eway-container" dir="<%= dir %>">
+            
+            <!-- Header Banner: Logo, Centered Title, Contact Phones -->
+            <div class="eway-header">
+                <!-- Left Side: Configured Contact Numbers -->
+                <div style="text-align: start !important; font-size: 12px; color: #24292e;">
+                    <strong><%= t('waybill.print_contact_numbers') %></strong><br>
+                    <span>📞 <%= content.waybill_phone_1 || '+۹۳ ۷۰۰ ۰۰۰ ۰۰۰' %></span><br>
+                    <span>📞 <%= content.waybill_phone_2 || '+۹۳ ۷۸۰ ۰۰۰ ۰۰۰' %></span>
+                </div>
+
+                <!-- Center: Company Name & Subtext -->
+                <div style="text-align: center !important;">
+                    <h1 class="eway-title"><%= t('waybill.print_company_name') %></h1>
+                    <p style="margin: 4px 0 0 0; font-size: 13px; color: #57606a; text-align: center !important;"><%= t('waybill.print_subtitle') %></p>
+                </div>
+
+                <!-- Right Side: Company Logo -->
+                <div style="text-align: end;">
+                    <img src="/Logo.png" alt="Atlas Cement Group ERP" style="width: 55px; height: 55px; object-fit: contain;">
+                </div>
+            </div>
+
+            <!-- Section 1: Waybill Metadata -->
+            <div class="eway-section-header"><%= t('waybill.section_1_header') %></div>
+            <table class="eway-grid-table">
+                <tr>
+                    <td style="width: 20%; font-weight: bold;"><%= t('waybill.print_serial_number') %></td>
+                    <td style="width: 30%; color: #cf222e; font-weight: bold;" id="lbl_wb_serial">WB-0001</td>
+                    <td style="width: 20%; font-weight: bold;"><%= t('waybill.print_loading_date') %></td>
+                    <td style="width: 30%;" id="lbl_wb_date">____/__/__</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;"><%= t('waybill.print_sent_to_agency') %></td>
+                    <td id="lbl_wb_selled_to" colspan="3">__________</td>
+                </tr>
+            </table>
+
+            <!-- Section 2: Transport & Driver Details -->
+            <div class="eway-section-header"><%= t('waybill.section_2_header') %></div>
+            <table class="eway-grid-table">
+                <tr>
+                    <td style="font-weight: bold;"><%= t('waybill.print_driver_name') %></td>
+                    <td id="lbl_wb_driver">__________</td>
+                    <td style="font-weight: bold;"><%= t('waybill.print_driver_phone') %></td>
+                    <td id="lbl_wb_driver_phone">__________</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;"><%= t('waybill.print_truck_plate') %></td>
+                    <td id="lbl_wb_plate">__________</td>
+                    <td style="font-weight: bold;"><%= t('waybill.print_truck_type') %></td>
+                    <td id="lbl_wb_truck_type">موتر شرکت</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;"><%= t('waybill.print_loading_location') %></td>
+                    <td id="lbl_wb_loading">__________</td>
+                    <td style="font-weight: bold;"><%= t('waybill.print_unloading_location') %></td>
+                    <td id="lbl_wb_unloading">__________</td>
+                </tr>
+            </table>
+
+            <!-- Section 3: Goods & Freight Details -->
+            <div class="eway-section-header"><%= t('waybill.section_3_header') %></div>
+            <table class="eway-grid-table">
+                <thead>
+                    <tr>
+                        <th style="width: 40px; text-align: start !important;">#</th>
+                        <th style="text-align: start !important;"><%= t('waybill.print_goods_type') %></th>
+                        <th style="text-align: start !important;"><%= t('waybill.print_bag_count') %></th>
+                        <th style="text-align: start !important;"><%= t('waybill.print_total_weight') %></th>
+                        <th style="text-align: start !important;"><%= t('waybill.print_total_freight') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="text-align: start !important;">۱</td>
+                        <td style="text-align: start !important;" id="lbl_wb_type">سمنت ممتاز باقران</td>
+                        <td id="lbl_wb_bags" style="font-weight: bold; text-align: start !important;">۰ کیسه</td>
+                        <td id="lbl_wb_tonnage" style="font-weight: bold; color: #0284c7; text-align: start !important;">۰.۰۰ تن</td>
+                        <td id="lbl_wb_total_freight" style="font-weight: bold; color: #166534; text-align: start !important;">۰ افغانی</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Section 4: Remarks -->
+            <div class="eway-section-header"><%= t('waybill.section_4_header') %></div>
+            <div style="border: 1px solid #d0d7de; padding: 12px; font-size: 13px; background: #fafafa; text-align: start !important;">
+                <span id="lbl_wb_remarks"><%= t('waybill.print_default_remarks') %></span>
+            </div>
+
+            <!-- Footer Signatures -->
+            <div class="signatures-section" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding-bottom: 50px; padding-inline-start: 20px; padding-inline-end: 20px;">
+                <div style="text-align: center; width: 40%;">
+                    <div style="border-bottom: 2px dashed #000; margin-bottom: 8px; width: 100%; height: 1px;"></div>
+                    <strong style="font-size: 14px; color: #000;"><%= t('waybill.print_signature_driver') %></strong>
+                </div>
+                <div style="text-align: center; width: 40%;">
+                    <div style="border-bottom: 2px dashed #000; margin-bottom: 8px; width: 100%; height: 1px;"></div>
+                    <strong style="font-size: 14px; color: #000;"><%= t('waybill.print_signature_sender') %></strong>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Edit Waybill Modal -->
+<div id="editWbModal" class="no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2500; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); border-radius: 10px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; padding: 25px; direction: <%= dir %>; text-align: start; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+            <h3 style="margin: 0; color: #0284c7;"><%= t('waybill.edit_title') %> <span id="edit_modal_serial" style="color: #cf222e;"></span></h3>
+            <button onclick="closeEditWbModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+
+        <input type="hidden" id="edit_wb_id">
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.loading_date') %></label>
+                <input type="text" id="edit_wb_date" class="form-control" data-datepicker="jalali">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.sent_to') %></label>
+                <select id="edit_wb_selled_to" class="form-control"></select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.driver_name') %></label>
+                <input type="text" id="edit_wb_driver_name" class="form-control">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.driver_phone') %></label>
+                <input type="text" id="edit_wb_driver_phone" class="form-control">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.truck_plate') %></label>
+                <input type="text" id="edit_wb_truck_plate" class="form-control">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.cement_type') %></label>
+                <select id="edit_wb_type" class="form-control">
+                    <option value=""><%= t('waybill.select_cement_type') %></option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.truck_type') %></label>
+                <select id="edit_wb_truck_type" class="form-control" onchange="calcEditFreight()">
+                    <option value="company"><%= t('waybill.company_truck') %></option>
+                    <option value="rented"><%= t('waybill.rented_truck') %></option>
+                </select>
+            </div>
+            <div id="edit_rent_box" style="display: none;">
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.freight_per_ton') %></label>
+                <input type="number" id="edit_wb_freight_per_ton" class="form-control" oninput="calcEditFreight()">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.bags_count') %></label>
+                <input type="number" id="edit_wb_bags" class="form-control" oninput="calcEditTonnage()">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.tonnage') %></label>
+                <input type="text" id="edit_wb_tonnage" class="form-control" readonly>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.loading_location') %></label>
+                <input type="text" id="edit_wb_loading" class="form-control">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.unloading_location') %></label>
+                <input type="text" id="edit_wb_unloading" class="form-control">
+            </div>
+            <div style="grid-column: span 2;">
+                <label style="font-size: 12px; font-weight: bold;"><%= t('waybill.remarks') %></label>
+                <textarea id="edit_wb_remarks" class="form-control" rows="2"></textarea>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <button onclick="closeEditWbModal()" class="btn btn-secondary"><%= t('waybill.edit_cancel') %></button>
+            <button onclick="saveEditWaybill()" class="btn btn-primary" style="background-color: #0284c7;"><%= t('waybill.edit_save') %></button>
+        </div>
+    </div>
+</div>
+
+<!-- Waybill Transaction History Table Card -->
+<div class="card no-print" style="margin-top: 30px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+        <h3 style="margin: 0; color: var(--text-main);"><%= t('waybill.registered_waybills_list') %></h3>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="openAdvWbModal()" class="btn btn-primary" style="background-color: #0284c7; padding: 8px 16px; font-size: 13px;">
+                🔍 <%= t('waybill.advanced_filters') %>
+            </button>
+            <button onclick="resetAdvWbFilters()" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px;">
+                🔄 <%= t('waybill.reset_filters') %>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-responsive waybill-table-container" style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; text-align: center;">
+            <thead>
+                <tr>
+                    <th><%= t('waybill.th_actions') %></th>
+                    <th><%= t('waybill.th_status') %></th>
+                    <th><%= t('waybill.th_unloading_location') %></th>
+                    <th><%= t('waybill.th_loading_location') %></th>
+                    <th><%= t('waybill.th_tonnage') %></th>
+                    <th><%= t('waybill.th_bag_count') %></th>
+                    <th><%= t('waybill.th_total_freight') %></th>
+                    <th><%= t('waybill.th_truck_type') %></th>
+                    <th><%= t('waybill.th_truck_plate') %></th>
+                    <th><%= t('waybill.th_phone') %></th>
+                    <th><%= t('waybill.th_driver_name') %></th>
+                    <th><%= t('waybill.th_sent_to') %></th>
+                    <th><%= t('waybill.th_date') %></th>
+                    <th><%= t('waybill.th_serial_number') %></th>
+                    <th><%= t('waybill.th_number') %></th>
+                </tr>
+            </thead>
+            <tbody id="waybill-history-rows">
+                <tr>
+                    <td colspan="15" style="padding: 20px; color: #57606a;"><%= t('waybill.loading_info') %></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Standardized Pagination Footer with Rows Per Page Dropdown -->
+    <div id="wb-pagination-container" class="no-print waybill-pagination-container" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; flex-wrap: wrap; gap: 10px; direction: <%= dir %>; text-align: <%= dir === 'rtl' ? 'right' : 'left' %>;">
+        
+        <!-- Rows Per Page Selector -->
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted);">
+            <span><%= t('waybill.rows_per_page') %></span>
+            <select id="wb_rows_per_page" class="form-control" style="width: 80px; padding: 4px 8px; font-size: 13px; font-weight: bold; border: 1px solid var(--border-color); border-radius: 6px;" onchange="handleRowsPerPageChange(this.value)">
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+
+        <!-- Summary Count Indicator -->
+        <div style="font-size: 13px; color: var(--text-muted);">
+            <%= t('waybill.showing_waybills').replace('{start}', '').replace('{end}', '').replace('{total}', '') %>
+            <span id="lbl_page_start">0</span>
+            <%= t('waybill.to') %>
+            <span id="lbl_page_end">0</span>
+            <%= t('waybill.of') %>
+            <span id="lbl_total_count">0</span>
+            <%= t('waybill.waybills') %>
+        </div>
+
+        <!-- Page Buttons Navigation -->
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <button id="btn_page_prev" onclick="goToPrevPage()" class="btn btn-secondary" style="padding: 5px 12px; font-size: 12px;" disabled><%= t('waybill.prev_button') %></button>
+            <span id="lbl_page_indicator" style="font-size: 13px; font-weight: bold; color: #0284c7;"><%= t('waybill.page_label') %> 1</span>
+            <button id="btn_page_next" onclick="goToNextPage()" class="btn btn-secondary" style="padding: 5px 12px; font-size: 12px;" disabled><%= t('waybill.next_button') %></button>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Filters Modal -->
+<div id="advWbModal" class="no-print" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); border-radius: 10px; width: 90%; max-width: 750px; max-height: 90vh; overflow-y: auto; padding: 25px; direction: <%= dir %>; text-align: <%= dir === 'rtl' ? 'right' : 'left' %>; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 10px;">
+            <h3 style="margin: 0; color: #0284c7;"><%= t('waybill.advanced_filters_title') %></h3>
+            <button onclick="closeAdvWbModal()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+            <!-- 1. Serial Number with Fixed WB- Prefix -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);"><%= t('waybill.filter_serial') %></label>
+                <div style="display: flex; align-items: center; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;">
+                    <span style="background: var(--bg-light); padding: 8px 12px; font-weight: bold; color: var(--accent-blue);">WB-</span>
+                    <input type="text" id="adv_wb_serial" class="form-control" placeholder="0001" style="border: none; border-radius: 0;">
+                </div>
+            </div>
+
+            <!-- 2. From Date & To Date -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);"><%= t('waybill.filter_date_range') %></label>
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="adv_wb_start_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('waybill.filter_from_date') %>">
+                    <input type="text" id="adv_wb_end_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('waybill.filter_to_date') %>">
+                </div>
+            </div>
+
+            <!-- 3. Selled To Agency Checkboxes -->
+            <div style="grid-column: span 2;">
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted); display: block; margin-bottom: 6px;"><%= t('waybill.filter_agency') %></label>
+                <div id="adv_agency_checkboxes" style="max-height: 120px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: var(--bg-color);">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- 4. Driver Name -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);"><%= t('waybill.filter_driver') %></label>
+                <input type="text" id="adv_wb_driver" class="form-control" placeholder="<%= t('waybill.filter_driver_placeholder') %>">
+            </div>
+
+            <!-- 5. Driver Phone -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: var(--text-muted);"><%= t('waybill.filter_phone') %></label>
+                <input type="text" id="adv_wb_phone" class="form-control" placeholder="<%= t('waybill.filter_phone_placeholder') %>">
+            </div>
+
+            <!-- 6. Truck Plate -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_plate') %></label>
+                <input type="text" id="adv_wb_plate" class="form-control" placeholder="<%= t('waybill.filter_plate_placeholder') %>">
+            </div>
+
+            <!-- 7. Cement Type -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_cement') %></label>
+                <select id="adv_wb_type" class="form-control">
+                    <option value=""><%= t('waybill.filter_all_cement_types') %></option>
+                </select>
+            </div>
+
+            <!-- 8. Total Bags -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_bags') %></label>
+                <input type="number" id="adv_wb_bags" class="form-control" placeholder="<%= t('waybill.filter_bags_placeholder') %>">
+            </div>
+
+            <!-- 9. Tonnage -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_tonnage') %></label>
+                <input type="number" step="any" id="adv_wb_tonnage" class="form-control" placeholder="<%= t('waybill.filter_tonnage_placeholder') %>">
+            </div>
+
+            <!-- 10. Loading Province -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_loading') %></label>
+                <input type="text" id="adv_wb_loading" class="form-control" placeholder="<%= t('waybill.filter_loading_placeholder') %>">
+            </div>
+
+            <!-- 11. Unloading Province -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_unloading') %></label>
+                <input type="text" id="adv_wb_unloading" class="form-control" placeholder="<%= t('waybill.filter_unloading_placeholder') %>">
+            </div>
+
+            <!-- 12. Truck Type -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_truck_type') %></label>
+                <select id="adv_wb_truck_type" class="form-control">
+                    <option value=""><%= t('waybill.filter_all_types') %></option>
+                    <option value="company"><%= t('waybill.company_truck') %></option>
+                    <option value="rented"><%= t('waybill.rented_truck') %></option>
+                </select>
+            </div>
+
+            <!-- 13. Status -->
+            <div>
+                <label style="font-size: 12px; font-weight: bold; color: #475569;"><%= t('waybill.filter_status') %></label>
+                <select id="adv_wb_status" class="form-control">
+                    <option value=""><%= t('waybill.filter_all_statuses') %></option>
+                    <option value="posted_sold"><%= t('waybill.status_sold') %></option>
+                    <option value="available"><%= t('waybill.status_pending') %></option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <button onclick="resetAdvWbFilters()" class="btn btn-secondary" style="padding: 8px 16px;"><%= t('waybill.filter_clear') %></button>
+            <button onclick="applyAdvWbFilters()" class="btn btn-primary" style="background-color: #0284c7; padding: 8px 20px;"><%= t('waybill.filter_apply') %></button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Net cement stock per type (from /admin/stock) — feeds the Bag Count stock gate
+window.STOCK_AVAILABILITY = <%- jsonEmbed(stockAvailability || {}) %>;
+
+// Expose translations to client-side JavaScript
+const waybillTranslations = {
+    js_select_agency_default: "<%= t('waybill.js_select_agency_default') %>",
+    js_select_cement_default: "<%= t('waybill.js_select_cement_default') %>",
+    js_select_default: "<%= t('waybill.js_select_default') %>",
+    js_ton_unit: "<%= t('waybill.js_ton_unit') %>",
+    js_afghani_currency: "<%= t('waybill.js_afghani_currency') %>",
+    js_company_truck_freight: "<%= t('waybill.js_company_truck_freight') %>",
+    js_default_cement: "<%= t('waybill.js_default_cement') %>",
+    js_truck_rented_label: "<%= t('waybill.js_truck_rented_label') %>",
+    js_truck_company_label: "<%= t('waybill.js_truck_company_label') %>",
+    js_rented_freight_label: "<%= t('waybill.js_rented_freight_label') %>",
+    js_remark_default: "<%= t('waybill.js_remark_default') %>",
+    js_phone_validation_error: "<%= t('waybill.js_phone_validation_error') %>",
+    js_bags_validation_error: "<%= t('waybill.js_bags_validation_error') %>",
+    js_stock_insufficient_error: "<%= t('waybill.js_stock_insufficient_error') %>",
+    stock_available_label: "<%= t('waybill.stock_available_label') %>",
+    stock_unit_bags: "<%= t('waybill.stock_unit_bags') %>",
+    js_required_fields_error: "<%= t('waybill.js_required_fields_error') %>",
+    js_save_success: "<%= t('waybill.js_save_success') %>",
+    js_save_error: "<%= t('waybill.js_save_error') %>",
+    js_unknown_error: "<%= t('waybill.js_unknown_error') %>",
+    js_connection_error: "<%= t('waybill.js_connection_error') %>",
+    no_waybills: "<%= t('waybill.no_waybills') %>",
+    status_sold: "<%= t('waybill.status_sold') %>",
+    status_pending: "<%= t('waybill.status_pending') %>",
+    js_edit_button: "<%= t('waybill.js_edit_button') %>",
+    js_delete_button: "<%= t('waybill.js_delete_button') %>",
+    page_label: "<%= t('waybill.page_label') %>",
+    page_of: "<%= t('waybill.page_of') %>",
+    currentLang: "<%= lang %>",
+    dir: "<%= dir %>"
+};
+
+document.getElementById('nav-admin-waybill').classList.add('active');
+
+// Populate agency dropdown on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAgencyUsers();
+    loadEditAgencyDropdown();
+    fetchNextSerial();
+    updateWaybillSheet();
+    loadWaybillHistory();
+    populateAdvAgencyCheckboxes();
+    loadCementTypesDropdown();
+});
+
+// Modal Controls
+function openAdvWbModal() { 
+    document.getElementById('advWbModal').style.display = 'flex'; 
+}
+
+function closeAdvWbModal() { 
+    document.getElementById('advWbModal').style.display = 'none'; 
+}
+
+// Populate Agency Checkboxes in Modal
+function populateAdvAgencyCheckboxes() {
+    fetch('/api/admin/agency-users')
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('adv_agency_checkboxes');
+            if (!container) return;
+            container.innerHTML = '';
+            (data.agencies || []).forEach(user => {
+                const label = document.createElement('label');
+                label.style.cssText = 'font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;';
+                label.innerHTML = `<input type="checkbox" class="adv-agency-cb" value="${esc(user.username)}"> ${esc(user.agency_name || user.username)}`;
+                container.appendChild(label);
+            });
+        });
+}
+
+// Populate edit modal agency dropdown
+function loadEditAgencyDropdown() {
+    fetch('/api/admin/agency-users')
+        .then(res => res.json())
+        .then(data => {
+            const editSelect = document.getElementById('edit_wb_selled_to');
+            if (!editSelect) return;
+
+            editSelect.innerHTML = `<option value="">${esc(waybillTranslations.js_select_agency_default)}</option>`;
+
+            if (data.agencies && data.agencies.length > 0) {
+                data.agencies.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.username; // Use username for database compatibility
+                    option.textContent = user.agency_name || user.username; // Display agency_name or fallback to username
+                    editSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading edit agency dropdown:', err);
+        });
+}
+
+// Apply Advanced Filter Rules
+function applyAdvWbFilters() {
+    const serial = document.getElementById('adv_wb_serial').value.trim();
+    const startDate = document.getElementById('adv_wb_start_date').value.trim();
+    const endDate = document.getElementById('adv_wb_end_date').value.trim();
+    const checkedAgencies = Array.from(document.querySelectorAll('.adv-agency-cb:checked')).map(cb => cb.value);
+    const driver = document.getElementById('adv_wb_driver').value.toLowerCase().trim();
+    const phone = document.getElementById('adv_wb_phone').value.trim();
+    const plate = document.getElementById('adv_wb_plate').value.toLowerCase().trim();
+    const type = document.getElementById('adv_wb_type').value.trim();
+    const bags = document.getElementById('adv_wb_bags').value.trim();
+    const tonnage = document.getElementById('adv_wb_tonnage').value.trim();
+    const loading = document.getElementById('adv_wb_loading').value.toLowerCase().trim();
+    const unloading = document.getElementById('adv_wb_unloading').value.toLowerCase().trim();
+    const truckType = document.getElementById('adv_wb_truck_type').value.trim();
+    const status = document.getElementById('adv_wb_status').value.trim();
+
+    filteredTableData = currentTableData.filter(row => {
+        if (serial && !(row.waybill_serial || '').toLowerCase().includes(`wb-${esc(serial.toLowerCase())}`)) return false;
+        if (startDate && (row.waybill_date || '') < startDate) return false;
+        if (endDate && (row.waybill_date || '') > endDate) return false;
+        if (checkedAgencies.length > 0 && !checkedAgencies.includes(row.selled_to_agent)) return false;
+        if (driver && !(row.driver_name || '').toLowerCase().includes(driver)) return false;
+        if (phone && !(row.driver_phone || '').includes(phone)) return false;
+        if (plate && !(row.truck_plate || '').toLowerCase().includes(plate)) return false;
+        if (type && (row.cement_type || '') !== type) return false;
+        if (bags && parseInt(row.total_bags) !== parseInt(bags)) return false;
+        if (tonnage && parseFloat(row.tonnage) !== parseFloat(tonnage)) return false;
+        if (loading && !(row.loading_province || '').toLowerCase().includes(loading)) return false;
+        if (unloading && !(row.unloading_province || '').toLowerCase().includes(unloading)) return false;
+        if (truckType && row.truck_type !== truckType) return false;
+        if (status && (row.status || '') !== status) return false;
+        return true;
+    });
+
+    wbCurrentPage = 1;
+    renderWaybillTable();
+    closeAdvWbModal();
+}
+
+function resetAdvWbFilters() {
+    document.getElementById('adv_wb_serial').value = '';
+    document.getElementById('adv_wb_start_date').value = '';
+    document.getElementById('adv_wb_end_date').value = '';
+    document.querySelectorAll('.adv-agency-cb').forEach(cb => cb.checked = false);
+    document.getElementById('adv_wb_driver').value = '';
+    document.getElementById('adv_wb_phone').value = '';
+    document.getElementById('adv_wb_plate').value = '';
+    document.getElementById('adv_wb_type').value = '';
+    document.getElementById('adv_wb_bags').value = '';
+    document.getElementById('adv_wb_tonnage').value = '';
+    document.getElementById('adv_wb_loading').value = '';
+    document.getElementById('adv_wb_unloading').value = '';
+    document.getElementById('adv_wb_truck_type').value = '';
+    document.getElementById('adv_wb_status').value = '';
+
+    filteredTableData = [...currentTableData];
+    wbCurrentPage = 1;
+    renderWaybillTable();
+}
+
+// Load agency users dynamically
+function loadAgencyUsers() {
+    fetch('/api/admin/agency-users')
+        .then(res => res.json())
+        .then(data => {
+            const agentSelect = document.getElementById('wb_selled_to');
+            if (!agentSelect) return;
+
+            // Clear existing options except default
+            while (agentSelect.options.length > 1) {
+                agentSelect.remove(1);
+            }
+
+            // Populate with agency users from database
+            // Display agency_name, use username as value for database compatibility
+            if (data.agencies && data.agencies.length > 0) {
+                data.agencies.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.username; // Use username for database compatibility
+                    option.textContent = user.agency_name || user.username; // Display agency_name or fallback to username
+                    agentSelect.appendChild(option);
+                });
+            }
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading agency users:', err);
+        });
+}
+
+// Load Cement Types Dropdown Options
+async function loadCementTypesDropdown() {
+    try {
+        const res = await fetch('/api/config/cement-types');
+        if (!res.ok) return;
+        const items = await res.json();
+
+        const selectMain = document.getElementById('wb_type');
+        const selectEdit = document.getElementById('edit_wb_type');
+        const selectAdv = document.getElementById('adv_wb_type');
+        
+        const optionsHtml = items.map(item => 
+            `<option value="${esc(item.cement_name)}">${esc(item.cement_name)}</option>` 
+        ).join('');
+
+        if (selectMain) {
+            selectMain.innerHTML = `<option value="">${esc(waybillTranslations.js_select_cement_default)}</option>` + optionsHtml;
+            onCementTypeChange();
+        }
+        if (selectEdit) {
+            selectEdit.innerHTML = `<option value="">${esc(waybillTranslations.js_select_default)}</option>` + optionsHtml;
+        }
+        if (selectAdv) {
+            selectAdv.innerHTML = `<option value="">${esc(waybillTranslations.filter_all_cement_types || 'All Cement Types')}</option>` + optionsHtml;
+        }
+    } catch (err) {
+        console.error('[ERROR] Failed to load cement types into dropdown:', err);
+    }
+}
+
+// Fetch next sequential serial number from backend
+function fetchNextSerial() {
+    fetch('/api/admin/next-waybill-serial')
+        .then(res => res.json())
+        .then(data => {
+            if (data.serial) {
+                document.getElementById('wb_serial').value = data.serial;
+                document.getElementById('lbl_wb_serial').textContent = data.serial;
+            }
+        })
+        .catch(err => {
+            console.error('[ERROR] Error fetching next serial:', err);
+            // Fallback to random serial if backend fails
+            const timestamp = Date.now().toString().slice(-4);
+            document.getElementById('wb_serial').value = `WB-${timestamp}`;
+            document.getElementById('lbl_wb_serial').textContent = document.getElementById('wb_serial').value;
+        });
+}
+
+// Auto-calculate Tonnage from Bags (20 Bags = 1 Ton) with Dari display
+document.getElementById('wb_bags').addEventListener('input', function() {
+    calculateTonnage();
+});
+
+function calculateTonnage() {
+    const bags = parseFloat(document.getElementById('wb_bags').value) || 0;
+    const tonnage = (bags / 20).toFixed(2);
+    document.getElementById('wb_tonnage').value = `${tonnage} ${waybillTranslations.js_ton_unit} (${bags} کیسه)`;
+    document.getElementById('wb_calculated_tonnage_val').value = tonnage;
+    updateWaybillSheet();
+}
+
+// Validate Bags Count Range (650-950)
+function validateBagsCount() {
+    const bagsInput = document.getElementById('wb_bags');
+    const errorElement = document.getElementById('wb_bags_error');
+    const bags = parseFloat(bagsInput.value);
+
+    if (bags < 650 || bags > 950) {
+        errorElement.style.display = 'block';
+        bagsInput.style.borderColor = '#cf222e';
+        return false;
+    } else {
+        errorElement.style.display = 'none';
+        bagsInput.style.borderColor = '';
+        return true;
+    }
+}
+
+// Cement stock link: Bag Count stays disabled until a cement type is picked,
+// then the available stock of that type is shown below the field.
+let stockAvailMap = window.STOCK_AVAILABILITY || {};
+
+function onCementTypeChange() {
+    const typeEl = document.getElementById('wb_type');
+    const bagsEl = document.getElementById('wb_bags');
+    const availEl = document.getElementById('wb_stock_avail');
+    const errEl = document.getElementById('wb_stock_error');
+    if (errEl) errEl.style.display = 'none';
+
+    if (!typeEl.value) {
+        bagsEl.disabled = true;
+        if (availEl) {
+            availEl.style.display = 'none';
+            availEl.textContent = '';
+        }
+        return;
+    }
+
+    bagsEl.disabled = false;
+    if (availEl) {
+        if (stockAvailMap.hasOwnProperty(typeEl.value)) {
+            const avail = Number(stockAvailMap[typeEl.value]) || 0;
+            availEl.textContent = waybillTranslations.stock_available_label + ': ' +
+                avail.toLocaleString('en-US') + ' ' + waybillTranslations.stock_unit_bags;
+            availEl.style.display = 'block';
+        } else {
+            availEl.style.display = 'none';
+        }
+    }
+    validateStockCount();
+}
+
+// Not enough bags in stock? Show the inline error (used on input and before save)
+function validateStockCount() {
+    const typeEl = document.getElementById('wb_type');
+    const bagsEl = document.getElementById('wb_bags');
+    const errEl = document.getElementById('wb_stock_error');
+    const hasTracking = typeEl.value && stockAvailMap.hasOwnProperty(typeEl.value);
+    const avail = hasTracking ? Number(stockAvailMap[typeEl.value]) : null;
+    const bags = parseInt(bagsEl.value) || 0;
+    const over = avail !== null && bags > avail;
+    if (errEl) errEl.style.display = over ? 'block' : 'none';
+    if (over) bagsEl.style.borderColor = '#cf222e';
+    return !over;
+}
+
+// Toggle Rent Fields based on Truck Type
+function toggleTruckRentInput() {
+    const type = document.getElementById('wb_truck_type').value;
+    const rentBox = document.getElementById('wb_rent_container');
+    const totalBox = document.getElementById('wb_total_freight_container');
+    
+    if (type === 'rented') {
+        rentBox.style.display = 'block';
+        totalBox.style.display = 'block';
+        calculateFreightTotal();
+    } else {
+        rentBox.style.display = 'none';
+        totalBox.style.display = 'none';
+        document.getElementById('wb_freight_per_ton').value = 0;
+        document.getElementById('wb_total_freight_val').value = 0;
+        document.getElementById('wb_total_freight_display').value = waybillTranslations.js_company_truck_freight;
+    }
+}
+
+// Calculate Total Freight (Tonnage * Freight per Ton)
+function calculateFreightTotal() {
+    const tonnage = parseFloat(document.getElementById('wb_calculated_tonnage_val').value) || 0;
+    const rate = parseFloat(document.getElementById('wb_freight_per_ton').value) || 0;
+    const total = tonnage * rate;
+    
+    document.getElementById('wb_total_freight_val').value = total.toFixed(2);
+    document.getElementById('wb_total_freight_display').value = `${total.toLocaleString()} ${waybillTranslations.js_afghani_currency}`;
+}
+
+// Validate Driver Phone Number (Must be at least 9 digits)
+function getFormattedDriverPhone() {
+    const rawPhone = (document.getElementById('wb_driver_phone').value || '').trim();
+    if (rawPhone.length < 9) {
+        return null;
+    }
+    return `+93${esc(rawPhone)}`;
+}
+
+// Update Waybill Live Preview & Printable Card
+function updateWaybillSheet() {
+    document.getElementById('lbl_wb_date').textContent = document.getElementById('wb_date').value || '____/__/__';
+    
+    document.getElementById('lbl_wb_driver').textContent = document.getElementById('wb_driver_name').value || '__________';
+    
+    // Bind phone with +93 prefix
+    const rawPhone = (document.getElementById('wb_driver_phone').value || '').trim();
+    document.getElementById('lbl_wb_driver_phone').textContent = rawPhone ? `+93 ${rawPhone}` : '__________';
+    
+    document.getElementById('lbl_wb_plate').textContent = document.getElementById('wb_truck_plate').value || '__________';
+    document.getElementById('lbl_wb_type').textContent = document.getElementById('wb_type').value || waybillTranslations.js_default_cement;
+    document.getElementById('lbl_wb_bags').textContent = document.getElementById('wb_bags').value || '____';
+    
+    // Format tonnage with decimal places
+    const tonnageVal = document.getElementById('wb_calculated_tonnage_val').value || '0';
+    document.getElementById('lbl_wb_tonnage').textContent = `${parseFloat(tonnageVal).toFixed(2)} ${waybillTranslations.js_ton_unit}`;
+    
+    const truckType = document.getElementById('wb_truck_type').value;
+    const totalFreight = document.getElementById('wb_total_freight_val').value || 0;
+    const truckLabel = truckType === 'rented' 
+        ? waybillTranslations.js_rented_freight_label.replace('{freight}', parseFloat(totalFreight).toLocaleString())
+        : waybillTranslations.js_truck_company_label;
+    if (document.getElementById('lbl_wb_truck_type')) {
+        document.getElementById('lbl_wb_truck_type').textContent = truckLabel;
+    }
+
+    const freightLabel = truckType === 'rented' ? `${parseFloat(totalFreight).toLocaleString()} ${esc(waybillTranslations.js_afghani_currency)}` : `۰ ${esc(waybillTranslations.js_afghani_currency)}`;
+    document.getElementById('lbl_wb_total_freight').textContent = freightLabel;
+
+    const loadingSelect = document.getElementById('wb_loading_province');
+    document.getElementById('lbl_wb_loading').textContent = loadingSelect.options[loadingSelect.selectedIndex]?.text || '__________';
+    
+    const unloadingSelect = document.getElementById('wb_unloading_province');
+    document.getElementById('lbl_wb_unloading').textContent = unloadingSelect.options[unloadingSelect.selectedIndex]?.text || '__________';
+    
+    const remarksVal = document.getElementById('wb_remarks').value.trim();
+    document.getElementById('lbl_wb_remarks').textContent = remarksVal || waybillTranslations.js_remark_default;
+    
+    // Update "ارسال شده به" field - display the selected option's text (agency_name)
+    const selledToSelect = document.getElementById('wb_selled_to');
+    const selledTo = selledToSelect.options[selledToSelect.selectedIndex]?.text || '__________';
+    if (document.getElementById('lbl_wb_selled_to')) {
+        document.getElementById('lbl_wb_selled_to').textContent = selledTo;
+    }
+    
+    // Update barcode serial
+    const serial = document.getElementById('wb_serial').value || 'WB-0001';
+    if (document.getElementById('barcode_serial')) {
+        document.getElementById('barcode_serial').textContent = serial;
+    }
+}
+
+// Save waybill to database
+function saveWaybill() {
+    const rawPhone = (document.getElementById('wb_driver_phone').value || '').trim();
+    
+    // Remove any non-digit characters for validation
+    const digitsOnly = rawPhone.replace(/\D/g, '');
+    
+    // 9-digit Validation Check
+    if (digitsOnly.length !== 9) {
+        alert(waybillTranslations.js_phone_validation_error);
+        document.getElementById('wb_driver_phone').focus();
+        return;
+    }
+
+    // Bags Count Range Validation (650-950)
+    if (!validateBagsCount()) {
+        alert(waybillTranslations.js_bags_validation_error);
+        document.getElementById('wb_bags').focus();
+        return;
+    }
+
+    // Cement stock gate: not enough bags in stock for the selected cement type
+    if (!validateStockCount()) {
+        alert(waybillTranslations.js_stock_insufficient_error);
+        document.getElementById('wb_bags').focus();
+        return;
+    }
+
+    // Format phone with country code (input should be local digits only)
+    const formattedPhone = `+93${esc(digitsOnly)}`;
+
+    const waybillData = {
+        waybill_serial: document.getElementById('wb_serial').value,
+        waybill_date: document.getElementById('wb_date').value,
+        selled_to_agent: document.getElementById('wb_selled_to').value,
+        driver_name: document.getElementById('wb_driver_name').value,
+        driver_phone: formattedPhone,
+        truck_plate: document.getElementById('wb_truck_plate').value,
+        truck_type: document.getElementById('wb_truck_type').value,
+        freight_per_ton: parseFloat(document.getElementById('wb_freight_per_ton').value) || 0,
+        total_freight: parseFloat(document.getElementById('wb_total_freight_val').value) || 0,
+        cement_type: document.getElementById('wb_type').value,
+        total_bags: parseInt(document.getElementById('wb_bags').value) || 0,
+        tonnage: parseFloat(document.getElementById('wb_calculated_tonnage_val').value) || 0,
+        loading_province: document.getElementById('wb_loading_province').value,
+        unloading_province: document.getElementById('wb_unloading_province').value,
+        remarks: document.getElementById('wb_remarks').value
+    };
+
+    // Validate required fields
+    if (!waybillData.waybill_date || !waybillData.selled_to_agent || !waybillData.driver_name || 
+        !waybillData.truck_plate || !waybillData.total_bags || !waybillData.loading_province || !waybillData.unloading_province) {
+        alert(waybillTranslations.js_required_fields_error);
+        return;
+    }
+
+    fetch('/api/admin/save-waybill', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(waybillData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(waybillTranslations.js_save_success);
+
+            // Reflect the stock deduction in the availability display without reloading
+            if (waybillData.cement_type && stockAvailMap.hasOwnProperty(waybillData.cement_type)) {
+                stockAvailMap[waybillData.cement_type] = Number(stockAvailMap[waybillData.cement_type]) - waybillData.total_bags;
+                onCementTypeChange();
+            }
+
+            // Clear form inputs
+            document.getElementById('wb_date').value = '';
+            document.getElementById('wb_selled_to').value = '';
+            document.getElementById('wb_driver_name').value = '';
+            document.getElementById('wb_driver_phone').value = '';
+            document.getElementById('wb_truck_plate').value = '';
+            document.getElementById('wb_bags').value = '';
+            document.getElementById('wb_tonnage').value = '';
+            document.getElementById('wb_calculated_tonnage_val').value = '';
+            document.getElementById('wb_freight_per_ton').value = '';
+            document.getElementById('wb_total_freight_val').value = '0';
+            document.getElementById('wb_remarks').value = '';
+            document.getElementById('wb_loading_province').value = '';
+            document.getElementById('wb_unloading_province').value = '';
+            
+            // Instant Real-time Data Refresh without page reload
+            fetchNextSerial();
+            loadWaybillHistory();
+            updateWaybillSheet();
+        } else if (data.code === 'insufficient_stock') {
+            alert(waybillTranslations.js_stock_insufficient_error);
+        } else {
+            alert(waybillTranslations.js_save_error.replace('{error}', data.error || waybillTranslations.js_unknown_error));
+        }
+    })
+    .catch(err => {
+        console.error('Error saving waybill:', err);
+        alert(waybillTranslations.js_connection_error);
+    });
+}
+
+// Waybill History Table Management
+let currentTableData = [];
+let filteredTableData = [];
+let wbCurrentPage = 1;
+let wbRowsPerPage = 10; // Default dynamic rows count
+
+function loadWaybillHistory() {
+    fetch('/api/admin/waybill-history')
+        .then(res => res.json())
+        .then(data => {
+            currentTableData = data.records || [];
+            filteredTableData = [...currentTableData];
+            wbCurrentPage = 1;
+            renderWaybillTable();
+        })
+        .catch(err => console.error('Error loading history:', err));
+}
+
+function filterWaybillTable() {
+    const term = document.getElementById('wb_search_input').value.toLowerCase().trim();
+    filteredTableData = currentTableData.filter(row => 
+        (row.waybill_serial || '').toLowerCase().includes(term) ||
+        (row.driver_name || '').toLowerCase().includes(term) ||
+        (row.truck_plate || '').toLowerCase().includes(term) ||
+        (row.selled_to_agent || '').toLowerCase().includes(term)
+    );
+    wbCurrentPage = 1;
+    renderWaybillTable();
+}
+
+function renderWaybillTable() {
+    const container = document.getElementById('waybill-history-rows');
+    if (filteredTableData.length === 0) {
+        container.innerHTML = `<tr><td colspan="15" style="padding: 20px; color: #57606a;">${esc(waybillTranslations.no_waybills)}</td></tr>`;
+        updateWbPagination(0);
+        return;
+    }
+
+    const totalRecords = filteredTableData.length;
+    const totalPages = Math.ceil(totalRecords / wbRowsPerPage) || 1;
+    const startIdx = (wbCurrentPage - 1) * wbRowsPerPage;
+    const paginated = filteredTableData.slice(startIdx, startIdx + wbRowsPerPage);
+
+    let html = '';
+    paginated.forEach((row, i) => {
+        const isSold = row.status === 'posted_sold' || row.status === 'draft_sold';
+
+        const statusBadge = isSold
+            ? `<span class="waybill-status-badge waybill-status-sold">${esc(waybillTranslations.status_sold)}</span>`
+            : `<span class="waybill-status-badge waybill-status-pending">${esc(waybillTranslations.status_pending)}</span>`;
+
+        const truckLabel = row.truck_type === 'rented' ? waybillTranslations.js_truck_rented_label : waybillTranslations.js_truck_company_label;
+        const freightLabel = row.truck_type === 'rented' ? `${parseFloat(row.total_freight || 0).toLocaleString()} ${esc(waybillTranslations.js_afghani_currency)}` : waybillTranslations.js_truck_company_label;
+
+        html += `
+            <tr class="${esc(isSold ? 'waybill-row-sold' : '')}">
+                <td style="padding: 10px 8px;" class="waybill-action-cell">
+                    <div style="display: flex; gap: 6px; justify-content: center; align-items: center; min-width: 100px;">
+                        <button onclick="openEditWbModal(${esc(row.id)})" class="btn btn-primary waybill-action-btn">${esc(waybillTranslations.js_edit_button)}</button>
+                        <button onclick="deleteWaybill(${esc(row.id)})" class="btn btn-danger waybill-action-btn">${esc(waybillTranslations.js_delete_button)}</button>
+                    </div>
+                </td>
+                <td style="padding: 10px 8px;">${statusBadge}</td>
+                <td style="padding: 10px 8px;">${esc(row.unloading_province || '-')}</td>
+                <td style="padding: 10px 8px;">${esc(row.loading_province || '-')}</td>
+                <td style="padding: 10px 8px; font-weight: 600;">${esc(row.tonnage || 0)} ${esc(waybillTranslations.js_ton_unit)}</td>
+                <td style="padding: 10px 8px; font-weight: 600;">${esc(row.total_bags || 0)}</td>
+                <td style="padding: 10px 8px; font-weight: 600;">${esc(freightLabel)}</td>
+                <td style="padding: 10px 8px; font-weight: 600;">${esc(truckLabel)}</td>
+                <td style="padding: 10px 8px;">${esc(row.truck_plate || '-')}</td>
+                <td style="padding: 10px 8px;">${esc(row.driver_phone || '-')}</td>
+                <td style="padding: 10px 8px;">${esc(row.driver_name || '-')}</td>
+                <td style="padding: 10px 8px;">${esc(row.agency_name || row.selled_to_agent || '-')}</td>
+                <td style="padding: 10px 8px;">${esc(row.waybill_date || '-')}</td>
+                <td style="padding: 10px 8px; font-weight: 600;">${esc(row.waybill_serial || '-')}</td>
+                <td style="padding: 10px 8px;">${esc(startIdx + i + 1)}</td>
+            </tr>
+        `;
+    });
+    container.innerHTML = html;
+    updateWbPagination(totalRecords);
+}
+
+function updateWbPagination(totalRecords) {
+    const totalPages = Math.ceil(totalRecords / wbRowsPerPage) || 1;
+    const start = totalRecords === 0 ? 0 : (wbCurrentPage - 1) * wbRowsPerPage + 1;
+    const end = Math.min(wbCurrentPage * wbRowsPerPage, totalRecords);
+
+    if (document.getElementById('lbl_page_start')) document.getElementById('lbl_page_start').textContent = start.toLocaleString();
+    if (document.getElementById('lbl_page_end')) document.getElementById('lbl_page_end').textContent = end.toLocaleString();
+    if (document.getElementById('lbl_total_count')) document.getElementById('lbl_total_count').textContent = totalRecords.toLocaleString();
+    if (document.getElementById('lbl_page_indicator')) document.getElementById('lbl_page_indicator').textContent = `${waybillTranslations.page_label} ${wbCurrentPage} ${waybillTranslations.page_of} ${totalPages}`;
+
+    if (document.getElementById('btn_page_prev')) document.getElementById('btn_page_prev').disabled = (wbCurrentPage === 1 || totalRecords === 0);
+    if (document.getElementById('btn_page_next')) document.getElementById('btn_page_next').disabled = (wbCurrentPage === totalPages || totalRecords === 0);
+}
+
+// Handle Rows Per Page Selection Change
+function handleRowsPerPageChange(val) {
+    wbRowsPerPage = parseInt(val) || 10;
+    wbCurrentPage = 1; // Reset to first page when limit changes
+    renderWaybillTable();
+}
+
+// Go to previous page
+function goToPrevPage() {
+    if (wbCurrentPage > 1) {
+        wbCurrentPage--;
+        renderWaybillTable();
+    }
+}
+
+// Go to next page
+function goToNextPage() {
+    const maxP = Math.ceil(filteredTableData.length / wbRowsPerPage);
+    if (wbCurrentPage < maxP) {
+        wbCurrentPage++;
+        renderWaybillTable();
+    }
+}
+
+function deleteWaybill(id) {
+    if (!confirm('Are you sure you want to delete this waybill? This action cannot be undone.')) return;
+    fetch(`/api/admin/waybill/${id}`, { method: 'DELETE' })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                loadWaybillHistory();
+                fetchNextSerial();
+            } else {
+                alert(waybillTranslations.js_save_error.replace('{error}', data.error || waybillTranslations.js_unknown_error));
+            }
+        })
+        .catch(err => console.error('Error deleting waybill:', err));
+}
+
+// Edit Waybill Modal Functions
+function openEditWbModal(id) {
+    const item = currentTableData.find(r => r.id === id);
+    if (!item) return;
+
+    document.getElementById('edit_wb_id').value = item.id;
+    document.getElementById('edit_modal_serial').textContent = `(${item.waybill_serial})`;
+    document.getElementById('edit_wb_date').value = item.waybill_date || '';
+    document.getElementById('edit_wb_driver_name').value = item.driver_name || '';
+    
+    // Strip country code from phone number for display in edit modal
+    let phoneDisplay = item.driver_phone || '';
+    if (phoneDisplay.startsWith('+93')) {
+        phoneDisplay = phoneDisplay.substring(3);
+    }
+    document.getElementById('edit_wb_driver_phone').value = phoneDisplay;
+    
+    document.getElementById('edit_wb_truck_plate').value = item.truck_plate || '';
+    document.getElementById('edit_wb_type').value = item.cement_type || '';
+    document.getElementById('edit_wb_truck_type').value = item.truck_type || 'company';
+    document.getElementById('edit_wb_freight_per_ton').value = item.freight_per_ton || 0;
+    document.getElementById('edit_wb_bags').value = item.total_bags || 0;
+    document.getElementById('edit_wb_tonnage').value = `${item.tonnage || 0} تن`;
+    document.getElementById('edit_wb_loading').value = item.loading_province || '';
+    document.getElementById('edit_wb_unloading').value = item.unloading_province || '';
+    document.getElementById('edit_wb_remarks').value = item.remarks || '';
+
+    // Set edit agency dropdown value using username (database stores username)
+    document.getElementById('edit_wb_selled_to').value = item.selled_to_agent || '';
+
+    // Copy options to edit cement type dropdown
+    const mainCementSelect = document.getElementById('wb_type');
+    const editCementSelect = document.getElementById('edit_wb_type');
+    if (mainCementSelect && editCementSelect) {
+        editCementSelect.innerHTML = mainCementSelect.innerHTML;
+        editCementSelect.value = item.cement_type || '';
+    }
+
+    calcEditFreight();
+    document.getElementById('editWbModal').style.display = 'flex';
+}
+
+function closeEditWbModal() {
+    document.getElementById('editWbModal').style.display = 'none';
+}
+
+function calcEditTonnage() {
+    const bags = parseFloat(document.getElementById('edit_wb_bags').value) || 0;
+    const tonnage = (bags / 20).toFixed(2);
+    document.getElementById('edit_wb_tonnage').value = `${tonnage} تن`;
+    calcEditFreight();
+}
+
+function calcEditFreight() {
+    const type = document.getElementById('edit_wb_truck_type').value;
+    const rentBox = document.getElementById('edit_rent_box');
+    rentBox.style.display = type === 'rented' ? 'block' : 'none';
+}
+
+function saveEditWaybill() {
+    const id = document.getElementById('edit_wb_id').value;
+    const bags = parseFloat(document.getElementById('edit_wb_bags').value) || 0;
+    const tonnage = (bags / 20).toFixed(2);
+    const rate = parseFloat(document.getElementById('edit_wb_freight_per_ton').value) || 0;
+    const totalFreight = document.getElementById('edit_wb_truck_type').value === 'rented' ? (tonnage * rate).toFixed(2) : 0;
+
+    const payload = {
+        waybill_date: document.getElementById('edit_wb_date').value,
+        selled_to_agent: document.getElementById('edit_wb_selled_to').value,
+        driver_name: document.getElementById('edit_wb_driver_name').value,
+        driver_phone: document.getElementById('edit_wb_driver_phone').value,
+        truck_plate: document.getElementById('edit_wb_truck_plate').value,
+        truck_type: document.getElementById('edit_wb_truck_type').value,
+        freight_per_ton: rate,
+        total_freight: totalFreight,
+        cement_type: document.getElementById('edit_wb_type').value,
+        total_bags: bags,
+        tonnage: tonnage,
+        loading_province: document.getElementById('edit_wb_loading').value,
+        unloading_province: document.getElementById('edit_wb_unloading').value,
+        remarks: document.getElementById('edit_wb_remarks').value
+    };
+
+    fetch(`/api/admin/waybill/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert('تغییرات بارنامه با موفقیت ثبت شد');
+            closeEditWbModal();
+            loadWaybillHistory();
+        } else {
+            alert('خطا در ثبت تغییرات: ' + (data.error || 'خطای ناشناخته'));
+        }
+    })
+    .catch(err => {
+        console.error('Error updating waybill:', err);
+        alert('خطا در ثبت تغییرات بارنامه');
+    });
+}
+
+// Initialize intl-tel-input for driver phone field
+let driverPhoneInput;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize driver phone input
+    const driverPhoneElement = document.getElementById('wb_driver_phone');
+    if (driverPhoneElement) {
+        driverPhoneInput = intlTelInput(driverPhoneElement, {
+            initialCountry: 'af',
+            separateDialCode: true,
+            utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js',
+            rtl: true,
+            nationalMode: true,
+            formatOnDisplay: false
+        });
+
+        // Handle input to limit digits based on country
+        driverPhoneElement.addEventListener('input', function(e) {
+            const countryData = driverPhoneInput.getSelectedCountryData();
+            const dialCode = countryData.dialCode;
+            const maxLength = countryData.name === 'Afghanistan' ? 9 : 15;
+            
+            // Get current value and remove non-digits
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Limit to max digits for the country
+            if (value.length > maxLength) {
+                value = value.substring(0, maxLength);
+                e.target.value = value;
+            }
+            
+            // Clear error while typing
+            const errorElement = document.getElementById('wb_driver_phone_error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        });
+
+        // Handle paste to prevent duplicate country codes
+        driverPhoneElement.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Remove any existing country code from pasted text
+            let cleanNumber = pastedText.replace(/\D/g, '');
+            
+            // If pasted number starts with country code, remove it
+            const countryData = driverPhoneInput.getSelectedCountryData();
+            const dialCode = countryData.dialCode;
+            if (cleanNumber.startsWith(dialCode)) {
+                cleanNumber = cleanNumber.substring(dialCode.length);
+            }
+            
+            // Limit to max digits for the country
+            const maxLength = countryData.name === 'Afghanistan' ? 9 : 15;
+            if (cleanNumber.length > maxLength) {
+                cleanNumber = cleanNumber.substring(0, maxLength);
+            }
+            
+            // Insert the cleaned number
+            const start = e.target.selectionStart;
+            const end = e.target.selectionEnd;
+            const currentValue = e.target.value.replace(/\D/g, '');
+            const newValue = currentValue.substring(0, start) + cleanNumber + currentValue.substring(end);
+            
+            e.target.value = newValue.substring(0, maxLength);
+        });
+
+        // Add validation on blur (when user leaves the field)
+        driverPhoneElement.addEventListener('blur', function() {
+            validateDriverPhone(true);
+        });
+    }
+
+    // Add form validation for saveWaybill
+    const originalSaveWaybill = window.saveWaybill;
+    window.saveWaybill = function() {
+        if (!validateDriverPhone(false)) {
+            alert('لطفاً شماره تماس معتبر وارد کنید');
+            document.getElementById('wb_driver_phone').focus();
+            return;
+        }
+        // Phone number formatting is handled in saveWaybill function itself
+        originalSaveWaybill();
+    };
+
+    // Add form validation for saveEditWaybill
+    const originalSaveEditWaybill = window.saveEditWaybill;
+    window.saveEditWaybill = function() {
+        const editPhoneElement = document.getElementById('edit_wb_driver_phone');
+        // For edit modal, we don't have intl-tel-input initialized, so just do basic validation
+        if (editPhoneElement && editPhoneElement.value) {
+            const cleanPhone = editPhoneElement.value.trim();
+            // Remove any non-digit characters
+            const digitsOnly = cleanPhone.replace(/\D/g, '');
+            
+            // Validate Afghan phone number (9 digits)
+            if (digitsOnly.length !== 9) {
+                alert('شماره تماس راننده باید ۹ رقم باشد.');
+                editPhoneElement.focus();
+                return;
+            }
+            
+            // Add country code for storage
+            editPhoneElement.value = '+93' + digitsOnly;
+        }
+        originalSaveEditWaybill();
+    };
+});
+
+function validateDriverPhone(isBlur) {
+    const errorElement = document.getElementById('wb_driver_phone_error');
+    if (!driverPhoneInput || !errorElement) return true;
+
+    const phoneNumber = driverPhoneInput.getNumber(intlTelInputUtils.numberFormat.NATIONAL);
+    
+    // If field is empty
+    if (!phoneNumber || phoneNumber.trim() === '') {
+        errorElement.style.display = 'none';
+        return false;
+    }
+
+    // Get country data for specific validation
+    const countryData = driverPhoneInput.getSelectedCountryData();
+    const currentLength = phoneNumber.replace(/\D/g, '').length;
+    
+    // Afghanistan-specific validation: exactly 9 digits
+    if (countryData.name === 'Afghanistan') {
+        if (currentLength === 9) {
+            errorElement.style.display = 'none';
+            return true;
+        }
+        
+        // Only show error on blur or when called from save (isBlur = false means save)
+        if (isBlur || !isBlur) {
+            errorElement.style.display = 'block';
+            errorElement.textContent = 'شماره تماس راننده باید ۹ رقم باشد.';
+            return false;
+        }
+    } else {
+        // For other countries, use standard validation
+        if (driverPhoneInput.isValidNumber()) {
+            errorElement.style.display = 'none';
+            return true;
+        }
+        
+        // Only show error on blur or when called from save
+        if (isBlur || !isBlur) {
+            errorElement.style.display = 'block';
+            errorElement.textContent = 'شماره تماس واردشده معتبر نیست.';
+            return false;
+        }
+    }
+
+    // If typing and not at error condition, don't show error
+    errorElement.style.display = 'none';
+    return false;
+}
+
+// Override openEditWbModal to handle existing phone numbers
+const originalOpenEditWbModal = openEditWbModal;
+openEditWbModal = function(id) {
+    originalOpenEditWbModal(id);
+    
+    // Set the phone number in the edit modal
+    const item = currentTableData.find(r => r.id === id);
+    const editPhoneElement = document.getElementById('edit_wb_driver_phone');
+    if (editPhoneElement && item && item.driver_phone) {
+        editPhoneElement.value = item.driver_phone;
+    }
+};
+</script>
+
+<%- include('partials/footer') %>

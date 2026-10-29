@@ -1,0 +1,289 @@
+<%- include('../partials/header') %>
+<%
+var PO_BL = {
+    OBLIGATION_NOT_FOUND: 'hr.payws.bl_OBLIGATION_NOT_FOUND', OBLIGATION_FULLY_PAID: 'hr.payws.bl_OBLIGATION_FULLY_PAID',
+    SOURCE_UNAVAILABLE: 'hr.payws.bl_SOURCE_UNAVAILABLE', OT_NOT_ELIGIBLE: 'hr.payws.bl_OT_NOT_ELIGIBLE',
+    ADVANCE_NOT_ELIGIBLE: 'hr.payws.bl_ADVANCE_NOT_ELIGIBLE', OVER_ALLOCATION: 'hr.payws.bl_OVER_ALLOCATION',
+    INVALID_MANUAL_SELECTION: 'hr.payws.bl_INVALID_MANUAL_SELECTION', RESERVATION_CONFLICT: 'hr.payws.bl_RESERVATION_CONFLICT',
+    INCONSISTENT_BALANCE: 'hr.payws.bl_INCONSISTENT_BALANCE', INVALID_REQUESTED_AMOUNT: 'hr.payws.bl_INVALID_REQUESTED_AMOUNT',
+    INVALID_EARNING_MONTH: 'hr.payws.bl_INVALID_EARNING_MONTH', EMPLOYEE_NOT_FOUND: 'hr.payws.bl_EMPLOYEE_NOT_FOUND',
+    NO_SCHEDULE: 'hr.payws.bl_NO_SCHEDULE', SCHEDULE_INVALID: 'hr.payws.bl_SCHEDULE_INVALID',
+    EMPLOYMENT_DATA_INVALID: 'hr.payws.bl_EMPLOYMENT_DATA_INVALID', SALARY_HISTORY_MISSING: 'hr.payws.bl_SALARY_HISTORY_MISSING',
+    SALARY_HISTORY_INVALID: 'hr.payws.bl_SALARY_HISTORY_INVALID', SALARY_HISTORY_GAP: 'hr.payws.bl_SALARY_HISTORY_GAP',
+    SALARY_HISTORY_OVERLAP: 'hr.payws.bl_SALARY_HISTORY_OVERLAP', MISSING_CHECK_IN: 'hr.payws.bl_MISSING_CHECK_IN',
+    MISSING_ATTENDANCE: 'hr.payws.bl_MISSING_ATTENDANCE', PENDING_EXCEPTION: 'hr.payws.bl_PENDING_EXCEPTION',
+    EXCEPTION_INVALID: 'hr.payws.bl_EXCEPTION_INVALID', CORRECTED_ATTENDANCE_MISSING: 'hr.payws.bl_CORRECTED_ATTENDANCE_MISSING',
+    NO_SOURCE_ROWS: 'hr.payws.bl_NO_SOURCE_ROWS', NO_ELIGIBLE_ROWS: 'hr.payws.bl_NO_ELIGIBLE_ROWS',
+    NOT_APPROVED: 'hr.payws.bl_NOT_APPROVED', LINKED_TO_PAYROLL: 'hr.payws.bl_LINKED_TO_PAYROLL',
+    PRE_CUTOVER: 'hr.payws.bl_PRE_CUTOVER', STORED_REMAINDER_DIVERGENT: 'hr.payws.bl_STORED_REMAINDER_DIVERGENT',
+    NEGATIVE_SALARY_REMAINING: 'hr.payws.bl_NEGATIVE_SALARY_REMAINING', NEGATIVE_OT_REMAINING: 'hr.payws.bl_NEGATIVE_OT_REMAINING',
+    NEGATIVE_ADVANCE_AVAILABLE: 'hr.payws.bl_NEGATIVE_ADVANCE_AVAILABLE', NEGATIVE_ADVANCE_BALANCE: 'hr.payws.bl_NEGATIVE_ADVANCE_BALANCE',
+    ROWS_SUM_ZERO: 'hr.payws.bl_ROWS_SUM_ZERO', SUM_COUNT_MISMATCH: 'hr.payws.bl_SUM_COUNT_MISMATCH',
+    NON_INTEGER_ARITHMETIC: 'hr.payws.bl_NON_INTEGER_ARITHMETIC', NON_SELECT_STATEMENT_BLOCKED: 'hr.payws.bl_NON_SELECT_STATEMENT_BLOCKED',
+    SOURCE_QUERY_FAILED: 'hr.payws.bl_SOURCE_QUERY_FAILED', SOURCE_TABLE_MISSING: 'hr.payws.bl_SOURCE_TABLE_MISSING',
+    UNKNOWN_FIGURE_CODE: 'hr.payws.bl_UNKNOWN_FIGURE_CODE', UNKNOWN_STATE: 'hr.payws.bl_UNKNOWN_STATE'
+};
+function poCodeLabel(c) { return (c && PO_BL[c]) ? t(PO_BL[c]) : t('hr.payws.code_generic'); }
+%>
+
+<style>
+    .po-stat { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0 20px 0; }
+    .po-stat-item { flex: 1; min-width: 130px; border: 1px solid var(--border-color, #d1d5db); border-radius: 10px;
+        padding: 12px 14px; background: var(--bg-color, #fff); text-align: center; }
+    .po-stat-value { font-size: 22px; font-weight: 800; }
+    .po-stat-label { font-size: 11.5px; color: var(--text-muted, #6b7280); margin-top: 4px; }
+    .po-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px;
+        font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+    .po-badge-green { background: rgba(16, 185, 129, 0.15); color: #047857; }
+    .po-badge-amber { background: rgba(245, 158, 11, 0.15); color: #b45309; }
+    .po-badge-red { background: rgba(239, 68, 68, 0.15); color: #b91c1c; }
+    .po-badge-blue { background: rgba(59, 130, 246, 0.15); color: #1d4ed8; }
+    .po-badge-gray { background: rgba(107, 114, 128, 0.15); color: #4b5563; }
+    [data-theme="dark"] .po-badge-green { background: rgba(16, 185, 129, 0.2); color: #3fb950; }
+    [data-theme="dark"] .po-badge-amber { background: rgba(245, 158, 11, 0.2); color: #fbbf24; }
+    [data-theme="dark"] .po-badge-red { background: rgba(239, 68, 68, 0.2); color: #f85149; }
+    [data-theme="dark"] .po-badge-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    [data-theme="dark"] .po-badge-gray { background: rgba(107, 114, 128, 0.2); color: #9ca3af; }
+    .po-code { display: inline-block; font-family: monospace; font-size: 11px; padding: 2px 6px;
+        border-radius: 6px; background: rgba(107, 114, 128, 0.12); color: inherit; margin-inline-end: 4px; }
+    .po-warning { border-inline-start: 4px solid #f59e0b; background: rgba(245, 158, 11, 0.08);
+        padding: 10px 14px; border-radius: 8px; font-size: 12.5px; margin-bottom: 16px; }
+    .po-note { font-size: 12px; color: var(--text-muted, #6b7280); margin-top: 8px; }
+    .po-correct { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; }
+    .po-label { display: block; margin-bottom: 5px; font-size: 12.5px; font-weight: 600; }
+    .po-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+    .po-emp { font-weight: 700; font-size: 13.5px; }
+    .po-sub { font-size: 11.5px; color: var(--text-muted, #6b7280); }
+    .po-created { border-inline-start: 4px solid #10b981; background: rgba(16, 185, 129, 0.08);
+        padding: 12px 16px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; font-weight: 600; }
+    .po-link { font-size: 13px; font-weight: 600; color: var(--accent-blue, #2563eb); text-decoration: none;
+        padding: 6px 12px; border: 1px solid var(--border-color, #d1d5db); border-radius: 8px; background: var(--bg-color, #fff); }
+    .po-link:hover { text-decoration: underline; }
+    .pay-tech { display: inline-block; margin: 2px 6px 2px 0; vertical-align: top; }
+    .pay-tech summary { cursor: pointer; font-size: 11.5px; font-weight: 700; color: var(--text-muted, #6b7280); letter-spacing: .2px; }
+    .pay-tech[open] summary { margin-bottom: 3px; }
+    .pay-tech .po-code { display: block; font-size: 10.5px; margin-top: 2px; }
+    .po-empty { padding: 14px 16px; border: 1px dashed var(--border-color, #d1d5db); border-radius: 10px;
+        font-size: 13px; color: var(--text-muted, #6b7280); background: var(--bg-color, #fafafa); }
+</style>
+
+<div class="card">
+    <% if (mode === 'obligations') { %>
+        <!-- ===================== OBLIGATIONS LIST ===================== -->
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 8px;">
+            <div>
+                <h2 style="font-size: 22px; font-weight: 700; margin: 0;">🧾 <%= t('hr.payroll_period.obligations_title') %></h2>
+                <p style="font-size: 13px; color: var(--text-muted, #6b7280); margin: 6px 0 0 0;"><%= t('hr.payroll_period.obligations_desc') %></p>
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <a href="/admin/hr/payroll/periods/open" class="btn btn-primary"><%= t('hr.payroll_period.open_period') %></a>
+                <a href="/admin/hr/payroll" class="btn btn-secondary"><%= t('hr.payroll_period.back_to_payroll') %></a>
+            </div>
+        </div>
+
+        <% if (!obligations || obligations.length === 0) { %>
+            <div class="po-empty">
+                <%= t('hr.payroll_period.no_obligations') %>
+            </div>
+        <% } else { %>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><%= t('hr.payroll_period.col_obligation') %></th>
+                            <th><%= t('hr.payroll_period.col_employee') %></th>
+                            <th><%= t('hr.payroll_period.col_department') %></th>
+                            <th><%= t('hr.payroll_period.col_month') %></th>
+                            <th><%= t('hr.payroll_period.col_earned') %></th>
+                            <th><%= t('hr.payroll_period.col_paid') %></th>
+                            <th><%= t('hr.payroll_period.col_remaining') %></th>
+                            <th><%= t('hr.payroll_period.col_status') %></th>
+                            <th><%= t('hr.payroll_period.col_note') %></th>
+                            <th><%= t('hr.payroll_period.correct_title') %></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% obligations.forEach(function(o) { %>
+                            <%
+                                var statusKey = o.status === 'PAID' ? 'status_paid' : o.status === 'PARTIAL' ? 'status_partial' : 'status_open';
+                                var statusTone = o.status === 'PAID' ? 'po-badge-green' : o.status === 'PARTIAL' ? 'po-badge-amber' : 'po-badge-blue';
+                            %>
+                            <tr>
+                                <td dir="ltr">#<%= o.id %></td>
+                                <td>
+                                    <span class="po-emp"><%= o.full_name || '—' %></span><br>
+                                    <span class="po-sub" dir="ltr"><%= o.employee_code || '' %></span>
+                                </td>
+                                <td><%= o.department_name || '—' %></td>
+                                <td dir="ltr"><%= o.earning_month %></td>
+                                <td dir="ltr"><%= (Number(o.salary_earned) / 100).toFixed(2) %></td>
+                                <td dir="ltr"><%= (Number(o.salary_paid) / 100).toFixed(2) %></td>
+                                <td dir="ltr"><%= (Number(o.salary_remaining) / 100).toFixed(2) %></td>
+                                <td><span class="po-badge <%= statusTone %>"><%= t('hr.payroll_period.' + statusKey) %></span></td>
+                                <td><span class="po-sub"><%= o.source_note || '—' %></span></td>
+                                <td>
+                                    <details>
+                                        <summary style="cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--accent-blue, #2563eb);">
+                                            <%= t('hr.payroll_period.correct_title') %>
+                                        </summary>
+                                        <form method="POST" action="/admin/hr/payroll/periods/correct" class="po-correct" style="margin-top: 8px;">
+                                            <input type="hidden" name="earning_month" value="<%= o.earning_month %>">
+                                            <input type="hidden" name="employee_id" value="<%= o.employee_id %>">
+                                            <div style="min-width: 180px;">
+                                                <label class="po-label" for="reason"><%= t('hr.payroll_period.correct_reason') %> <span style="color: red;">*</span></label>
+                                                <input type="text" name="reason" class="form-control" required maxlength="500" id="reason">
+                                            </div>
+                                            <div>
+                                                <label class="po-label" style="display: flex; align-items: center; gap: 6px; font-weight: 500;" for="confirm_partial">
+                                                    <input type="checkbox" name="confirm_partial" value="1" id="confirm_partial">
+                                                    <%= t('hr.payroll_period.confirm_partial') %>
+                                                </label>
+                                                <span class="po-sub"><%= t('hr.payroll_period.confirm_partial_hint') %></span>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary"><%= t('hr.payroll_period.correct_submit') %></button>
+                                        </form>
+                                    </details>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+            <p class="po-note"><%= t('hr.payroll_period.amount_cents_note') %></p>
+        <% } %>
+
+    <% } else if (mode === 'form') { %>
+        <!-- ===================== OPEN FORM ===================== -->
+        <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 6px 0;">🗓 <%= t('hr.payroll_period.open_title') %></h2>
+        <p style="font-size: 13px; color: var(--text-muted, #6b7280); margin: 0 0 16px 0;"><%= t('hr.payroll_period.open_desc') %></p>
+        <div class="po-warning"><%= t('hr.payroll_period.confirm_open_warning') %></div>
+
+        <form method="GET" action="/admin/hr/payroll/periods/open">
+            <label class="po-label"><%= t('hr.payroll_period.earning_month') %> <span style="color: red;">*</span></label>
+            <input type="text" name="month" class="form-control" value="<%= month %>"
+                   placeholder="<%= t('hr.payroll_period.earning_month_placeholder') %>" required style="width: 190px;" dir="ltr">
+            <div class="po-actions">
+                <button type="submit" class="btn btn-primary">🔎 <%= t('hr.payroll_period.preview') %></button>
+                <a href="/admin/hr/payroll" class="btn btn-secondary"><%= t('hr.payroll_period.back_to_payroll') %></a>
+                <a href="/admin/hr/payroll/obligations" class="btn btn-secondary"><%= t('hr.payroll_period.back_to_obligations') %></a>
+            </div>
+        </form>
+        <p class="po-note"><%= t('hr.payroll_period.amount_cents_note') %></p>
+
+    <% } else if (mode === 'preview' || mode === 'result') { %>
+        <!-- ===================== PREVIEW / RESULT ===================== -->
+        <h2 style="font-size: 22px; font-weight: 700; margin: 0 0 6px 0;">
+            <%= mode === 'result' ? '✅ ' + t('hr.payroll_period.result_title') : '🗓 ' + t('hr.payroll_period.open_title') %>
+        </h2>
+        <p style="font-size: 13px; color: var(--text-muted, #6b7280); margin: 0 0 4px 0;">
+            <strong dir="ltr"><%= month %></strong>
+        </p>
+
+        <% if (mode === 'preview') { %>
+            <div class="po-warning"><%= t('hr.payroll_period.confirm_open_warning') %></div>
+        <% } else { %>
+            <div class="po-created">
+                ✅ <%= t('hr.payroll_period.ok_opened') %> <span dir="ltr"><%= month %></span> —
+                <%= t('hr.payroll_period.result_created') %>: <%= counts.create %>
+            </div>
+        <% } %>
+
+        <div class="po-stat">
+            <div class="po-stat-item">
+                <div class="po-stat-value" style="color: #047857;"><%= counts.create %></div>
+                <div class="po-stat-label"><%= t('hr.payroll_period.total_create') %></div>
+            </div>
+            <div class="po-stat-item">
+                <div class="po-stat-value" style="color: #b45309;"><%= counts.warn %></div>
+                <div class="po-stat-label"><%= t('hr.payroll_period.total_warn') %></div>
+            </div>
+            <div class="po-stat-item">
+                <div class="po-stat-value" style="color: #b91c1c;"><%= counts.blocked %></div>
+                <div class="po-stat-label"><%= t('hr.payroll_period.total_blocked') %></div>
+            </div>
+            <div class="po-stat-item">
+                <div class="po-stat-value" style="color: #6b7280;"><%= counts.zero %></div>
+                <div class="po-stat-label"><%= t('hr.payroll_period.total_zero') %></div>
+            </div>
+            <div class="po-stat-item">
+                <div class="po-stat-value" style="color: #1d4ed8;"><%= counts.already %></div>
+                <div class="po-stat-label"><%= t('hr.payroll_period.total_already') %></div>
+            </div>
+            <div class="po-stat-item">
+                <div class="po-stat-value" style="color: #b91c1c;"><%= counts.error || 0 %></div>
+                <div class="po-stat-label"><%= t('hr.payroll_period.total_error') %></div>
+            </div>
+        </div>
+
+        <% if (!rows || rows.length === 0) { %>
+            <div style="padding: 14px 16px; border: 1px dashed var(--border-color, #d1d5db); border-radius: 10px; font-size: 13px; color: var(--text-muted, #6b7280);">
+                <%= t('hr.payroll_period.empty_rows') %>
+            </div>
+        <% } else { %>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><%= t('hr.payroll_period.col_employee') %></th>
+                            <th><%= t('hr.payroll_period.col_department') %></th>
+                            <th><%= t('hr.payroll_period.col_month') %></th>
+                            <th><%= t('hr.payroll_period.col_earned') %></th>
+                            <th><%= t('hr.payroll_period.verdict_skip') %></th>
+                            <th><%= t('hr.payroll_period.col_note') %></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% rows.forEach(function(r) { %>
+                            <%
+                                var verdictKey = r.verdict === 'CREATE' ? (r.warn ? 'verdict_warn' : 'verdict_create') : 'verdict_skip';
+                                var verdictTone = r.verdict === 'CREATE' ? (r.warn ? 'po-badge-amber' : 'po-badge-green') : 'po-badge-gray';
+                                var skipKey = r.skip_code === 'ALREADY_OPEN' ? 'skip_already'
+                                    : r.skip_code === 'BLOCKED' ? 'skip_blocked'
+                                    : r.skip_code === 'ZERO_ENTITLEMENT' ? 'skip_zero'
+                                    : r.skip_code === 'ERROR' ? 'skip_error' : null;
+                            %>
+                            <tr>
+                                <td>
+                                    <span class="po-emp"><%= r.full_name %></span><br>
+                                    <span class="po-sub" dir="ltr"><%= r.employee_code %></span>
+                                </td>
+                                <td><%= r.department_name || '—' %></td>
+                                <td dir="ltr"><%= r.earning_month %></td>
+                                <td dir="ltr"><%= (Number(r.entitlement_cents) / 100).toFixed(2) %></td>
+                                <td>
+                                    <span class="po-badge <%= verdictTone %>"><%= t('hr.payroll_period.' + verdictKey) %></span>
+                                    <% if (skipKey) { %>
+                                        <span class="po-badge po-badge-red" style="margin-inline-start: 6px;"><%= t('hr.payroll_period.' + skipKey) %></span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% (r.codes || []).forEach(function(c) { %><details class="pay-tech"><summary><%= poCodeLabel(c) %></summary><span class="po-code" dir="ltr"><%= c %></span></details><% }); %>
+                                    <% if (r.message) { %><span class="po-sub"><%= r.message %></span><% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        <% } %>
+
+        <div class="po-actions">
+            <% if (mode === 'preview') { %>
+                <form method="POST" action="/admin/hr/payroll/periods/open">
+                    <input type="hidden" name="earning_month" value="<%= month %>">
+                    <button type="submit" class="btn btn-primary"
+                            onclick="return confirm('<%= t('hr.payroll_period.confirm_open_warning') %>');">
+                        ✅ <%= t('hr.payroll_period.confirm_open') %>
+                    </button>
+                </form>
+                <a href="/admin/hr/payroll/periods/open" class="btn btn-secondary"><%= t('hr.payroll_period.back_to_open') %></a>
+            <% } else { %>
+                <a href="/admin/hr/payroll/obligations" class="btn btn-primary">🧾 <%= t('hr.payroll_period.back_to_obligations') %></a>
+                <a href="/admin/hr/payroll" class="btn btn-secondary"><%= t('hr.payroll_period.back_to_payroll') %></a>
+            <% } %>
+        </div>
+        <p class="po-note"><%= t('hr.payroll_period.amount_cents_note') %></p>
+    <% } %>
+</div>
+
+<%- include('../partials/footer') %>

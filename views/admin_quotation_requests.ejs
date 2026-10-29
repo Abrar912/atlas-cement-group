@@ -1,0 +1,342 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Status badge styles - now handled globally in header.ejs */
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .source-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+</style>
+
+<div style="border-bottom: 2px solid var(--border-color); padding-bottom: 10px; margin-bottom: 20px;">
+    <h2><%= t('quotation_requests.title') %></h2>
+    <p style="font-size: 14px; color: var(--text-muted);"><%= t('quotation_requests.description') %></p>
+</div>
+
+<!-- Filter Row -->
+<div class="filter-row">
+    <div class="filter-item">
+        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; display: block;"><%= t('quotation_requests.status_label') %></label>
+        <select id="filterStatus" class="form-control" onchange="loadQuotationRequests()">
+            <option value="all"><%= t('quotation_requests.all') %></option>
+            <option value="pending_admin_review"><%= t('quotation_requests.status_pending_review') %></option>
+            <option value="assigned_to_worker"><%= t('quotation_requests.status_assigned_worker') %></option>
+            <option value="completed"><%= t('quotation_requests.status_completed') %></option>
+            <option value="rejected"><%= t('quotation_requests.status_rejected') %></option>
+        </select>
+    </div>
+    <div class="filter-item">
+        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; display: block;"><%= t('quotation_requests.province_label') %></label>
+        <select id="filterProvince" class="form-control" onchange="loadQuotationRequests()">
+            <option value="all"><%= t('quotation_requests.all') %></option>
+            <option value="Kabul"><%= t('quotation_requests.province_kabul') %></option>
+            <option value="Herat"><%= t('quotation_requests.province_herat') %></option>
+            <option value="Balkh"><%= t('quotation_requests.province_balkh') %></option>
+            <option value="Kandahar"><%= t('quotation_requests.province_kandahar') %></option>
+            <option value="Nangarhar"><%= t('quotation_requests.province_nangarhar') %></option>
+            <option value="Khost"><%= t('quotation_requests.province_khost') %></option>
+            <option value="Paktia"><%= t('quotation_requests.province_paktia') %></option>
+            <option value="Paktika"><%= t('quotation_requests.province_paktika') %></option>
+            <option value="Ghazni"><%= t('quotation_requests.province_ghazni') %></option>
+            <option value="Logar"><%= t('quotation_requests.province_logar') %></option>
+            <option value="Wardak"><%= t('quotation_requests.province_wardak') %></option>
+            <option value="Parwan"><%= t('quotation_requests.province_parwan') %></option>
+            <option value="Kapisa"><%= t('quotation_requests.province_kapisa') %></option>
+            <option value="Panjshir"><%= t('quotation_requests.province_panjshir') %></option>
+            <option value="Laghman"><%= t('quotation_requests.province_laghman') %></option>
+            <option value="Kunar"><%= t('quotation_requests.province_kunar') %></option>
+            <option value="Nuristan"><%= t('quotation_requests.province_nuristan') %></option>
+            <option value="Badakhshan"><%= t('quotation_requests.province_badakhshan') %></option>
+            <option value="Takhar"><%= t('quotation_requests.province_takhar') %></option>
+            <option value="Baghlan"><%= t('quotation_requests.province_baghlan') %></option>
+            <option value="Samangan"><%= t('quotation_requests.province_samangan') %></option>
+            <option value="Jowzjan"><%= t('quotation_requests.province_jowzjan') %></option>
+            <option value="Sar-e Pol"><%= t('quotation_requests.province_sarepol') %></option>
+            <option value="Faryab"><%= t('quotation_requests.province_faryab') %></option>
+            <option value="Kunduz"><%= t('quotation_requests.province_kunduz') %></option>
+            <option value="Badghis"><%= t('quotation_requests.province_badghis') %></option>
+            <option value="Ghor"><%= t('quotation_requests.province_ghor') %></option>
+            <option value="Daikundi"><%= t('quotation_requests.province_daikundi') %></option>
+            <option value="Bamyan"><%= t('quotation_requests.province_bamyan') %></option>
+            <option value="Uruzgan"><%= t('quotation_requests.province_uruzgan') %></option>
+            <option value="Zabul"><%= t('quotation_requests.province_zabul') %></option>
+            <option value="Helmand"><%= t('quotation_requests.province_helmand') %></option>
+            <option value="Nimruz"><%= t('quotation_requests.province_nimruz') %></option>
+            <option value="Farah"><%= t('quotation_requests.province_farah') %></option>
+        </select>
+    </div>
+    <div class="filter-item">
+        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; display: block;"><%= t('quotation_requests.source_label') %></label>
+        <select id="filterSource" class="form-control" onchange="loadQuotationRequests()">
+            <option value="all"><%= t('quotation_requests.all') %></option>
+            <option value="direct_customer"><%= t('quotation_requests.source_direct_customer') %></option>
+            <option value="direct_customer_no_worker"><%= t('quotation_requests.source_no_worker') %></option>
+            <option value="admin_assigned"><%= t('quotation_requests.source_admin_assigned') %></option>
+        </select>
+    </div>
+</div>
+
+<!-- Requests Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t('quotation_requests.th_request_id') %></th>
+                    <th><%= t('quotation_requests.th_customer') %></th>
+                    <th><%= t('quotation_requests.th_company') %></th>
+                    <th><%= t('quotation_requests.th_phone') %></th>
+                    <th><%= t('quotation_requests.th_province') %></th>
+                    <th><%= t('quotation_requests.th_cement_type') %></th>
+                    <th><%= t('quotation_requests.th_quantity') %></th>
+                    <th><%= t('quotation_requests.th_assigned_worker') %></th>
+                    <th><%= t('quotation_requests.th_source') %></th>
+                    <th><%= t('quotation_requests.th_status') %></th>
+                    <th><%= t('quotation_requests.th_date') %></th>
+                    <th><%= t('quotation_requests.th_actions') %></th>
+                </tr>
+            </thead>
+            <tbody id="quotationRequestsTable">
+                <tr><td colspan="12" style="text-align: center; color: #57606a; padding: 20px;"><%= t('quotation_requests.loading') %></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Assignment Modal -->
+<div id="assignmentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
+        <h3 style="margin-bottom: 20px;"><%= t('quotation_requests.assign_to_worker') %></h3>
+        <input type="hidden" id="assignRequestId">
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label><%= t('quotation_requests.select_worker') %></label>
+            <select id="assignWorkerSelect" class="form-control">
+                <option value=""><%= t('quotation_requests.select_worker_placeholder') %></option>
+            </select>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button onclick="closeAssignmentModal()" class="btn" style="background: #6e7781; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;"><%= t('quotation_requests.cancel') %></button>
+            <button onclick="confirmAssignment()" class="btn" style="background: #2ea44f; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;"><%= t('quotation_requests.send_request') %></button>
+        </div>
+    </div>
+</div>
+
+<!-- Request Details Modal -->
+<div id="detailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <h3 style="margin-bottom: 20px;"><%= t('quotation_requests.request_details') %></h3>
+        <div id="requestDetailsContent"></div>
+        <div style="margin-top: 20px; text-align: right;">
+            <button onclick="closeDetailsModal()" class="btn" style="background: #6e7781; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;"><%= t('quotation_requests.close') %></button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load quotation requests
+async function loadQuotationRequests() {
+    const status = document.getElementById('filterStatus').value;
+    const province = document.getElementById('filterProvince').value;
+    const source = document.getElementById('filterSource').value;
+
+    const params = new URLSearchParams();
+    if (status !== 'all') params.append('status', status);
+    if (province !== 'all') params.append('province', province);
+    if (source !== 'all') params.append('source', source);
+
+    try {
+        const res = await fetch(`/api/admin/quotation-requests?${params}`);
+        const requests = await res.json();
+        const tbody = document.getElementById('quotationRequestsTable');
+
+        if (requests.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: #57606a; padding: 20px;"><%= t('quotation_requests.no_requests') %></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = requests.map(req => {
+            const statusClass = getStatusClass(req.status);
+            const sourceClass = getSourceClass(req.source_type);
+            const sourceLabel = getSourceLabel(req.source_type);
+            const statusLabel = getStatusLabel(req.status);
+
+            return `
+                <tr>
+                    <td><strong>${esc(req.request_id)}</strong></td>
+                    <td>${esc(req.customer_name)}</td>
+                    <td>${esc(req.company_name || '-')}</td>
+                    <td>${esc(req.phone)}</td>
+                    <td>${esc(req.province)}</td>
+                    <td>${esc(req.cement_type)}</td>
+                    <td>${esc(req.quantity)}</td>
+                    <td>${esc(req.assigned_worker || '-')}</td>
+                    <td><span class="source-badge ${sourceClass}">${sourceLabel}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                    <td>${esc(new Date(req.created_at).toLocaleDateString())}</td>
+                    <td>
+                        <button onclick="viewDetails(${Number(req.id)})" style="background: #0969da; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 5px;"><%= t('quotation_requests.view') %></button>
+                        ${!req.assigned_worker ? `<button onclick="openAssignmentModal(${Number(req.id)})" style="background: #2ea44f; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;"><%= t('quotation_requests.assign') %></button>` : ''}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading quotation requests:', error);
+        document.getElementById('quotationRequestsTable').innerHTML = '<tr><td colspan="12" style="text-align: center; color: #dc2626; padding: 20px;"><%= t('quotation_requests.error_loading') %></td></tr>';
+    }
+}
+
+// Load workers for assignment dropdown
+async function loadWorkers() {
+    try {
+        const res = await fetch('/api/admin/workers-list');
+        const workers = await res.json();
+        const select = document.getElementById('assignWorkerSelect');
+        
+        select.innerHTML = '<option value=""><%= t('quotation_requests.select_worker_placeholder') %></option>';
+        workers.forEach(worker => {
+            const option = document.createElement('option');
+            option.value = worker.username;
+            option.textContent = `${worker.full_name || worker.username} (${worker.assigned_province})`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error loading workers:', error);
+    }
+}
+
+// Open assignment modal
+function openAssignmentModal(requestId) {
+    document.getElementById('assignRequestId').value = requestId;
+    loadWorkers();
+    document.getElementById('assignmentModal').style.display = 'flex';
+}
+
+// Close assignment modal
+function closeAssignmentModal() {
+    document.getElementById('assignmentModal').style.display = 'none';
+}
+
+// Confirm assignment
+async function confirmAssignment() {
+    const requestId = document.getElementById('assignRequestId').value;
+    const workerUsername = document.getElementById('assignWorkerSelect').value;
+
+    if (!workerUsername) {
+        alert('<%= t('quotation_requests.alert_select_worker') %>');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/admin/quotation-requests/assign', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ request_id: requestId, worker_username: workerUsername })
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+            closeAssignmentModal();
+            loadQuotationRequests();
+            alert('<%= t('quotation_requests.alert_assigned_success') %>');
+        } else {
+            alert(result.error || '<%= t('quotation_requests.alert_assign_error') %>');
+        }
+    } catch (error) {
+        console.error('Error assigning request:', error);
+        alert('<%= t('quotation_requests.alert_network_error') %>');
+    }
+}
+
+// View request details
+async function viewDetails(requestId) {
+    try {
+        const res = await fetch(`/api/admin/quotation-requests/${requestId}`);
+        const req = await res.json();
+
+        const content = `
+            <div style="line-height: 1.8;">
+                <p><strong><%= t('quotation_requests.detail_request_id') %>:</strong> ${esc(req.request_id)}</p>
+                <p><strong><%= t('quotation_requests.detail_customer_name') %>:</strong> ${esc(req.customer_name)}</p>
+                <p><strong><%= t('quotation_requests.detail_company_name') %>:</strong> ${esc(req.company_name || '-')}</p>
+                <p><strong><%= t('quotation_requests.detail_phone') %>:</strong> ${esc(req.phone)}</p>
+                <p><strong><%= t('quotation_requests.detail_email') %>:</strong> ${esc(req.email || '-')}</p>
+                <p><strong><%= t('quotation_requests.detail_province') %>:</strong> ${esc(req.province)}</p>
+                <p><strong><%= t('quotation_requests.detail_delivery_address') %>:</strong> ${esc(req.delivery_address)}</p>
+                <p><strong><%= t('quotation_requests.detail_cement_type') %>:</strong> ${esc(req.cement_type)}</p>
+                <p><strong><%= t('quotation_requests.detail_quantity') %>:</strong> ${esc(req.quantity)} <%= t('quotation_requests.tons') %></p>
+                <p><strong><%= t('quotation_requests.detail_message') %>:</strong> ${esc(req.message || '-')}</p>
+                <p><strong><%= t('quotation_requests.detail_assigned_worker') %>:</strong> ${esc(req.assigned_worker || '-')}</p>
+                <p><strong><%= t('quotation_requests.detail_status') %>:</strong> ${esc(req.status)}</p>
+                <p><strong><%= t('quotation_requests.detail_source') %>:</strong> ${esc(req.source_type)}</p>
+                <p><strong><%= t('quotation_requests.detail_date') %>:</strong> ${esc(new Date(req.created_at).toLocaleString())}</p>
+            </div>
+        `;
+
+        document.getElementById('requestDetailsContent').innerHTML = content;
+        document.getElementById('detailsModal').style.display = 'flex';
+    } catch (error) {
+        console.error('Error loading request details:', error);
+        alert('<%= t('quotation_requests.alert_error_loading_details') %>');
+    }
+}
+
+// Close details modal
+function closeDetailsModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+}
+
+// Helper functions
+function getStatusClass(status) {
+    switch(status) {
+        case 'pending_admin_review': return 'status-pending';
+        case 'assigned_to_worker': return 'status-assigned';
+        case 'completed': return 'status-completed';
+        default: return 'status-pending';
+    }
+}
+
+function getStatusLabel(status) {
+    switch(status) {
+        case 'pending_admin_review': return '<%= t('quotation_requests.status_pending_review') %>';
+        case 'assigned_to_worker': return '<%= t('quotation_requests.status_assigned_worker') %>';
+        case 'completed': return '<%= t('quotation_requests.status_completed') %>';
+        case 'rejected': return '<%= t('quotation_requests.status_rejected') %>';
+        default: return status;
+    }
+}
+
+function getSourceClass(source) {
+    switch(source) {
+        case 'direct_customer': return 'source-direct';
+        case 'direct_customer_no_worker': return 'source-no-worker';
+        case 'admin_assigned': return 'source-admin';
+        default: return 'source-direct';
+    }
+}
+
+function getSourceLabel(source) {
+    switch(source) {
+        case 'direct_customer': return '<%= t('quotation_requests.source_direct_customer') %>';
+        case 'direct_customer_no_worker': return '<%= t('quotation_requests.source_no_worker') %>';
+        case 'admin_assigned': return '<%= t('quotation_requests.source_admin_assigned') %>';
+        default: return source;
+    }
+}
+
+// Initial load
+document.addEventListener('DOMContentLoaded', loadQuotationRequests);
+</script>
+
+<%- include('partials/footer') %>

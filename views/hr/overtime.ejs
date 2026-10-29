@@ -1,0 +1,302 @@
+<%- include('../partials/header') %>
+
+<style>
+.ot-hero{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+.ot-hero-left{display:flex;align-items:center;gap:16px}
+.ot-hero-icon{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 14px rgba(255,111,0,.25)}
+.ot-hero-icon svg{width:28px;height:28px;color:#fff;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.ot-hero-title{font-size:24px;font-weight:800;color:var(--text-main);margin:0;letter-spacing:-.3px}
+.ot-hero-sub{font-size:14px;color:var(--text-muted);margin:2px 0 0}
+.ot-hero-count{display:inline-block;background:rgba(255,111,0,.1);color:var(--primary);font-size:12px;font-weight:700;padding:2px 10px;border-radius:20px;margin-inline-start:8px}
+.ot-hero-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;border:none;text-decoration:none;white-space:nowrap;background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(255,111,0,.3)}
+.ot-hero-btn:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,111,0,.4)}
+.ot-hero-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.ot-context{background:var(--primary);color:#fff;padding:14px 20px;border-radius:10px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ot-context-left{display:flex;align-items:center;gap:12px}
+.ot-context-avatar{width:40px;height:40px;border-radius:8px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;flex-shrink:0;overflow:hidden}
+.ot-context-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.ot-context-name{font-size:16px;font-weight:600}
+.ot-context-id{font-size:12px;opacity:.8;font-family:monospace}
+.ot-context-label{font-size:13px;opacity:.9}
+.ot-context-link{background:rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-size:13px;transition:background .15s}
+.ot-context-link:hover{background:rgba(255,255,255,.3)}
+.ot-form-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:14px;padding:24px;margin-bottom:24px}
+.ot-section-title{font-size:18px;font-weight:700;color:var(--text-main);margin:0 0 16px;padding-bottom:12px;border-bottom:2px solid var(--border-color);display:flex;align-items:center;gap:8px}
+.ot-section-title svg{stroke:var(--primary);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.ot-form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:16px}
+.ot-form-group{display:flex;flex-direction:column;gap:6px}
+.ot-form-label{font-size:13px;font-weight:600;color:var(--text-main)}
+.ot-form-label span{color:var(--status-error);margin-inline-start:2px}
+.ot-form-select,.ot-form-input,.ot-form-textarea{width:100%;padding:10px 14px;font-size:14px;border:1px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-main);transition:border-color .15s,box-shadow .15s;font-family:inherit}
+.ot-form-select:focus,.ot-form-input:focus,.ot-form-textarea:focus{border-color:var(--accent-blue);outline:none;box-shadow:0 0 0 3px rgba(9,105,218,.12)}
+.ot-form-textarea{min-height:80px;resize:vertical}
+.ot-calc-box{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;background:var(--bg-color);border:1px solid var(--border-color);border-radius:10px;margin-bottom:16px}
+.ot-calc-label{font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px}
+.ot-calc-value{font-size:18px;font-weight:800;color:var(--primary)}
+.ot-calc-sep{font-size:18px;font-weight:700;color:var(--text-muted)}
+.ot-calc-result{font-size:20px;font-weight:800;color:var(--status-success)}
+.ot-submit-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;transition:all .18s;border:none;background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(255,111,0,.3)}
+.ot-submit-btn:hover{background:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(255,111,0,.4)}
+.ot-submit-btn svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.ot-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:20px;padding:14px 16px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px}
+.ot-search-wrap{position:relative;flex:1;min-width:200px}
+.ot-search-icon{position:absolute;inset-inline-start:12px;top:50%;transform:translateY(-50%);stroke:var(--text-muted);pointer-events:none}
+.ot-search-input{width:100%;padding:9px 12px;padding-inline-start:36px;font-size:13px;border:1px solid var(--border-color);border-radius:8px;background:var(--input-bg);color:var(--text-main);transition:border-color .15s}
+.ot-search-input:focus{border-color:var(--accent-blue);outline:none}
+.ot-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.ot-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:14px;overflow:hidden;transition:transform .18s,box-shadow .18s,border-color .18s}
+.ot-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);border-color:var(--primary)}
+.ot-card-header{padding:16px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border-color)}
+.ot-card-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;background:linear-gradient(135deg,var(--primary),var(--primary-dark));overflow:hidden}
+.ot-card-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.ot-card-identity{flex:1;min-width:0}
+.ot-card-name{font-size:15px;font-weight:700;color:var(--text-main);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ot-card-id{font-size:11px;color:var(--text-muted);font-family:monospace;margin-top:1px}
+.ot-card-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;white-space:nowrap}
+.ot-badge-pending{background:rgba(212,167,44,.15);color:var(--safety-orange);border:1px solid rgba(212,167,44,.25)}
+.ot-badge-approved{background:rgba(26,127,55,.1);color:var(--status-success);border:1px solid rgba(26,127,55,.2)}
+.ot-badge-rejected{background:rgba(207,34,46,.1);color:var(--status-error);border:1px solid rgba(207,34,46,.2)}
+.ot-card-body{padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ot-card-field{display:flex;flex-direction:column;gap:2px}
+.ot-card-field-label{font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px}
+.ot-card-field-value{font-size:14px;font-weight:600;color:var(--text-main)}
+.ot-card-field-value.amount{font-size:16px;font-weight:800;color:var(--primary)}
+.ot-card-field-value.total{font-size:18px;font-weight:800;color:var(--status-success)}
+.ot-card-reason{padding:0 18px 14px;font-size:13px;color:var(--text-muted);font-style:italic}
+.ot-card-actions{padding:12px 18px;border-top:1px solid var(--border-color);display:flex;gap:8px;flex-wrap:wrap}
+.ot-btn-approve{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;border:none;background:var(--status-success);color:#fff;box-shadow:0 2px 6px rgba(26,127,55,.2)}
+.ot-btn-approve:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,127,55,.3)}
+.ot-btn-reject{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .18s;border:none;background:var(--status-error);color:#fff;box-shadow:0 2px 6px rgba(207,34,46,.2)}
+.ot-btn-reject:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(207,34,46,.3)}
+.ot-btn-approve svg,.ot-btn-reject svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.ot-empty{text-align:center;padding:60px 20px;background:var(--card-bg);border:2px dashed var(--border-color);border-radius:14px}
+.ot-empty-icon{width:64px;height:64px;border-radius:16px;background:var(--bg-color);border:2px dashed var(--border-color);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.ot-empty-icon svg{width:28px;height:28px;stroke:var(--text-muted);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;fill:none}
+.ot-empty-title{font-size:16px;font-weight:600;color:var(--text-main);margin:0 0 4px}
+.ot-empty-sub{font-size:13px;color:var(--text-muted);margin:0}
+.ot-calc-col{display:flex;flex-direction:column;gap:2px}
+.ot-form-group-mb{margin-bottom:16px}
+.ot-filter-select{width:auto;padding:7px 12px;font-size:13px}
+@media(max-width:900px){.ot-grid{grid-template-columns:1fr}.ot-card-body{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.ot-hero{flex-direction:column;align-items:flex-start}.ot-hero-btn{width:100%;justify-content:center}.ot-toolbar{flex-direction:column}.ot-search-wrap{width:100%}.ot-form-grid{grid-template-columns:1fr}.ot-card-body{grid-template-columns:1fr}.ot-card-actions{flex-direction:column}.ot-btn-approve,.ot-btn-reject{width:100%;justify-content:center}}
+</style>
+
+<div class="card">
+    <% if (contextEmployee) { %>
+        <div class="ot-context">
+            <div class="ot-context-left">
+                <div class="ot-context-avatar"><% if (contextEmployee.photo_path) { %><img src="/<%= contextEmployee.photo_path %>" alt="<%= contextEmployee.full_name %>"><% } else { %><%= contextEmployee.full_name.charAt(0).toUpperCase() %><% } %></div>
+                <div>
+                    <div class="ot-context-label"><%= t('hr.employees.full_name') %></div>
+                    <div class="ot-context-name"><%= contextEmployee.full_name %></div>
+                    <div class="ot-context-id"><%= contextEmployee.employee_id || 'N/A' %></div>
+                </div>
+            </div>
+            <a href="/admin/hr/employees/<%= contextEmployee.id %>" class="ot-context-link">
+                <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                <%= t('hr.employees.back_to_list') %>
+            </a>
+        </div>
+    <% } %>
+
+    <div class="ot-hero">
+        <div class="ot-hero-left">
+            <div class="ot-hero-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+                <h1 class="ot-hero-title"><%= t('hr.overtime.title') %><% if (overtimeRecords && overtimeRecords.length > 0) { %><span class="ot-hero-count"><%= overtimeRecords.length %></span><% } %></h1>
+                <p class="ot-hero-sub"><%= t('hr.overtime.title_desc') %></p>
+            </div>
+        </div>
+        <a href="#ot-form" class="ot-hero-btn">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+            <%= t('hr.overtime.add_overtime') %>
+        </a>
+    </div>
+
+    <div class="ot-form-card" id="ot-form">
+        <h3 class="ot-section-title">
+            <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 5v14M5 12h14"/></svg>
+            <%= t('hr.overtime.add_overtime_request') %>
+        </h3>
+        <form method="POST" action="/admin/hr/overtime">
+            <% if (contextEmployee) { %>
+                <input type="hidden" name="context_employee_id" value="<%= contextEmployee.id %>">
+            <% } %>
+            <div class="ot-form-grid">
+                <div class="ot-form-group">
+                    <label class="ot-form-label" for="employee_id"><%= t('hr.overtime.employee') %> <span>*</span></label>
+                    <select name="employee_id" class="ot-form-select" required id="employee_id">
+                        <option value=""><%= t('hr.leave.select_employee') %></option>
+                        <% if (employees && employees.length > 0) { %>
+                            <% employees.forEach(function(emp) { %>
+                                <option value="<%= emp.id %>" <%= contextEmployee && contextEmployee.id == emp.id ? 'selected' : '' %>><%= emp.full_name %></option>
+                            <% }); %>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="ot-form-group">
+                    <label class="ot-form-label" for="overtime_date"><%= t('hr.overtime.overtime_date') %> <span>*</span></label>
+                    <input type="text" name="overtime_date" class="ot-form-input" required data-datepicker="jalali" placeholder="مثلاً ۱۴۰۳/۰۱/۰۱" dir="ltr" id="overtime_date">
+                </div>
+                <div class="ot-form-group">
+                    <label class="ot-form-label" for="hours"><%= t('hr.overtime.hours') %> <span>*</span></label>
+                    <input type="number" name="hours" class="ot-form-input" required min="0.5" step="0.5" id="hours">
+                </div>
+                <div class="ot-form-group">
+                    <label class="ot-form-label" for="rate"><%= t('hr.overtime.rate_per_hour') %> <span>*</span></label>
+                    <input type="number" name="rate" class="ot-form-input" required min="0" id="rate">
+                </div>
+            </div>
+
+            <div class="ot-calc-box">
+                <div class="ot-calc-col">
+                    <span class="ot-calc-label"><%= t('hr.overtime.hours') %></span>
+                    <span class="ot-calc-value" id="otCalcHours">0</span>
+                </div>
+                <span class="ot-calc-sep">&times;</span>
+                <div class="ot-calc-col">
+                    <span class="ot-calc-label"><%= t('hr.overtime.rate') %></span>
+                    <span class="ot-calc-value" id="otCalcRate">0</span>
+                </div>
+                <span class="ot-calc-sep">=</span>
+                <div class="ot-calc-col">
+                    <span class="ot-calc-label"><%= t('hr.overtime.total_amount') %></span>
+                    <span class="ot-calc-result" id="otCalcTotal">0</span>
+                </div>
+                <input type="hidden" name="total_amount" id="otTotalInput" value="0">
+            </div>
+
+            <div class="ot-form-group ot-form-group-mb">
+                <label class="ot-form-label" for="reason"><%= t('hr.overtime.overtime_reason') %></label>
+                <textarea name="reason" class="ot-form-textarea" rows="2" placeholder="دلیل اضافه کاری" dir="rtl" id="reason"></textarea>
+            </div>
+            <button type="submit" class="ot-submit-btn">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+                <%= t('hr.overtime.add_overtime') %>
+            </button>
+        </form>
+    </div>
+
+    <div class="ot-toolbar">
+        <div class="ot-search-wrap">
+            <svg class="ot-search-icon" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" class="ot-search-input" id="otSearchInput" placeholder="<%= t('hr.overtime.overtime_records') %>..." oninput="filterOvertime()">
+        </div>
+        <select class="ot-form-select ot-filter-select" id="otStatusFilter" onchange="filterOvertime()">
+            <option value=""><%= t('hr.leave.status') %></option>
+            <option value="Pending"><%= t('hr.leave.pending') %></option>
+            <option value="Approved"><%= t('hr.leave.approved') %></option>
+            <option value="Rejected"><%= t('hr.leave.rejected') %></option>
+        </select>
+    </div>
+
+    <div id="otRecordsList">
+        <% if (overtimeRecords && overtimeRecords.length > 0) { %>
+            <div class="ot-grid">
+                <% overtimeRecords.forEach(function(ot) { %>
+                    <div class="ot-card" data-search="<%= (ot.full_name + ' ' + (ot.employee_id || '') + ' ' + (ot.position || '') + ' ' + (ot.reason || '')).toLowerCase() %>" data-status="<%= ot.status %>">
+                        <div class="ot-card-header">
+                            <div class="ot-card-avatar"><% if (ot.photo_path) { %><img src="/<%= ot.photo_path %>" alt="<%= ot.full_name %>"><% } else { %><%= ot.full_name.charAt(0).toUpperCase() %><% } %></div>
+                            <div class="ot-card-identity">
+                                <div class="ot-card-name"><%= ot.full_name %></div>
+                                <div class="ot-card-id"><%= ot.employee_id || 'N/A' %> &middot; <%= ot.position %></div>
+                            </div>
+                            <% if (ot.status === 'Approved') { %>
+                                <span class="ot-card-badge ot-badge-approved"><%= t('hr.leave.approved') %></span>
+                            <% } else if (ot.status === 'Rejected') { %>
+                                <span class="ot-card-badge ot-badge-rejected"><%= t('hr.leave.rejected') %></span>
+                            <% } else if (ot.status === 'Pending') { %>
+                                <span class="ot-card-badge ot-badge-pending"><%= t('hr.leave.pending') %></span>
+                            <% } else { %>
+                                <span class="ot-card-badge"><%= ot.status %></span>
+                            <% } %>
+                        </div>
+                        <div class="ot-card-body">
+                            <div class="ot-card-field">
+                                <span class="ot-card-field-label"><%= t('hr.overtime.date') %></span>
+                                <span class="ot-card-field-value"><%= ot.overtime_date %></span>
+                            </div>
+                            <div class="ot-card-field">
+                                <span class="ot-card-field-label"><%= t('hr.overtime.hours') %></span>
+                                <span class="ot-card-field-value"><%= ot.hours %></span>
+                            </div>
+                            <div class="ot-card-field">
+                                <span class="ot-card-field-label"><%= t('hr.overtime.rate') %></span>
+                                <span class="ot-card-field-value amount"><%= ot.rate.toLocaleString() %> <small><%= t('hr.dashboard.afghani') %></small></span>
+                            </div>
+                            <div class="ot-card-field">
+                                <span class="ot-card-field-label"><%= t('hr.overtime.total_amount') %></span>
+                                <span class="ot-card-field-value total"><%= ot.total_amount.toLocaleString() %> <small><%= t('hr.dashboard.afghani') %></small></span>
+                            </div>
+                        </div>
+                        <% if (ot.reason) { %>
+                            <div class="ot-card-reason"><%= ot.reason %></div>
+                        <% } %>
+                        <% if (ot.status === 'Pending') { %>
+                            <div class="ot-card-actions">
+                                <form method="POST" action="/admin/hr/overtime/<%= ot.id %>/approve" style="display:inline">
+                                    <button type="submit" class="ot-btn-approve">
+                                        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <%= t('hr.leave.approved') %>
+                                    </button>
+                                </form>
+                                <form method="POST" action="/admin/hr/overtime/<%= ot.id %>/reject" style="display:inline">
+                                    <button type="submit" class="ot-btn-reject" onclick="return confirm('<%= t('hr.leave.rejected') %>?')">
+                                        <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                        <%= t('hr.leave.rejected') %>
+                                    </button>
+                                </form>
+                            </div>
+                        <% } %>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="ot-empty">
+                <div class="ot-empty-icon">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <p class="ot-empty-title"><%= t('hr.overtime.no_records_found') %></p>
+                <p class="ot-empty-sub"><%= t('hr.overtime.add_overtime') %></p>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+(function(){
+    var hoursInput = document.querySelector('input[name="hours"]');
+    var rateInput = document.querySelector('input[name="rate"]');
+    var totalInput = document.getElementById('otTotalInput');
+    var calcHours = document.getElementById('otCalcHours');
+    var calcRate = document.getElementById('otCalcRate');
+    var calcTotal = document.getElementById('otCalcTotal');
+
+    function calculateTotal() {
+        var hours = parseFloat(hoursInput.value) || 0;
+        var rate = parseFloat(rateInput.value) || 0;
+        var total = hours * rate;
+        totalInput.value = total.toFixed(2);
+        calcHours.textContent = hours;
+        calcRate.textContent = rate.toLocaleString();
+        calcTotal.textContent = total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    hoursInput.addEventListener('input', calculateTotal);
+    rateInput.addEventListener('input', calculateTotal);
+    calculateTotal();
+})();
+
+function filterOvertime() {
+    var search = document.getElementById('otSearchInput').value.toLowerCase();
+    var status = document.getElementById('otStatusFilter').value;
+    var cards = document.querySelectorAll('.ot-card');
+    cards.forEach(function(card) {
+        var matchesSearch = !search || card.getAttribute('data-search').indexOf(search) !== -1;
+        var matchesStatus = !status || card.getAttribute('data-status') === status;
+        card.style.display = matchesSearch && matchesStatus ? '' : 'none';
+    });
+}
+</script>

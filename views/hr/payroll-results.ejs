@@ -1,0 +1,135 @@
+<%- include('../partials/header') %>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 24px;">📊 <%= t('hr.payroll.results_title') %></h2>
+        <a href="/admin/hr/payroll" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">
+            ← <%= t('hr.payroll.back_to_payroll') %>
+        </a>
+        <a href="/admin/hr/payroll/add-salary" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">
+            <%= t('hr.payroll.add_salary_button') %>
+        </a>
+        <a href="/admin/hr/payroll/periods/open" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">
+            <%= t('hr.payroll_period.open_link') %>
+        </a>
+    </div>
+    
+    <!-- Summary Section -->
+    <div class="card" style="background-color: var(--bg-color); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text-main);"><%= t('hr.payroll.results_summary') %></h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.payroll_period') %></div>
+                <div style="font-size: 14px; font-weight: 600;" dir="ltr"><%= payroll_period %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.total_selected') %></div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--text-main);"><%= summary.totalSelected %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.created_count') %></div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--status-success);"><%= summary.createdCount %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.skipped_count') %></div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--text-secondary);"><%= summary.skippedCount %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.blocked_count') %></div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--status-error);"><%= summary.blockedCount %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.failed_count') %></div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--status-error);"><%= summary.failedCount %></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Per-Employee Results -->
+    <div class="card" style="margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px;"><%= t('hr.payroll.per_employee_results') %></h3>
+        
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th><%= t('hr.employees.employee_id') %></th>
+                        <th><%= t('hr.employees.full_name') %></th>
+                        <th><%= t('hr.payroll.status') %></th>
+                        <th><%= t('hr.payroll.reason') %></th>
+                        <th><%= t('hr.payroll.payroll_id') %></th>
+                        <th><%= t('hr.employees.actions') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (results && results.length > 0) { %>
+                        <% results.forEach(function(result) { %>
+                            <% const emp = result.employee; %>
+                            <% const status = result.status; %>
+                            <% const reasonKey = result.reasonKey; %>
+                            <% const payrollId = result.payrollId; %>
+                            
+                            <tr style="<%= status === 'created' ? 'background-color: rgba(46, 160, 67, 0.05);' : (status === 'blocked' || status === 'failed' ? 'background-color: rgba(231, 76, 60, 0.05);' : (status === 'skipped' ? 'background-color: rgba(149, 165, 166, 0.05);' : '')) %>">
+                                <td><code><%= emp.employee_id || 'N/A' %></code></td>
+                                <td><strong><%= emp.full_name %></strong></td>
+                                <td>
+                                    <% if (status === 'created') { %>
+                                        <span style="color: var(--status-success); font-weight: 600;"><%= t('hr.payroll.status_created') %></span>
+                                    <% } else if (status === 'skipped') { %>
+                                        <span style="color: var(--text-secondary); font-weight: 600;"><%= t('hr.payroll.status_skipped') %></span>
+                                    <% } else if (status === 'blocked') { %>
+                                        <span style="color: var(--status-error); font-weight: 600;"><%= t('hr.payroll.status_blocked') %></span>
+                                    <% } else if (status === 'failed') { %>
+                                        <span style="color: var(--status-error); font-weight: 600;"><%= t('hr.payroll.status_failed') %></span>
+                                    <% } else { %>
+                                        <%= status %>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (reasonKey) { %>
+                                        <span style="color: var(--text-secondary); font-size: 13px;"><%= t('hr.payroll.' + reasonKey) %></span>
+                                    <% } else { %>
+                                        —
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (payrollId) { %>
+                                        <code><%= payrollId %></code>
+                                    <% } else { %>
+                                        —
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (status === 'created' && payrollId) { %>
+                                        <a href="/admin/hr/payroll/<%= payrollId %>" class="btn btn-primary" style="padding: 4px 8px; font-size: 12px;"><%= t('hr.employees.view') %></a>
+                                    <% } else { %>
+                                        <a href="/admin/hr/employees/<%= emp.id %>" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main); padding: 4px 8px; font-size: 12px;"><%= t('hr.payroll.employee_profile') %></a>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                                <%= t('hr.payroll.no_results') %>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Information Note -->
+    <div style="margin-top: 20px; padding: 15px; background-color: rgba(52, 152, 219, 0.1); border: 1px solid var(--primary); border-radius: 8px;">
+        <p style="margin: 0; color: var(--primary);">
+            <strong>ℹ️ <%= t('hr.payroll.results_note') %></strong> <%= t('hr.payroll.results_note_text') %>
+        </p>
+    </div>
+</div>

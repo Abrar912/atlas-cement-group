@@ -1,0 +1,1243 @@
+<%- include('partials/header') %>
+
+<style>
+    /* ============================================================
+       Worker Desk — Waybill Card Design (redesigned 2026-10-19)
+       Visual language matches the official waybill (admin/local-waybill)
+       ============================================================ */
+
+    /* --- Buttons (explicit light/dark colors, kept from previous design) --- */
+    :root:not([data-theme="dark"]) .worker-btn-danger { background-color: #DC2626 !important; color: #FFFFFF !important; border: 1px solid #DC2626 !important; }
+    :root:not([data-theme="dark"]) .worker-btn-danger:hover { background-color: #B91C1C !important; border-color: #B91C1C !important; }
+    :root:not([data-theme="dark"]) .worker-btn-success { background-color: #059669 !important; color: #FFFFFF !important; border: 1px solid #059669 !important; }
+    :root:not([data-theme="dark"]) .worker-btn-success:hover { background-color: #047857 !important; border-color: #047857 !important; }
+    :root:not([data-theme="dark"]) .worker-btn-primary { background-color: #2563EB !important; color: #FFFFFF !important; border: 1px solid #2563EB !important; }
+    :root:not([data-theme="dark"]) .worker-btn-primary:hover { background-color: #1D4ED8 !important; border-color: #1D4ED8 !important; }
+    [data-theme="dark"] .worker-btn-danger { background-color: #EF4444 !important; color: #FFFFFF !important; border: 1px solid #EF4444 !important; }
+    [data-theme="dark"] .worker-btn-danger:hover { background-color: #DC2626 !important; border-color: #DC2626 !important; }
+    [data-theme="dark"] .worker-btn-success { background-color: #10B981 !important; color: #FFFFFF !important; border: 1px solid #10B981 !important; }
+    [data-theme="dark"] .worker-btn-success:hover { background-color: #059669 !important; border-color: #059669 !important; }
+    [data-theme="dark"] .worker-btn-primary { background-color: #3B82F6 !important; color: #FFFFFF !important; border: 1px solid #3B82F6 !important; }
+    [data-theme="dark"] .worker-btn-primary:hover { background-color: #2563EB !important; border-color: #2563EB !important; }
+
+    .worker-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: none;
+        line-height: 1.2;
+    }
+    .worker-btn svg { width: 16px; height: 16px; }
+    .worker-btn-primary { background-color: var(--accent-blue) !important; color: white !important; box-shadow: 0 1px 3px rgba(37, 99, 235, 0.25); }
+    .worker-btn-primary:hover { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35); transform: translateY(-1px); }
+    .worker-btn-success { background-color: var(--success-green) !important; color: white !important; box-shadow: 0 1px 3px rgba(5, 150, 105, 0.25); }
+    .worker-btn-success:hover { box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35); transform: translateY(-1px); }
+    .worker-btn-danger { background-color: var(--danger-red) !important; color: white !important; box-shadow: 0 1px 3px rgba(220, 38, 38, 0.25); }
+    .worker-btn-danger:hover { box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35); transform: translateY(-1px); }
+    .worker-btn-secondary { background-color: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+    .worker-btn-secondary:hover { background-color: var(--bg-tertiary); }
+
+    /* --- Page header --- */
+    .worker-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 18px 22px;
+        margin-bottom: 22px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, rgba(207, 34, 46, 0.08), rgba(37, 99, 235, 0.08));
+        border: 1px solid var(--border-color);
+    }
+    .worker-page-header h2 {
+        margin: 0 0 4px 0;
+        font-size: 22px;
+        font-weight: 800;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .worker-page-header h2 svg { color: #cf222e; }
+    .worker-page-header p { margin: 0; font-size: 13px; color: var(--text-muted); }
+    .worker-station-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background-color: rgba(59, 130, 246, 0.1);
+        color: var(--accent-blue);
+        padding: 8px 14px;
+        border-radius: 999px;
+        font-size: 13px;
+        font-weight: 600;
+        border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+    .worker-station-badge svg { width: 15px; height: 15px; }
+
+    /* --- Section headers --- */
+    .worker-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 18px;
+    }
+    .worker-section-header .section-title-wrap { display: flex; align-items: center; gap: 12px; }
+    .worker-section-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(207, 34, 46, 0.1);
+        color: #cf222e;
+        flex-shrink: 0;
+    }
+    .worker-section-icon svg { width: 20px; height: 20px; }
+    .worker-section-header h3 { margin: 0 0 2px 0; font-size: 17px; font-weight: 700; color: var(--text-primary); }
+    .worker-section-header p { margin: 0; font-size: 12.5px; color: var(--text-muted); }
+    .worker-count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 26px;
+        height: 26px;
+        padding: 0 8px;
+        margin-inline-start: 8px;
+        border-radius: 999px;
+        background: #cf222e;
+        color: #fff;
+        font-size: 13px;
+        font-weight: 700;
+        vertical-align: middle;
+    }
+    .worker-count-badge.zero { background: var(--bg-tertiary); color: var(--text-muted); }
+
+    /* --- Waybill card grid --- */
+    .waybill-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(305px, 1fr));
+        gap: 18px;
+    }
+
+    /* --- Mini waybill card (paper look, works in both themes) --- */
+    .wb-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        animation: wbPop 0.25s ease both;
+    }
+    @keyframes wbPop { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .wb-card:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14); border-color: rgba(207, 34, 46, 0.45); }
+    .wb-card.clickable { cursor: pointer; }
+
+    .wb-band {
+        background: #cf222e;
+        color: #fff;
+        padding: 9px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+    }
+    .wb-band .wb-company { font-size: 11px; font-weight: 600; opacity: 0.92; letter-spacing: 0.2px; }
+    .wb-band .wb-serial { font-size: 16px; font-weight: 800; letter-spacing: 0.4px; }
+    .wb-band .wb-date { font-size: 12px; font-weight: 600; opacity: 0.95; white-space: nowrap; }
+
+    .wb-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+    .wb-row { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; }
+    .wb-field { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+    .wb-field .wb-label { font-size: 10.5px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+    .wb-field .wb-value { font-size: 13px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
+    .wb-divider { border: none; border-top: 1px dashed var(--border-color); margin: 2px 0; }
+    .wb-tonnage { color: #0284c7; }
+    .wb-freight { color: #166534; }
+    .wb-net { color: #0284c7; font-weight: 800 !important; }
+    .wb-remarks {
+        font-size: 12px;
+        color: var(--text-muted);
+        background: var(--bg-light, var(--bg-secondary));
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 7px 10px;
+    }
+    .wb-route {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+    .wb-route svg { width: 14px; height: 14px; color: #cf222e; flex-shrink: 0; }
+    .wb-footer { padding: 0 14px 14px; display: flex; gap: 8px; }
+    .wb-footer .worker-btn { flex: 1; }
+
+    /* --- Empty / loading / error states --- */
+    .worker-empty-state {
+        grid-column: 1 / -1;
+        text-align: center;
+        padding: 44px 20px;
+        color: var(--text-muted);
+        border: 1.5px dashed var(--border-color);
+        border-radius: 12px;
+        background: var(--bg-secondary);
+    }
+    .worker-empty-state svg { width: 44px; height: 44px; margin-bottom: 10px; opacity: 0.55; }
+    .worker-empty-state p { margin: 4px 0; font-size: 14px; }
+    .worker-empty-state p:first-child { font-weight: 600; color: var(--text-primary); }
+
+    /* --- Modal (shared shell: sale entry + dialogs) --- */
+    .worker-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 18, 26, 0.55);
+        backdrop-filter: blur(2px);
+        z-index: 1500;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+    .worker-modal {
+        background: var(--modal-bg);
+        border-radius: 14px;
+        width: 100%;
+        max-width: 640px;
+        max-height: 92vh;
+        overflow-y: auto;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+        animation: wbModalIn 0.2s ease both;
+    }
+    @keyframes wbModalIn { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .worker-modal-band {
+        background: #cf222e;
+        color: #fff;
+        padding: 13px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+    .worker-modal-band .wbm-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .worker-modal-band .wbm-title svg { width: 18px; height: 18px; }
+    .worker-modal-band .wbm-serial { font-size: 15px; font-weight: 800; background: rgba(255, 255, 255, 0.18); padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+    .worker-modal-close {
+        background: rgba(255, 255, 255, 0.15);
+        border: none;
+        color: #fff;
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: background 0.15s ease;
+    }
+    .worker-modal-close:hover { background: rgba(255, 255, 255, 0.3); }
+    .worker-modal-body { padding: 18px; }
+
+    /* Selected waybill info panel inside the modal */
+    .worker-waybill-info {
+        background: var(--bg-light, var(--bg-secondary));
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 16px;
+    }
+    .worker-waybill-info h4 { margin: 0 0 10px 0; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.4px; }
+    .worker-info-grid { display: flex; flex-wrap: wrap; gap: 10px 20px; font-size: 13px; }
+    .worker-info-item { display: flex; align-items: baseline; gap: 5px; }
+    .worker-info-item strong { color: var(--text-muted); font-weight: 500; font-size: 12px; }
+    .worker-info-item span { color: var(--text-primary); font-weight: 600; }
+
+    /* Forms inside modal */
+    .worker-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
+    .worker-form-grid .form-group { margin: 0; }
+    .worker-form-grid .form-group label { display: block; margin-bottom: 5px; font-size: 12.5px; font-weight: 600; color: var(--text-primary); }
+    .worker-form-grid .form-control { height: 38px; padding: 8px 12px; font-size: 13px; }
+    .worker-readonly-field { background-color: var(--bg-light, var(--bg-secondary)) !important; color: var(--text-muted) !important; font-weight: 600; }
+    .worker-calculated-field { background-color: rgba(2, 132, 199, 0.08) !important; border-color: rgba(2, 132, 199, 0.35) !important; color: #0284c7 !important; font-weight: 700; }
+
+    /* --- App dialog (confirm / alert) --- */
+    .worker-dialog-modal { max-width: 430px; }
+    .worker-dialog-body { padding: 26px 24px 20px; text-align: center; }
+    .worker-dialog-icon {
+        width: 54px;
+        height: 54px;
+        margin: 0 auto 14px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .worker-dialog-icon svg { width: 26px; height: 26px; }
+    .worker-dialog-icon.confirm { background: rgba(2, 132, 199, 0.12); color: #0284c7; }
+    .worker-dialog-icon.success { background: rgba(5, 150, 105, 0.12); color: #059669; }
+    .worker-dialog-icon.error { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+    .worker-dialog-title { margin: 0 0 8px; font-size: 16px; font-weight: 700; color: var(--text-primary); }
+    .worker-dialog-message { margin: 0; font-size: 13.5px; color: var(--text-muted); line-height: 1.55; }
+    .worker-dialog-actions { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+    .worker-dialog-actions .worker-btn { min-width: 110px; }
+
+    /* --- Responsive --- */
+    @media (max-width: 640px) {
+        .worker-page-header { padding: 14px 16px; }
+        .worker-page-header h2 { font-size: 18px; }
+        .worker-modal { max-width: 100%; }
+        .wb-footer { flex-direction: column; }
+    }
+
+    /* --- Dark mode --- */
+    html[data-theme="dark"] .worker-station-badge { background-color: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.3); }
+    html[data-theme="dark"] .worker-section-icon { background: rgba(207, 34, 46, 0.22); }
+    html[data-theme="dark"] .wb-card:hover { box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); }
+    html[data-theme="dark"] .worker-modal { box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7); }
+</style>
+
+<div class="worker-page-header">
+    <div>
+        <h2>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <%= t('worker.daily_logs_title') %>
+        </h2>
+        <p><%= t('worker.daily_logs_subtitle') %></p>
+    </div>
+    <span class="worker-station-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+        <%= t('worker.station') %>: <%= session.province %>
+    </span>
+</div>
+
+<!-- STEP 1: Incoming Waybills (waybill cards) -->
+<div class="card" style="margin-bottom: 20px; padding: 20px; border-radius: 14px;">
+    <div class="worker-section-header">
+        <div class="section-title-wrap">
+            <span class="worker-section-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+            </span>
+            <div>
+                <h3><%= t('worker.incoming_waybills_title') %><span class="worker-count-badge zero" id="incoming-count">0</span></h3>
+                <p><%= t('worker.incoming_waybills_subtitle') %></p>
+            </div>
+        </div>
+        <button onclick="loadIncomingWaybills()" class="worker-btn worker-btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <polyline points="1 20 1 14 7 14"></polyline>
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+            <%= t('worker.refresh_list') %>
+        </button>
+    </div>
+
+    <div id="incoming-waybills-grid" class="waybill-grid">
+        <div class="worker-empty-state">
+            <p><%= t('worker.loading_waybills') %></p>
+        </div>
+    </div>
+</div>
+
+<!-- STEP 3: Sales Report Waiting Queue (waybill cards) -->
+<div class="card" style="margin-bottom: 20px; padding: 20px; border-radius: 14px;">
+    <div class="worker-section-header">
+        <div class="section-title-wrap">
+            <span class="worker-section-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+            </span>
+            <div>
+                <h3><%= t('worker.waiting_queue_title') %><span class="worker-count-badge zero" id="queue-count">0</span></h3>
+                <p><%= t('worker.waiting_queue_subtitle') %></p>
+            </div>
+        </div>
+        <button onclick="sendReportToAdmin()" class="worker-btn worker-btn-success">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <%= t('worker.send_to_admin') %>
+        </button>
+    </div>
+
+    <div id="waiting-queue-grid" class="waybill-grid">
+        <div class="worker-empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p><%= t('worker.js_no_entries') %></p>
+        </div>
+    </div>
+</div>
+
+<!-- STEP 2: Sale Entry Modal (opens when a waybill card is clicked) -->
+<div id="sale-modal" class="worker-modal-overlay">
+    <div class="worker-modal">
+        <div class="worker-modal-band">
+            <span class="wbm-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                </svg>
+                <%= t('worker.sale_entry_title') %>
+            </span>
+            <span class="wbm-serial" id="modal-waybill-serial">-</span>
+            <button type="button" class="worker-modal-close" onclick="clearSelectedWaybill()" aria-label="<%= t('admin.close') %>">&times;</button>
+        </div>
+        <div class="worker-modal-body">
+            <p style="margin: 0 0 14px; font-size: 12.5px; color: var(--text-muted);"><%= t('worker.sale_entry_subtitle') %></p>
+
+            <!-- Selected Waybill Details (Read-only) -->
+            <div class="worker-waybill-info">
+                <h4><%= t('worker.waybill_info') %></h4>
+                <div class="worker-info-grid">
+                    <div class="worker-info-item"><strong><%= t('worker.serial_number') %></strong><span id="selected-waybill-serial">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.loading_date') %></strong><span id="selected-waybill-date">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.driver_name') %></strong><span id="selected-waybill-driver">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.plate_number') %></strong><span id="selected-waybill-plate">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.cement_type') %></strong><span id="selected-waybill-cement">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.bag_count') %></strong><span id="selected-waybill-bags">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.tonnage') %></strong><span id="selected-waybill-tonnage">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.truck_type') %></strong><span id="selected-waybill-truck-type">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.loading_location') %></strong><span id="selected-waybill-loading">-</span></div>
+                    <div class="worker-info-item"><strong><%= t('worker.unloading_location') %></strong><span id="selected-waybill-unloading">-</span></div>
+                </div>
+            </div>
+
+            <!-- Sale Entry Form -->
+            <form id="sale-entry-form" onsubmit="addSaleToQueue(event)">
+                <input type="hidden" id="selected-waybill-id">
+                <div class="worker-form-grid">
+                    <div class="form-group">
+                        <label><%= t('worker.sale_date') %></label>
+                        <input type="text" id="sale_date" class="form-control" data-datepicker="jalali" placeholder="1405/03/23" required>
+                    </div>
+                    <div class="form-group">
+                        <label><%= t('worker.customer_account') %></label>
+                        <select id="customer_id" class="form-control" required>
+                            <option value=""><%= t('worker.choose_customer') %></option>
+                            <% customers.forEach(function(customer) { %>
+                                <%
+                                    const cleanId = customer.customer_id ? customer.customer_id.match(/^([A-Z]{3}-\d+)/i) ? customer.customer_id.match(/^([A-Z]{3}-\d+)/i)[1].toUpperCase() : customer.customer_id : customer.id;
+                                %>
+                                <option value="<%= customer.id %>"><%= cleanId %> - <%= customer.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label><%= t('worker.shortage_bags') %></label>
+                        <input type="number" id="shortage_bags" class="form-control" placeholder="0" value="0" oninput="calculateSaleTotals()">
+                    </div>
+                    <div class="form-group">
+                        <label><%= t('worker.unit_price') %></label>
+                        <input type="number" step="0.1" id="sale_unit_price" class="form-control" placeholder="500" oninput="calculateSaleTotals()" required>
+                    </div>
+                </div>
+
+                <div class="worker-form-grid" style="grid-template-columns: 1fr 1fr 1fr; margin-top: 14px;">
+                    <div class="form-group">
+                        <label><%= t('worker.total_sales') %></label>
+                        <input type="number" step="0.1" id="total_sale_amount" class="form-control worker-readonly-field" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label><%= t('worker.total_freight') %></label>
+                        <input type="number" step="0.1" id="total_freight" class="form-control worker-readonly-field" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label><%= t('worker.net_cement') %></label>
+                        <input type="number" step="0.1" id="net_cement_money" class="form-control worker-calculated-field" readonly>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 10px; margin-top: 18px;">
+                    <button type="button" onclick="clearSelectedWaybill()" class="worker-btn worker-btn-secondary" style="flex: 1; padding: 12px;">
+                        <%= t('worker.js_cancel') %>
+                    </button>
+                    <button type="submit" class="worker-btn worker-btn-success" style="flex: 2; padding: 12px; font-size: 14px;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <%= t('worker.add_to_queue') %>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- App dialog (replaces browser confirm/alert) -->
+<div id="worker-dialog" class="worker-modal-overlay">
+    <div class="worker-modal worker-dialog-modal">
+        <div class="worker-dialog-body">
+            <div class="worker-dialog-icon confirm" id="worker-dialog-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <h3 class="worker-dialog-title" id="worker-dialog-title"></h3>
+            <p class="worker-dialog-message" id="worker-dialog-message"></p>
+            <div class="worker-dialog-actions">
+                <button type="button" id="worker-dialog-cancel" class="worker-btn worker-btn-secondary"><%= t('worker.js_cancel') %></button>
+                <button type="button" id="worker-dialog-confirm" class="worker-btn worker-btn-primary"><%= t('admin.close') %></button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Translation strings for JavaScript (same keys as before)
+const i18nStrings = {
+    jsLoadingWaybills: '<%= t("worker.js_loading_waybills") %>',
+    jsErrorLoadingWaybills: '<%= t("worker.js_error_loading_waybills") %>',
+    jsTryAgain: '<%= t("worker.js_try_again") %>',
+    jsNoWaybills: '<%= t("worker.js_no_waybills") %>',
+    jsSelectWaybill: '<%= t("worker.js_select_waybill") %>',
+    jsNoEntries: '<%= t("worker.js_no_entries") %>',
+    jsEdit: '<%= t("worker.js_edit") %>',
+    jsRemove: '<%= t("worker.js_remove") %>',
+    jsEditTitle: '<%= t("worker.js_edit_title") %>',
+    jsWaybillReadonly: '<%= t("worker.js_waybill_readonly") %>',
+    jsWaybillSerial: '<%= t("worker.js_waybill_serial") %>',
+    jsWaybillDate: '<%= t("worker.js_waybill_date") %>',
+    jsDriverName: '<%= t("worker.js_driver_name") %>',
+    jsDriverPhone: '<%= t("worker.js_driver_phone") %>',
+    jsTruckPlate: '<%= t("worker.js_truck_plate") %>',
+    jsCementType: '<%= t("worker.js_cement_type") %>',
+    jsBagCount: '<%= t("worker.js_bag_count") %>',
+    jsTonnage: '<%= t("worker.js_tonnage") %>',
+    jsTruckType: '<%= t("worker.js_truck_type") %>',
+    jsFreightTotal: '<%= t("worker.js_freight_total") %>',
+    jsSaleDate: '<%= t("worker.js_sale_date") %>',
+    jsCustomer: '<%= t("worker.js_customer") %>',
+    jsShortage: '<%= t("worker.js_shortage") %>',
+    jsUnitPrice: '<%= t("worker.js_unit_price") %>',
+    jsTotalSales: '<%= t("worker.js_total_sales") %>',
+    jsTotalFreight: '<%= t("worker.js_total_freight") %>',
+    jsNetCement: '<%= t("worker.js_net_cement") %>',
+    jsCancel: '<%= t("worker.js_cancel") %>',
+    jsSave: '<%= t("worker.js_save") %>',
+    jsAlertSelectWaybill: '<%= t("worker.js_alert_select_waybill") %>',
+    jsAlertEmptyQueue: '<%= t("worker.js_alert_empty_queue") %>',
+    jsConfirmSend: '<%= t("worker.js_confirm_send") %>',
+    jsAlertSuccess: '<%= t("worker.js_alert_success") %>',
+    jsAlertError: '<%= t("worker.js_alert_error") %>',
+    jsAlertConnection: '<%= t("worker.js_alert_connection") %>',
+    jsConfirmRemove: '<%= t("worker.js_confirm_remove") %>',
+    jsSentTo: '<%= t("worker.sent_to") %>',
+    jsClose: '<%= t("admin.close") %>'
+};
+
+// Company name for the waybill card band (from the print key, same value in every language)
+const WB_COMPANY = '<%= t("waybill.print_company_name") %>';
+
+// Global state (unchanged)
+let incomingWaybills = [];
+let selectedWaybill = null;
+let waitingQueue = [];
+let editingQueueIndex = null;
+let customers = <%- typeof customers !== 'undefined' ? jsonEmbed(customers) : '[]' %>;
+
+const navWorkerSales = document.getElementById('nav-worker-sales');
+if (navWorkerSales) {
+    navWorkerSales.classList.add('active');
+}
+
+/* ============================================================
+   App dialog helpers (replace browser confirm / alert)
+   ============================================================ */
+function workerDialog(opts) {
+    return new Promise(resolve => {
+        const overlay = document.getElementById('worker-dialog');
+        const iconBox = document.getElementById('worker-dialog-icon');
+        document.getElementById('worker-dialog-title').textContent = opts.title || '';
+        document.getElementById('worker-dialog-message').textContent = opts.message || '';
+        const confirmBtn = document.getElementById('worker-dialog-confirm');
+        const cancelBtn = document.getElementById('worker-dialog-cancel');
+        confirmBtn.textContent = opts.confirmText || jsClose;
+        confirmBtn.className = 'worker-btn ' + (opts.confirmClass || 'worker-btn-primary');
+        cancelBtn.textContent = opts.cancelText || jsCancelSafe();
+        cancelBtn.style.display = opts.showCancel === false ? 'none' : '';
+        iconBox.className = 'worker-dialog-icon ' + (opts.icon || 'confirm');
+        overlay.style.display = 'flex';
+        function done(v) {
+            overlay.style.display = 'none';
+            confirmBtn.onclick = null;
+            cancelBtn.onclick = null;
+            overlay.onclick = null;
+            resolve(v);
+        }
+        confirmBtn.onclick = () => done(true);
+        cancelBtn.onclick = () => done(false);
+        overlay.onclick = (e) => { if (e.target === overlay) done(false); };
+    });
+}
+function jsCancelSafe() { return i18nStrings.jsCancel; }
+const jsClose = i18nStrings.jsClose;
+const jsCancel = i18nStrings.jsCancel;
+
+/* ============================================================
+   Incoming waybills
+   ============================================================ */
+function loadIncomingWaybills() {
+    const grid = document.getElementById('incoming-waybills-grid');
+    grid.innerHTML = '<div class="worker-empty-state"><p>' + i18nStrings.jsLoadingWaybills + '</p></div>';
+
+    fetch('/api/worker/incoming-waybills', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) throw new Error('Response is not JSON');
+        return res.json();
+    })
+    .then(data => {
+        incomingWaybills = data.waybills || [];
+        renderIncomingWaybills();
+    })
+    .catch(err => {
+        console.error('[ERROR] Error loading incoming waybills:', err);
+        grid.innerHTML = `
+            <div class="worker-empty-state" style="border-color: rgba(220,38,38,0.4);">
+                <p style="color: var(--danger-red);">${esc(i18nStrings.jsErrorLoadingWaybills)}: ${esc(err.message)}</p>
+                <button onclick="loadIncomingWaybills()" class="worker-btn worker-btn-primary" style="margin-top: 10px; padding: 6px 14px; font-size: 12px;">
+                    ${esc(i18nStrings.jsTryAgain)}
+                </button>
+            </div>`;
+    });
+}
+
+function renderIncomingWaybills() {
+    const grid = document.getElementById('incoming-waybills-grid');
+    const countBadge = document.getElementById('incoming-count');
+    countBadge.textContent = incomingWaybills.length;
+    countBadge.className = 'worker-count-badge' + (incomingWaybills.length === 0 ? ' zero' : '');
+
+    if (incomingWaybills.length === 0) {
+        grid.innerHTML = `
+            <div class="worker-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="3" width="15" height="13"></rect>
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                </svg>
+                <p>${esc(i18nStrings.jsNoWaybills)}</p>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    incomingWaybills.forEach((waybill, idx) => {
+        html += `
+            <div class="wb-card clickable" onclick="selectWaybill(${esc(idx)})" title="${esc(i18nStrings.jsSelectWaybill)}">
+                <div class="wb-band">
+                    <span class="wb-company">${esc(WB_COMPANY)}</span>
+                    <span class="wb-serial">${esc(waybill.waybill_serial || '-')}</span>
+                    <span class="wb-date">${esc(waybill.waybill_date || '-')}</span>
+                </div>
+                <div class="wb-body">
+                    <div class="wb-row">
+                        <div class="wb-field" style="flex: 1;">
+                            <span class="wb-label">${esc(i18nStrings.jsDriverName)}</span>
+                            <span class="wb-value">${esc(waybill.driver_name || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsDriverPhone)}</span>
+                            <span class="wb-value" dir="ltr">${esc(waybill.driver_phone || '-')}</span>
+                        </div>
+                    </div>
+                    <div class="wb-row">
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsTruckPlate)}</span>
+                            <span class="wb-value">${esc(waybill.truck_plate || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsTruckType)}</span>
+                            <span class="wb-value">${esc(waybill.truck_type || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsCementType)}</span>
+                            <span class="wb-value">${esc(waybill.cement_type || '-')}</span>
+                        </div>
+                    </div>
+                    <hr class="wb-divider">
+                    <div class="wb-row">
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsBagCount)}</span>
+                            <span class="wb-value">${esc(waybill.total_bags || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsTonnage)}</span>
+                            <span class="wb-value wb-tonnage">${esc(waybill.tonnage || '-')} Tons</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsFreightTotal)}</span>
+                            <span class="wb-value wb-freight">${esc((waybill.total_freight || 0).toLocaleString())} AFN</span>
+                        </div>
+                    </div>
+                    <div class="wb-row" style="align-items: center;">
+                        <span class="wb-route">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                            ${esc(waybill.loading_province || '-')} &rarr; ${esc(waybill.unloading_province || '-')}
+                        </span>
+                        <span class="wb-field"><span class="wb-label">${esc(i18nStrings.jsSentTo)}</span><span class="wb-value">${esc(waybill.selled_to_agent || '-')}</span></span>
+                    </div>
+                    ${esc(waybill.remarks ? `<div class="wb-remarks">${waybill.remarks}</div>` : '')}
+                </div>
+                <div class="wb-footer">
+                    <button onclick="event.stopPropagation(); selectWaybill(${esc(idx)})" class="worker-btn worker-btn-primary">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        ${esc(i18nStrings.jsSelectWaybill)}
+                    </button>
+                </div>
+            </div>`;
+    });
+    grid.innerHTML = html;
+}
+
+/* ============================================================
+   Sale entry modal
+   ============================================================ */
+function selectWaybill(index) {
+    selectedWaybill = incomingWaybills[index];
+
+    document.getElementById('selected-waybill-id').value = selectedWaybill.id;
+    document.getElementById('modal-waybill-serial').textContent = selectedWaybill.waybill_serial || '-';
+    document.getElementById('selected-waybill-serial').textContent = selectedWaybill.waybill_serial || '-';
+    document.getElementById('selected-waybill-date').textContent = selectedWaybill.waybill_date || '-';
+    document.getElementById('selected-waybill-driver').textContent = selectedWaybill.driver_name || '-';
+    document.getElementById('selected-waybill-plate').textContent = selectedWaybill.truck_plate || '-';
+    document.getElementById('selected-waybill-cement').textContent = selectedWaybill.cement_type || '-';
+    document.getElementById('selected-waybill-bags').textContent = selectedWaybill.total_bags || '-';
+    document.getElementById('selected-waybill-tonnage').textContent = selectedWaybill.tonnage || '-';
+    document.getElementById('selected-waybill-truck-type').textContent = selectedWaybill.truck_type || '-';
+    document.getElementById('selected-waybill-loading').textContent = selectedWaybill.loading_province || '-';
+    document.getElementById('selected-waybill-unloading').textContent = selectedWaybill.unloading_province || '-';
+
+    document.getElementById('sale-modal').style.display = 'flex';
+    calculateSaleTotals();
+}
+
+function clearSelectedWaybill() {
+    selectedWaybill = null;
+    document.getElementById('sale-modal').style.display = 'none';
+    document.getElementById('sale-entry-form').reset();
+}
+
+function calculateSaleTotals() {
+    if (!selectedWaybill) return;
+
+    const shortageBags = parseInt(document.getElementById('shortage_bags').value) || 0;
+    const unitPrice = parseFloat(document.getElementById('sale_unit_price').value) || 0;
+
+    const totalBags = selectedWaybill.total_bags || 0;
+    const soldBags = totalBags - shortageBags;
+
+    // Total sales = sold bags * unit price
+    const totalSales = soldBags * unitPrice;
+    document.getElementById('total_sale_amount').value = totalSales.toFixed(2);
+
+    // Total freight from waybill
+    const totalFreight = selectedWaybill.total_freight || 0;
+    document.getElementById('total_freight').value = totalFreight.toFixed(2);
+
+    // Net cement = total sales - total freight
+    const netCement = totalSales - totalFreight;
+    document.getElementById('net_cement_money').value = netCement.toFixed(2);
+}
+
+function addSaleToQueue(event) {
+    event.preventDefault();
+
+    if (!selectedWaybill) {
+        workerDialog({ message: i18nStrings.jsAlertSelectWaybill, icon: 'error', showCancel: false, confirmClass: 'worker-btn-primary' });
+        return;
+    }
+
+    const custSelect = document.getElementById('customer_id');
+    const customer = customers.find(c => c.id === parseInt(custSelect.value));
+
+    const saleEntry = {
+        waybill_id: selectedWaybill.id,
+        waybill_serial: selectedWaybill.waybill_serial,
+        waybill_date: selectedWaybill.waybill_date,
+        sale_date: document.getElementById('sale_date').value,
+        customer_id: parseInt(custSelect.value),
+        customer_name: customer ? customer.name : 'Unknown',
+        driver_name: selectedWaybill.driver_name,
+        driver_phone: selectedWaybill.driver_phone,
+        truck_plate: selectedWaybill.truck_plate,
+        truck_type: selectedWaybill.truck_type || 'company',
+        cement_type: selectedWaybill.cement_type,
+        total_bags: selectedWaybill.total_bags,
+        tonnage: selectedWaybill.tonnage,
+        shortage_bags: parseInt(document.getElementById('shortage_bags').value) || 0,
+        sale_unit_price: parseFloat(document.getElementById('sale_unit_price').value) || 0,
+        total_sale_amount: parseFloat(document.getElementById('total_sale_amount').value) || 0,
+        freight_per_ton: selectedWaybill.freight_per_ton || 0,
+        total_freight: parseFloat(document.getElementById('total_freight').value) || 0,
+        net_cement_money: parseFloat(document.getElementById('net_cement_money').value) || 0
+    };
+
+    // Mark waybill as in_queue on server
+    fetch('/api/worker/mark-waybill-in-queue', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ waybill_id: selectedWaybill.id })
+    })
+    .then(response => response.json().then(data => ({ status: response.status, ok: response.ok, data })))
+    .then(({ ok, data }) => {
+        if (ok && data.success) {
+            waitingQueue.push(saleEntry);
+            renderWaitingQueue();
+
+            // Remove selected waybill from incoming list BEFORE closing the modal
+            incomingWaybills = incomingWaybills.filter(w => w.id !== selectedWaybill.id);
+            renderIncomingWaybills();
+
+            clearSelectedWaybill();
+        } else {
+            console.error('[ERROR] Request failed:', { ok, data });
+            workerDialog({ message: 'Error: ' + (data.error || 'Failed to add to queue'), icon: 'error', showCancel: false });
+        }
+    })
+    .catch(err => {
+        console.error('[ERROR] Fetch error:', err);
+        workerDialog({ message: 'Error: Failed to add to queue', icon: 'error', showCancel: false });
+    });
+}
+
+/* ============================================================
+   Waiting queue (waybill sale cards)
+   ============================================================ */
+function loadWaitingQueue() {
+    fetch('/api/worker/waiting-queue', {
+        method: 'GET',
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) throw new Error('Response is not JSON');
+        return res.json();
+    })
+    .then(data => {
+        // Server returns local_waybills rows with status = 'in_queue'
+        waitingQueue = (data.waybills || []).map(w => ({
+            waybill_id: w.id,
+            waybill_serial: w.waybill_serial,
+            waybill_date: w.waybill_date,
+            sale_date: w.sale_date || '',
+            customer_id: w.customer_id || '',
+            customer_name: w.customer_name || 'Unknown',
+            driver_name: w.driver_name,
+            driver_phone: w.driver_phone,
+            truck_plate: w.truck_plate,
+            truck_type: w.truck_type || 'company',
+            cement_type: w.cement_type,
+            total_bags: w.total_bags,
+            tonnage: w.tonnage,
+            shortage_bags: w.shortage_bags || 0,
+            sale_unit_price: w.sale_unit_price || 0,
+            total_sale_amount: w.total_sale_amount || 0,
+            freight_per_ton: w.freight_per_ton || 0,
+            total_freight: w.total_freight || 0,
+            net_cement_money: w.net_cement_money || 0
+        }));
+        renderWaitingQueue();
+    })
+    .catch(err => {
+        console.error('[ERROR] Error loading waiting queue:', err);
+        renderWaitingQueue();
+    });
+}
+
+function renderWaitingQueue() {
+    const grid = document.getElementById('waiting-queue-grid');
+    const countBadge = document.getElementById('queue-count');
+    countBadge.textContent = waitingQueue.length;
+    countBadge.className = 'worker-count-badge' + (waitingQueue.length === 0 ? ' zero' : '');
+
+    if (waitingQueue.length === 0) {
+        grid.innerHTML = `
+            <div class="worker-empty-state">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <p>${esc(i18nStrings.jsNoEntries)}</p>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    waitingQueue.forEach((entry, idx) => {
+        html += `
+            <div class="wb-card">
+                <div class="wb-band">
+                    <span class="wb-company">${esc(WB_COMPANY)}</span>
+                    <span class="wb-serial">${esc(entry.waybill_serial || '-')}</span>
+                    <span class="wb-date">${esc(entry.sale_date || '-')}</span>
+                </div>
+                <div class="wb-body">
+                    <div class="wb-row">
+                        <div class="wb-field" style="flex: 1;">
+                            <span class="wb-label">${esc(i18nStrings.jsCustomer)}</span>
+                            <span class="wb-value">${esc(entry.customer_name || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsSaleDate)}</span>
+                            <span class="wb-value">${esc(entry.sale_date || '-')}</span>
+                        </div>
+                    </div>
+                    <div class="wb-row">
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsDriverName)}</span>
+                            <span class="wb-value">${esc(entry.driver_name || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsDriverPhone)}</span>
+                            <span class="wb-value" dir="ltr">${esc(entry.driver_phone || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsTruckPlate)}</span>
+                            <span class="wb-value">${esc(entry.truck_plate || '-')}</span>
+                        </div>
+                    </div>
+                    <hr class="wb-divider">
+                    <div class="wb-row">
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsCementType)}</span>
+                            <span class="wb-value">${esc(entry.cement_type || '-')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsBagCount)}</span>
+                            <span class="wb-value">${esc(entry.total_bags || '-')}${esc(entry.shortage_bags > 0 ? ' (-' + entry.shortage_bags + ')' : '')}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsTonnage)}</span>
+                            <span class="wb-value wb-tonnage">${esc(entry.tonnage || '-')} Tons</span>
+                        </div>
+                    </div>
+                    <hr class="wb-divider">
+                    <div class="wb-row">
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsUnitPrice)}</span>
+                            <span class="wb-value">${esc(entry.sale_unit_price || 0)}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsTotalSales)}</span>
+                            <span class="wb-value">${esc((entry.total_sale_amount || 0).toLocaleString())}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsTotalFreight)}</span>
+                            <span class="wb-value wb-freight">${esc((entry.total_freight || 0).toLocaleString())}</span>
+                        </div>
+                        <div class="wb-field">
+                            <span class="wb-label">${esc(i18nStrings.jsNetCement)}</span>
+                            <span class="wb-value wb-net">${esc((entry.net_cement_money || 0).toLocaleString())}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="wb-footer">
+                    <button onclick="editQueueEntry(${esc(idx)})" class="worker-btn worker-btn-primary" style="flex: 1;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        ${esc(i18nStrings.jsEdit)}
+                    </button>
+                    <button onclick="removeQueueEntry(${esc(idx)})" class="worker-btn worker-btn-danger" style="flex: 1;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        ${esc(i18nStrings.jsRemove)}
+                    </button>
+                </div>
+            </div>`;
+    });
+    grid.innerHTML = html;
+}
+
+/* ============================================================
+   Edit queue entry (modal, same behavior as before)
+   ============================================================ */
+function editQueueEntry(index) {
+    const entry = waitingQueue[index];
+    editingQueueIndex = index;
+
+    const modalHtml = `
+        <div id="edit-modal" class="worker-modal-overlay" style="display: flex;">
+            <div class="worker-modal">
+                <div class="worker-modal-band">
+                    <span class="wbm-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        ${esc(i18nStrings.jsEditTitle)}
+                    </span>
+                    <span class="wbm-serial">${esc(entry.waybill_serial || '-')}</span>
+                    <button type="button" class="worker-modal-close" onclick="closeEditModal()">&times;</button>
+                </div>
+                <div class="worker-modal-body">
+                    <!-- Read-only Waybill Information -->
+                    <div class="worker-waybill-info">
+                        <h4>${esc(i18nStrings.jsWaybillReadonly)}</h4>
+                        <div class="worker-info-grid">
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsWaybillSerial)}</strong><span>${esc(entry.waybill_serial)}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsWaybillDate)}</strong><span>${esc(entry.waybill_date)}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsDriverName)}</strong><span>${esc(entry.driver_name)}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsDriverPhone)}</strong><span>${esc(entry.driver_phone || '-')}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsTruckPlate)}</strong><span>${esc(entry.truck_plate)}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsCementType)}</strong><span>${esc(entry.cement_type)}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsBagCount)}</strong><span>${esc(entry.total_bags)}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsTonnage)}</strong><span>${esc(entry.tonnage)}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsTruckType)}</strong><span>${esc(entry.truck_type || '-')}</span></div>
+                            <div class="worker-info-item"><strong>${esc(i18nStrings.jsFreightTotal)}</strong><span>${esc(entry.total_freight.toLocaleString())}</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Editable Sale Fields -->
+                    <div class="worker-form-grid" style="grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                        <div class="form-group">
+                            <label>${esc(i18nStrings.jsSaleDate)}</label>
+                            <input type="text" id="edit_sale_date" class="form-control" value="${esc(entry.sale_date)}" data-datepicker="jalali">
+                        </div>
+                        <div class="form-group">
+                            <label>${esc(i18nStrings.jsCustomer)}</label>
+                            <select id="edit_customer_id" class="form-control">
+                                ${esc(customers.map(c => `<option value="${c.id}" ${c.id === entry.customer_id ? 'selected' : ''}>${c.name}</option>`).join(''))}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>${esc(i18nStrings.jsShortage)}</label>
+                            <input type="number" id="edit_shortage_bags" class="form-control" value="${esc(entry.shortage_bags)}" oninput="calculateEditTotals()">
+                        </div>
+                        <div class="form-group">
+                            <label>${esc(i18nStrings.jsUnitPrice)}</label>
+                            <input type="number" step="0.1" id="edit_sale_unit_price" class="form-control" value="${esc(entry.sale_unit_price)}" oninput="calculateEditTotals()">
+                        </div>
+                    </div>
+
+                    <!-- Calculated Totals (Read-only) -->
+                    <div class="worker-form-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+                        <div class="form-group">
+                            <label>${esc(i18nStrings.jsTotalSales)}</label>
+                            <input type="number" step="0.1" id="edit_total_sale_amount" class="form-control worker-readonly-field" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>${esc(i18nStrings.jsTotalFreight)}</label>
+                            <input type="number" step="0.1" id="edit_total_freight" class="form-control worker-readonly-field" readonly value="${esc(entry.total_freight)}">
+                        </div>
+                        <div class="form-group">
+                            <label>${esc(i18nStrings.jsNetCement)}</label>
+                            <input type="number" step="0.1" id="edit_net_cement_money" class="form-control worker-calculated-field" readonly>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="closeEditModal()" class="worker-btn worker-btn-secondary" style="flex: 1; padding: 11px;">${esc(i18nStrings.jsCancel)}</button>
+                        <button onclick="saveEdit()" class="worker-btn worker-btn-success" style="flex: 2; padding: 11px;">${esc(i18nStrings.jsSave)}</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    calculateEditTotals();
+}
+
+function calculateEditTotals() {
+    const shortageBags = parseInt(document.getElementById('edit_shortage_bags').value) || 0;
+    const unitPrice = parseFloat(document.getElementById('edit_sale_unit_price').value) || 0;
+
+    const entry = waitingQueue[editingQueueIndex];
+    const totalBags = entry.total_bags || 0;
+    const soldBags = totalBags - shortageBags;
+
+    const totalSales = soldBags * unitPrice;
+    document.getElementById('edit_total_sale_amount').value = totalSales.toFixed(2);
+
+    const totalFreight = entry.total_freight || 0;
+    const netCement = totalSales - totalFreight;
+    document.getElementById('edit_net_cement_money').value = netCement.toFixed(2);
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('edit-modal');
+    if (modal) {
+        modal.remove();
+    }
+    editingQueueIndex = null;
+}
+
+function saveEdit() {
+    const entry = waitingQueue[editingQueueIndex];
+
+    const saleDate = document.getElementById('edit_sale_date').value;
+    const customerId = parseInt(document.getElementById('edit_customer_id').value);
+    const customer = customers.find(c => c.id === customerId);
+    const shortageBags = parseInt(document.getElementById('edit_shortage_bags').value) || 0;
+    const saleUnitPrice = parseFloat(document.getElementById('edit_sale_unit_price').value) || 0;
+    const totalSaleAmount = parseFloat(document.getElementById('edit_total_sale_amount').value) || 0;
+    const netCementMoney = parseFloat(document.getElementById('edit_net_cement_money').value) || 0;
+
+    entry.sale_date = saleDate;
+    entry.customer_id = customerId;
+    entry.customer_name = customer ? customer.name : 'Unknown';
+    entry.shortage_bags = shortageBags;
+    entry.sale_unit_price = saleUnitPrice;
+    entry.total_sale_amount = totalSaleAmount;
+    entry.net_cement_money = netCementMoney;
+
+    renderWaitingQueue();
+    closeEditModal();
+}
+
+/* ============================================================
+   Remove from queue / send report (with in-app dialogs)
+   ============================================================ */
+async function removeQueueEntry(index) {
+    const confirmed = await workerDialog({
+        title: i18nStrings.jsRemove,
+        message: i18nStrings.jsConfirmRemove,
+        icon: 'error',
+        confirmText: i18nStrings.jsRemove,
+        confirmClass: 'worker-btn-danger'
+    });
+    if (!confirmed) return;
+
+    const entry = waitingQueue[index];
+
+    fetch('/api/worker/mark-waybill-available', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ waybill_id: entry.waybill_id })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            waitingQueue.splice(index, 1);
+            renderWaitingQueue();
+            loadIncomingWaybills();
+        } else {
+            workerDialog({ message: 'Error: ' + (data.error || 'Failed to remove from queue'), icon: 'error', showCancel: false });
+        }
+    })
+    .catch(err => {
+        console.error('Error marking waybill as available:', err);
+        workerDialog({ message: 'Error: Failed to remove from queue', icon: 'error', showCancel: false });
+    });
+}
+
+async function sendReportToAdmin() {
+    if (waitingQueue.length === 0) {
+        workerDialog({ message: i18nStrings.jsAlertEmptyQueue, icon: 'confirm', showCancel: false });
+        return;
+    }
+
+    const confirmed = await workerDialog({
+        title: '<%= t("worker.waiting_queue_title") %>',
+        message: i18nStrings.jsConfirmSend.replace('{count}', waitingQueue.length),
+        icon: 'confirm',
+        confirmText: '<%= t("worker.send_to_admin") %>',
+        confirmClass: 'worker-btn-success'
+    });
+    if (!confirmed) return;
+
+    fetch('/api/worker/commit-waybill-sales-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ salesBatch: waitingQueue })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            workerDialog({
+                message: i18nStrings.jsAlertSuccess.replace('{count}', data.count),
+                icon: 'success',
+                showCancel: false
+            });
+            waitingQueue = [];
+            renderWaitingQueue();
+            loadIncomingWaybills();
+        } else {
+            workerDialog({ message: i18nStrings.jsAlertError + data.error, icon: 'error', showCancel: false });
+        }
+    })
+    .catch(err => {
+        workerDialog({ message: i18nStrings.jsAlertConnection, icon: 'error', showCancel: false });
+    });
+}
+
+// Load data on page load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        loadIncomingWaybills();
+        loadWaitingQueue();
+    });
+} else {
+    loadIncomingWaybills();
+    loadWaitingQueue();
+}
+</script>
+
+<%- include('partials/customer_modal') %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,81 @@
+<%- include('../partials/header') %>
+
+<div class="card">
+    <h2 style="margin-bottom: 20px; font-size: 24px;">💰 <%= t('hr.employees.salary_history_title') %></h2>
+    
+    <div style="margin-bottom: 20px;">
+        <a href="/admin/hr/employees/<%= employeeId %>" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">← <%= t('hr.employees.back_to_employee_profile') %></a>
+    </div>
+    
+    <!-- Add Salary History Form -->
+    <div class="card" style="background-color: var(--bg-color); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px;"><%= t('hr.employees.add_salary_history') %></h3>
+        <form method="POST" action="/admin/hr/employees/<%= employeeId %>/salary-history">
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label for="basic_salary"><%= t('hr.employees.basic_salary_amount') %> *</label>
+                    <input type="number" name="basic_salary" class="form-control" required min="0" id="basic_salary">
+                </div>
+                
+                <div class="form-group">
+                    <label for="allowances"><%= t('hr.employees.allowances_amount') %></label>
+                    <input type="number" name="allowances" class="form-control" min="0" value="0" id="allowances">
+                </div>
+                
+                <div class="form-group">
+                    <label for="effective_from"><%= t('hr.employees.effective_from') %> *</label>
+                    <input type="text" name="effective_from" class="form-control" required data-datepicker="jalali" placeholder="مثلاً ۱۴۰۳/۰۱/۰۱" dir="ltr" id="effective_from">
+                </div>
+                
+                <div class="form-group">
+                    <label for="effective_to"><%= t('hr.employees.effective_to') %></label>
+                    <input type="text" name="effective_to" class="form-control" data-datepicker="jalali" placeholder="مثلاً ۱۴۰۳/۱۲/۲۹" dir="ltr" id="effective_to">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="notes"><%= t('hr.employees.salary_history_notes') %></label>
+                <textarea name="notes" class="form-control" rows="2" placeholder="e.g., Salary increase, Promotion, etc." id="notes"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary"><%= t('hr.employees.add_salary_entry') %></button>
+        </form>
+    </div>
+    
+    <!-- Salary History List -->
+    <h3 style="margin-bottom: 15px; font-size: 18px;"><%= t('hr.employees.salary_history_list') %></h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t('hr.employees.effective_date') %></th>
+                    <th><%= t('hr.employees.to_date') %></th>
+                    <th><%= t('hr.employees.basic_salary_label') %></th>
+                    <th><%= t('hr.employees.allowances_label') %></th>
+                    <th><%= t('hr.employees.total_amount') %></th>
+                    <th><%= t('hr.employees.salary_history_notes') %></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (salaryHistory && salaryHistory.length > 0) { %>
+                    <% salaryHistory.forEach(function(salary) { %>
+                        <tr>
+                            <td><%= salary.effective_from %></td>
+                            <td><%= salary.effective_to || t('hr.employees.present') %></td>
+                            <td><%= salary.basic_salary.toLocaleString() %> Afs</td>
+                            <td><%= salary.allowances.toLocaleString() %> Afs</td>
+                            <td><strong><%= (salary.basic_salary + salary.allowances).toLocaleString() %> Afs</strong></td>
+                            <td><%= salary.notes || '-' %></td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <%= t('hr.employees.no_salary_history_found') %>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>

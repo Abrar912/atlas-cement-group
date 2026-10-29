@@ -1,0 +1,362 @@
+<%- include('../partials/header') %>
+
+<style>
+/* =============================================================
+   Payment History & Summary — report document (pr-* namespace)
+   ============================================================= */
+
+/* ---------- document header ---------- */
+.pr-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border-color,#d1d5db)}
+.pr-head-main{min-width:0}
+.pr-doc-title{display:flex;align-items:center;gap:10px;font-size:21px;font-weight:800;letter-spacing:-.3px;margin:0}
+.pr-doc-title::before{content:"";flex:none;width:5px;height:24px;border-radius:3px;background:var(--accent-blue,#2563eb)}
+.pr-doc-sub{font-size:12.5px;color:var(--text-muted,#6b7280);margin:6px 0 0}
+.pr-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ---------- filter toolbar ---------- */
+.pr-toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-bottom:14px;padding:14px 16px;border:1px solid var(--border-color,#d1d5db);border-radius:14px;background:var(--bg-color,#fafafa);box-shadow:0 1px 2px rgba(15,23,42,.04)}
+.pr-field{flex:1;min-width:155px}
+.pr-label{display:block;margin-bottom:5px;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.pr-toolbar-actions{display:flex;gap:8px;align-items:center;padding-bottom:1px}
+.pr-more{flex:1;min-width:155px}
+.pr-more-sum{cursor:pointer;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280);list-style:none}
+.pr-more-sum::-webkit-details-marker{display:none}
+.pr-more-sum::before{content:"\25B8";display:inline-block;margin-inline-end:5px;transition:transform .15s}
+.pr-more[open] .pr-more-sum::before{transform:rotate(90deg)}
+.pr-more-body{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+
+/* ---------- active filter context ---------- */
+.pr-ctx{margin-bottom:16px;padding:10px 14px;border:1px dashed rgba(59,130,246,.45);border-radius:12px;background:rgba(59,130,246,.05)}
+.pr-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+.pr-meta-label{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.pr-chip{display:inline-block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;padding:2px 8px;border-radius:7px;background:rgba(107,114,128,.12);color:inherit}
+.pr-chip[dir="ltr"]{direction:ltr}
+.pr-note{margin:0;font-size:12px;line-height:1.5;color:var(--text-muted,#6b7280)}
+.pr-range{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;color:inherit}
+
+/* ---------- employee group + financial table ---------- */
+.pr-group{margin:18px 0 22px 0;page-break-inside:avoid;break-inside:avoid}
+.pr-group-head{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline;padding:9px 12px;border:1px solid var(--border-color,#d1d5db);border-bottom:none;background:rgba(107,114,128,.08);border-radius:10px 10px 0 0}
+.pr-emp{font-weight:800;font-size:13.5px}
+.pr-sub{font-size:11.5px;color:var(--text-muted,#6b7280)}
+.pr-table{width:100%;border-collapse:collapse;font-size:12px}
+.pr-table th,.pr-table td{border:1px solid var(--border-color,#d1d5db);padding:5px 7px;text-align:start;vertical-align:top}
+.pr-table th{background:rgba(107,114,128,.07);font-size:10px;font-weight:800;letter-spacing:.5px;color:var(--text-muted,#6b7280);white-space:nowrap}
+.pr-table td.num{text-align:end;font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+.pr-table tbody tr:nth-child(even) td{background:rgba(107,114,128,.04)}
+.pr-table tbody tr:hover td{background:rgba(59,130,246,.05)}
+.pr-badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:10.5px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+.pr-badge-green{background:rgba(16,185,129,.15);color:#047857}
+.pr-badge-amber{background:rgba(245,158,11,.15);color:#b45309}
+.pr-voided{display:block;margin-top:3px;font-size:9.5px;font-weight:800;color:#b91c1c;letter-spacing:.4px}
+.pr-dup{display:block;margin-top:3px;font-size:10.5px;font-weight:700;color:#b45309}
+.pr-subtotal td{background:rgba(107,114,128,.10);font-weight:700;border-top:2px solid var(--border-color,#d1d5db)}
+
+/* ---------- HR-27 live G3 balances (group level, clearly non-historical) ---------- */
+.pr-live{display:flex;gap:8px 18px;flex-wrap:wrap;align-items:baseline;padding:7px 12px;border:1px solid var(--border-color,#d1d5db);border-top:none;background:rgba(59,130,246,.06);border-radius:0 0 10px 10px}
+.pr-live-chip{display:inline-flex;gap:6px;align-items:baseline;font-size:11.5px}
+.pr-live-label{font-weight:800;color:var(--text-muted,#6b7280)}
+.pr-live-chip b{font-weight:800;font-variant-numeric:tabular-nums}
+.pr-live-note{font-size:9.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:#1d4ed8;border:1px dashed rgba(59,130,246,.55);border-radius:999px;padding:1px 8px;white-space:nowrap}
+
+/* ---------- grand totals ---------- */
+.pr-grand{border:2px solid var(--border-color,#d1d5db);border-radius:12px;padding:13px 16px;margin:18px 0;background:var(--bg-color,#fafafa);page-break-inside:avoid;break-inside:avoid}
+.pr-grand-title{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted,#6b7280);margin-bottom:9px}
+.pr-grand-grid{display:flex;gap:10px 24px;flex-wrap:wrap}
+.pr-stat{display:inline-block;font-size:12.5px;color:var(--text-muted,#6b7280)}
+.pr-stat b{font-weight:800;color:#111827;font-variant-numeric:tabular-nums}
+.pr-stat-net b{font-size:14px}
+
+/* ---------- empty state + footer ---------- */
+.pr-empty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:44px 20px;border:1px dashed var(--border-color,#d1d5db);border-radius:14px;background:var(--bg-color,#fafafa);text-align:center;color:var(--text-muted,#6b7280);font-size:14px;font-weight:600;margin:14px 0}
+.pr-empty::before{content:"\1F4C4";font-size:28px}
+.pr-foot-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.pr-generated{font-size:11px;color:var(--text-muted,#6b7280);margin-top:16px;text-align:center}
+
+/* ---------- dark theme ---------- */
+[data-theme="dark"] .pr-doc-title::before{background:#60a5fa}
+[data-theme="dark"] .pr-table tbody tr:nth-child(even) td{background:rgba(163,173,188,.05)}
+[data-theme="dark"] .pr-table tbody tr:hover td{background:rgba(96,165,250,.08)}
+[data-theme="dark"] .pr-group-head{background:rgba(163,173,188,.08)}
+[data-theme="dark"] .pr-badge-green{background:rgba(63,185,80,.18);color:#3fb950}
+[data-theme="dark"] .pr-badge-amber{background:rgba(251,191,36,.16);color:#fbbf24}
+[data-theme="dark"] .pr-voided{color:#f87171}
+[data-theme="dark"] .pr-dup{color:#fbbf24}
+[data-theme="dark"] .pr-ctx{border-color:rgba(96,165,250,.45);background:rgba(96,165,250,.07)}
+[data-theme="dark"] .pr-grand{background:rgba(163,173,188,.06);border-color:rgba(163,173,188,.35)}
+[data-theme="dark"] .pr-stat b{color:#e6edf3}
+[data-theme="dark"] .pr-empty{background:rgba(163,173,188,.05)}
+[data-theme="dark"] .pr-live{background:rgba(96,165,250,.08);border-color:rgba(96,165,250,.35)}
+[data-theme="dark"] .pr-live-label{color:#9aa4b2}
+[data-theme="dark"] .pr-live-note{color:#60a5fa;border-color:rgba(96,165,250,.55)}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+    .pr-field{min-width:180px}
+}
+@media (max-width:640px){
+    .pr-head{flex-direction:column;align-items:stretch}
+    .pr-actions{width:100%}
+    .pr-doc-title{font-size:18px}
+    .pr-field{min-width:100%}
+    .pr-toolbar-actions{width:100%}
+    .pr-grand-grid{flex-direction:column;gap:8px}
+    .pr-meta{gap:6px}
+    .pr-stat-net b{font-size:13px}
+}
+
+/* ---------- print document (A4) ---------- */
+@media print {
+    @page { size: A4; margin: 12mm; }
+    .sidebar, .top-navbar, .no-print, .pr-toolbar, .pr-actions { display: none !important; }
+    .main-viewport > div:first-child { display: none !important; }
+    .main-viewport { overflow: visible !important; height: auto !important; }
+    .content-scrollable { padding: 0 !important; overflow: visible !important; }
+    .card { box-shadow: none !important; border: none !important; padding: 0 !important; overflow: visible !important; }
+    body { background: #fff !important; color: #000 !important; }
+    .pr-head { margin-bottom: 8px; padding-bottom: 8px; }
+    .pr-ctx { border: 1px solid #999 !important; background: #fff !important; border-radius: 0 !important; padding: 6px 8px !important; margin-bottom: 10px !important; }
+    .pr-meta-label, .pr-note, .pr-sub, .pr-stat { color: #333 !important; }
+    .pr-stat b { color: #000 !important; }
+    .pr-chip { font-size: 7.5px; padding: 1px 3px; background: #eee !important; }
+    .pr-table { font-size: 7.5px; table-layout: fixed; width: 100%; }
+    .pr-table th, .pr-table td { border-color: #999 !important; color: #000 !important; background: #fff !important; padding: 1px 2px !important; overflow-wrap: break-word; }
+    .pr-table th { background: #eee !important; white-space: normal !important; font-size: 7.5px; letter-spacing: 0; }
+    .pr-table td.num { white-space: nowrap; }
+    .pr-badge { font-size: 8px; padding: 1px 4px; white-space: normal; letter-spacing: 0; }
+    .pr-voided { white-space: normal; letter-spacing: 0; }
+    .pr-dup { white-space: normal; }
+    .pr-emp { font-size: 12px; }
+    .pr-group-head { gap: 6px; padding: 5px 8px; background: #f3f3f3 !important; border-color: #999 !important; }
+    .pr-subtotal td { background: #f3f3f3 !important; }
+    .pr-live { background: #f7f7f7 !important; border-color: #999 !important; border-radius: 0 !important; padding: 4px 8px !important; }
+    .pr-live-label, .pr-live-chip b { color: #000 !important; }
+    .pr-live-chip b { font-size: 9.5px; }
+    .pr-live-note { color: #333 !important; border-color: #999 !important; font-size: 7.5px; }
+    .pr-grand { background: #fff !important; border-color: #666 !important; padding: 8px 10px !important; }
+    .pr-grand-title { color: #333 !important; }
+    .pr-empty { border-color: #999 !important; background: #fff !important; color: #333 !important; padding: 18px !important; }
+    .pr-empty::before { content: none; }
+    .pr-generated { color: #555 !important; margin-top: 10px; }
+    .pr-group, .pr-table tr { page-break-inside: avoid; break-inside: avoid; }
+    .pr-table thead { display: table-header-group; }
+    .pr-group-head, .pr-grand-title { page-break-after: avoid; break-after: avoid; }
+    .pr-badge { border: 1px solid #666; }
+    a { color: #000 !important; text-decoration: none; }
+}
+.pc-tabbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.pc-tab{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:9px;font-size:13px;font-weight:700;color:var(--text-muted,#6b7280);border:1px solid var(--border-color,#e5e7eb);background:transparent;text-decoration:none;cursor:pointer}
+.pc-tab:hover{background:rgba(107,114,128,.08);color:inherit}
+.pc-tab-active{background:var(--primary,#FF6F00);color:#fff;border-color:var(--primary,#FF6F00)}
+.pc-tab-active:hover{background:var(--primary,#FF6F00);color:#fff}
+</style>
+
+<div class="card">
+    <nav class="pc-tabbar no-print" aria-label="Payroll">
+        <a href="/admin/hr/payroll" class="pc-tab"><%= t('hr.payroll.title') %></a>
+        <a href="/admin/hr/payments/create" class="pc-tab">💳 <%= t('hr.payroll.start_payment') %></a>
+        <span class="pc-tab pc-tab-active"><%= t('hr.payroll.payment_history_link') %></span>
+    </nav>
+    <div class="pr-head">
+        <div class="pr-head-main">
+            <h2 class="pr-doc-title"><%= t('hr.payment_report.title') %></h2>
+            <p class="pr-doc-sub no-print"><%= t('hr.payments.page_desc_history') %></p>
+        </div>
+        <div class="pr-actions no-print">
+            <a href="/admin/hr/payments" class="btn btn-secondary"><%= t('hr.payments.title') %></a>
+            <button type="button" class="btn btn-primary" onclick="window.print();"><%= t('hr.payment_report.btn_print') %></button>
+        </div>
+    </div>
+
+    <form method="GET" action="/admin/hr/payments/history-report" class="pr-toolbar no-print">
+        <div class="pr-field">
+            <label class="pr-label"><%= t('hr.payment_report.lbl_from') %></label>
+            <select name="from" class="form-control" dir="ltr">
+                <% periodOptions.forEach(function(opt) { %>
+                    <option value="<%= opt %>" <%= filters.from === opt ? 'selected' : '' %>><%= opt.slice(0, 7) %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="pr-field">
+            <label class="pr-label"><%= t('hr.payment_report.lbl_to') %></label>
+            <select name="to" class="form-control" dir="ltr">
+                <% periodOptions.forEach(function(opt) { %>
+                    <option value="<%= opt %>" <%= filters.to === opt ? 'selected' : '' %>><%= opt.slice(0, 7) %></option>
+                <% }); %>
+            </select>
+        </div>
+        <div class="pr-field">
+            <label class="pr-label"><%= t('hr.correction.filter_employee') %></label>
+            <select name="employee_id" class="form-control">
+                <option value=""><%= t('hr.payment_report.opt_all_employees') %></option>
+                <% (employeeOptions || []).forEach(function(e) { %>
+                    <option value="<%= e.id %>" <%= String(filters.employee_id) === String(e.id) ? 'selected' : '' %>><%= e.name %> (#<%= e.id %>)</option>
+                <% }); %>
+            </select>
+        </div>
+        <details class="pr-more no-print">
+            <summary class="pr-more-sum"><%= t('hr.payments.more_options') %></summary>
+            <div class="pr-more-body">
+                <div class="pr-field">
+                    <label class="pr-label"><%= t('hr.correction.filter_status') %></label>
+                    <select name="status" class="form-control">
+                        <option value=""><%= t('hr.payment_report.opt_all_statuses') %></option>
+                        <option value="FINALIZED" <%= filters.status === 'FINALIZED' ? 'selected' : '' %>><%= t('hr.payments.status_finalized') %></option>
+                        <option value="CORRECTED" <%= filters.status === 'CORRECTED' ? 'selected' : '' %>><%= t('hr.payments.status_corrected') %></option>
+                    </select>
+                </div>
+                <div class="pr-field">
+                    <label class="pr-label"><%= t('hr.payment_report.lbl_department') %></label>
+                    <select name="department" class="form-control">
+                        <option value=""><%= t('hr.payment_report.opt_all_departments') %></option>
+                        <% (departmentOptions || []).forEach(function(d) { %>
+                            <option value="<%= d.name %>" <%= filters.department === d.name ? 'selected' : '' %>><%= d.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+            </div>
+        </details>
+        <div class="pr-toolbar-actions">
+            <button type="submit" class="btn btn-secondary"><%= t('hr.correction.filter_apply') %></button>
+            <a href="/admin/hr/payments/history-report" class="btn btn-secondary"><%= t('hr.correction.filter_clear') %></a>
+        </div>
+    </form>
+
+    <div class="pr-ctx">
+        <div class="pr-meta">
+            <span class="pr-meta-label"><%= t('hr.correction.filter_active') %>:</span>
+            <span class="pr-chip"><%= t('hr.correction.filter_period') %>: <span dir="ltr"><%= filters.from.slice(0, 7) %> → <%= filters.to.slice(0, 7) %></span></span>
+            <% if (filters.employee_id !== '') { %><span class="pr-chip"><%= t('hr.correction.filter_employee') %>: #<%= filters.employee_id %></span><% } %>
+            <% if (filters.status !== '') { %><span class="pr-chip"><%= t('hr.correction.filter_status') %>: <%= t('hr.payments.status_' + (filters.status === 'FINALIZED' ? 'finalized' : 'corrected')) %></span><% } %>
+            <% if (filters.department !== '') { %><span class="pr-chip"><%= t('hr.payment_report.lbl_department') %>: <%= filters.department %></span><% } %>
+        </div>
+        <p class="pr-note"><span class="pr-range" dir="ltr"><%= filters.from %> — <%= filters.to %></span> · <%= t('hr.payment_report.status_note') %></p>
+    </div>
+
+    <% if (rowCount === 0) { %>
+        <div class="pr-empty"><%= t('hr.payment_report.empty_range') %></div>
+    <% } else { %>
+        <% groups.forEach(function(g) { %>
+            <section class="pr-group">
+                <div class="pr-group-head">
+                    <span class="pr-emp"><%= g.employee_name %></span>
+                    <% if (g.employee_code) { %><span class="pr-chip" dir="ltr">#<%= g.employee_code %></span><% } %>
+                    <span class="pr-sub"><%= g.department_name || '' %><%= g.position ? ' · ' + g.position : '' %></span>
+                </div>
+                <% var hr27live = g.live || null; %>
+                <div class="pr-live">
+                    <span class="pr-live-chip">
+                        <span class="pr-live-label"><%= t('hr.payhist.employee_owes_company') %>:</span>
+                        <b dir="ltr"><%= hr27live && hr27live.employee_cents !== null && hr27live.employee_cents !== undefined ? money(hr27live.employee_cents) : t('hr.payhist.live_unavailable') %></b>
+                    </span>
+                    <span class="pr-live-chip">
+                        <span class="pr-live-label"><%= t('hr.payhist.company_owes_employee') %>:</span>
+                        <b dir="ltr"><%= hr27live && hr27live.company_cents !== null && hr27live.company_cents !== undefined ? money(hr27live.company_cents) : t('hr.payhist.live_unavailable') %></b>
+                    </span>
+                    <span class="pr-live-note"><%= t('hr.payhist.live_note') %></span>
+                </div>
+                <table class="pr-table">
+                    <thead>
+                        <tr>
+                            <th><%= t('hr.payments.col_serial') %></th>
+                            <th><%= t('hr.payments.col_period') %></th>
+                            <th><%= t('hr.payments.col_date') %></th>
+                            <th><%= t('hr.payments.col_status') %></th>
+                            <th><%= t('hr.payhist.col_real_salary') %></th>
+                            <th><%= t('hr.payments.t_salary') %></th>
+                            <th><%= t('hr.payhist.col_salary_remaining') %></th>
+                            <th><%= t('hr.payments.t_overtime') %></th>
+                            <th><%= t('hr.payhist.col_ot_remaining') %></th>
+                            <th><%= t('hr.payments.t_additional') %></th>
+                            <th><%= t('hr.payments.t_advance') %></th>
+                            <th><%= t('hr.payhist.col_advance_remaining') %></th>
+                            <th><%= t('hr.payments.t_net') %></th>
+                            <th><%= t('hr.payments.zero_reason_label') %></th>
+                            <th><%= t('hr.payment_report.col_corrections') %></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% g.rows.forEach(function(p) { %>
+                            <tr>
+                                <td dir="ltr">
+                                    <% if (p.payment_serial) { %><span class="pr-chip"><%= p.payment_serial %></span><% } else { %>#<%= p.id %><% } %>
+                                    <% if (p.duplicate_confirmed) { %><span class="pr-dup"><%= t('hr.payments.dup_flag') %></span><% } %>
+                                </td>
+                                <td dir="ltr"><%= p.period_month %></td>
+                                <td dir="ltr"><%= p.payment_date %></td>
+                                <td>
+                                    <span class="pr-badge <%= p.status === 'FINALIZED' ? 'pr-badge-green' : 'pr-badge-amber' %>">
+                                        <%= t('hr.payments.status_' + (p.status === 'FINALIZED' ? 'finalized' : 'corrected')) %>
+                                    </span>
+                                    <% if (p.status === 'CORRECTED') { %><br><span class="pr-voided"><%= t('hr.payment_report.voided_marker') %></span><% } %>
+                                </td>
+                                <td class="num" dir="ltr"><%= money(p.basic_salary_applied) %></td>
+                                <td class="num" dir="ltr"><%= money(p.salary_total) %></td>
+                                <td class="num" dir="ltr"><%= money(p.salary_remaining_after) %></td>
+                                <td class="num" dir="ltr"><%= money(p.overtime_total) %></td>
+                                <td class="num" dir="ltr"><%= money(p.ot_remaining_after) %></td>
+                                <td class="num" dir="ltr"><%= money(p.additional_total) %></td>
+                                <td class="num" dir="ltr"><%= money(p.advance_deduction_total) %></td>
+                                <td class="num" dir="ltr"><%= money(p.advance_remaining_after) %></td>
+                                <td class="num" dir="ltr"><%= money(p.net_cash_paid) %></td>
+                                <td>
+                                    <% if (p.zero_reason_code) { %>
+                                        <% const ZRK = { NO_WORK_PERIOD:'zr_no_work', ABSENCE_UNPAID:'zr_absence', NEW_HIRE_NO_DUE:'zr_new_hire', LEAVE_UNPAID:'zr_leave', BANK_UNAVAILABLE:'zr_bank', EMPLOYEE_ABSENT_PICKUP:'zr_pickup', OTHER_APPROVED:'zr_other' }; %>
+                                        <%= t('hr.payments.' + (ZRK[p.zero_reason_code] || 'zr_other')) %>
+                                        <% if (p.zero_reason_note) { %><br><span class="pr-sub"><%= p.zero_reason_note %></span><% } %>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (p.corrected_count > 0) { %>
+                                        <span class="pr-sub"><%= t('hr.correction.corrected_count_label') %>: <%= p.corrected_count %></span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                    <tfoot>
+                        <tr class="pr-subtotal">
+                            <td colspan="4">
+                                <%= t('hr.payment_report.subtotal') %> —
+                                <%= t('hr.payment_report.lbl_paid') %>: <span dir="ltr"><%= g.paid_count %></span> ·
+                                <%= t('hr.payment_report.lbl_voided') %>: <span dir="ltr"><%= g.voided_count %></span>
+                            </td>
+                            <td></td>
+                            <td class="num" dir="ltr"><%= money(g.salary_cents) %></td>
+                            <td></td>
+                            <td class="num" dir="ltr"><%= money(g.overtime_cents) %></td>
+                            <td></td>
+                            <td class="num" dir="ltr"><%= money(g.additional_cents) %></td>
+                            <td class="num" dir="ltr"><%= money(g.advance_cents) %></td>
+                            <td></td>
+                            <td class="num" dir="ltr"><%= money(g.net_cents) %></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </section>
+        <% }); %>
+
+        <div class="pr-grand">
+            <div class="pr-grand-title"><%= t('hr.payment_report.grand_total') %></div>
+            <div class="pr-grand-grid">
+                <span class="pr-stat"><%= t('hr.payment_report.lbl_paid') %>: <b dir="ltr"><%= grand.paid_count %></b></span>
+                <span class="pr-stat"><%= t('hr.payment_report.lbl_voided') %>: <b dir="ltr"><%= grand.voided_count %></b></span>
+                <span class="pr-stat"><%= t('hr.payments.t_salary') %>: <b dir="ltr"><%= money(grand.salary_cents) %></b></span>
+                <span class="pr-stat"><%= t('hr.payments.t_overtime') %>: <b dir="ltr"><%= money(grand.overtime_cents) %></b></span>
+                <span class="pr-stat"><%= t('hr.payments.t_additional') %>: <b dir="ltr"><%= money(grand.additional_cents) %></b></span>
+                <span class="pr-stat"><%= t('hr.payments.t_advance') %>: <b dir="ltr"><%= money(grand.advance_cents) %></b></span>
+                <span class="pr-stat pr-stat-net"><%= t('hr.payments.t_net') %>: <b dir="ltr"><%= money(grand.net_cents) %></b></span>
+            </div>
+        </div>
+    <% } %>
+
+    <div class="pr-foot-links no-print">
+        <a href="/admin/hr/payments" class="btn btn-secondary"><%= t('hr.payments.see_drafts_link') %></a>
+        <a href="/admin/hr/payment-corrections" class="btn btn-secondary"><%= t('hr.payments.corrected_log_link') %></a>
+    </div>
+
+    <div class="pr-generated"><%= t('hr.contract.footer_generated').replace('{date}', generated) %></div>
+</div>
+
+<%- include('../partials/footer') %>

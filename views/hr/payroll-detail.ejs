@@ -1,0 +1,189 @@
+<%- include('../partials/header') %>
+
+<div class="card" style="direction: rtl; text-align: right;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="font-size: 24px;">💰 <%= t('hr.payroll.detail_title') %>: <%= payroll.full_name %></h2>
+        <div style="display: flex; gap: 10px;">
+            <a href="/admin/hr/payroll" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);"><%= t('hr.payroll.back_to_payroll') %></a>
+            <a href="/admin/hr/employees/<%= payroll.employee_id %>" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);"><%= t('hr.payroll.employee_profile') %></a>
+        </div>
+    </div>
+    
+    <div style="margin-bottom: 10px; padding: 8px 14px; border-left: 4px solid var(--safety-orange, #f59e0b); background: rgba(245,158,11,.10); border-radius: 6px; font-size: 12.5px; font-weight: 700; color: var(--text-muted, #6b7280);"><%= t('hr.payrollCenter.legacy_archive_label') %></div>
+    <!-- Payroll Overview -->
+    <div class="card" style="background-color: var(--bg-color); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text-main);">📋 <%= t('hr.payroll.summary') %></h3>
+        
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.employees.full_name') %></div>
+                <div style="font-size: 14px; font-weight: 600;"><%= payroll.full_name %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.employees.employee_id') %></div>
+                <div style="font-size: 14px;"><code><%= payroll.employee_id || 'N/A' %></code></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.employees.position') %></div>
+                <div style="font-size: 14px;"><%= payroll.position %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.employees.department') %></div>
+                <div style="font-size: 14px;"><%= payroll.department_name || '-' %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.payroll_period') %></div>
+                <div style="font-size: 14px; font-weight: 600;"><%= payroll.payroll_period %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.payment_status') %></div>
+                <div style="font-size: 14px; font-weight: 600;">
+                    <% if (payroll.payment_status === 'Paid') { %>
+                        <span style="color: var(--status-success);"><%= t('hr.payroll.paid') %></span>
+                    <% } else if (payroll.payment_status === 'Paid Early') { %>
+                        <span style="color: var(--status-success);"><%= t('hr.payroll.paid_early') %></span>
+                    <% } else if (payroll.payment_status === 'Paid Late') { %>
+                        <span style="color: var(--safety-orange);"><%= t('hr.payroll.paid_late') %></span>
+                    <% } else if (payroll.payment_status === 'Unpaid') { %>
+                        <span style="color: var(--status-error);"><%= t('hr.payroll.unpaid') %></span>
+                    <% } else { %>
+                        <%= payroll.payment_status %>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Salary Breakdown -->
+    <div class="card" style="margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px;">💵 <%= t('hr.payroll.breakdown') %></h3>
+        
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div class="card" style="background-color: var(--bg-color);">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.basic_salary') %></div>
+                <div style="font-size: 20px; font-weight: 600; color: var(--text-main);"><%= payroll.basic_salary.toLocaleString() %> افغانی</div>
+            </div>
+            
+            <div class="card" style="background-color: var(--bg-color);">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.allowances') %></div>
+                <div style="font-size: 20px; font-weight: 600; color: var(--text-main);"><%= payroll.allowances.toLocaleString() %> افغانی</div>
+            </div>
+            
+            <div class="card" style="background-color: rgba(46, 160, 67, 0.15);">
+                <div style="font-size: 12px; color: var(--status-success); margin-bottom: 4px;"><%= t('hr.payroll.overtime_amount') %></div>
+                <div style="font-size: 20px; font-weight: 600; color: var(--status-success);"><%= payroll.overtime_amount.toLocaleString() %> افغانی</div>
+            </div>
+            
+            <div class="card" style="background-color: rgba(207, 34, 46, 0.1);">
+                <div style="font-size: 12px; color: var(--status-error); margin-bottom: 4px;"><%= t('hr.payroll.advance_deduction') %></div>
+                <div style="font-size: 20px; font-weight: 600; color: var(--status-error);"><%= payroll.advance_deduction.toLocaleString() %> افغانی</div>
+            </div>
+            
+            <div class="card" style="background-color: rgba(207, 34, 46, 0.1);">
+                <div style="font-size: 12px; color: var(--status-error); margin-bottom: 4px;"><%= t('hr.payroll.attendance_deduction') %></div>
+                <div style="font-size: 20px; font-weight: 600; color: var(--status-error);"><%= payroll.attendance_deduction.toLocaleString() %> افغانی</div>
+            </div>
+            
+            <div class="card" style="background-color: rgba(207, 34, 46, 0.1);">
+                <div style="font-size: 12px; color: var(--status-error); margin-bottom: 4px;"><%= t('hr.payroll.other_deductions') %></div>
+                <div style="font-size: 20px; font-weight: 600; color: var(--status-error);"><%= payroll.other_deductions.toLocaleString() %> افغانی</div>
+            </div>
+        </div>
+        
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+            <div class="card" style="background-color: rgba(9, 105, 218, 0.1);">
+                <div style="font-size: 12px; color: var(--accent-blue); margin-bottom: 4px;"><%= t('hr.payroll.gross_salary') %></div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--accent-blue);"><%= payroll.gross_salary.toLocaleString() %> افغانی</div>
+            </div>
+            
+            <div class="card" style="background-color: rgba(207, 34, 46, 0.1);">
+                <div style="font-size: 12px; color: var(--status-error); margin-bottom: 4px;"><%= t('hr.payroll.total_deductions') %></div>
+                <div style="font-size: 24px; font-weight: 700; color: var(--status-error);"><%= payroll.total_deductions.toLocaleString() %> افغانی</div>
+            </div>
+            
+            <div class="card" style="background-color: rgba(46, 160, 67, 0.15); border: 2px solid var(--status-success);">
+                <div style="font-size: 12px; color: var(--status-success); margin-bottom: 4px;"><%= t('hr.payroll.net_salary') %></div>
+                <div style="font-size: 32px; font-weight: 700; color: var(--status-success);"><%= payroll.net_salary.toLocaleString() %> افغانی</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Payment Information -->
+    <div class="card" style="margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px;">💳 <%= t('hr.payroll.payment_info') %></h3>
+        
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.due_date') %></div>
+                <div style="font-size: 14px;"><%= payroll.due_date || t('hr.payroll.not_set') %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.payment_date') %></div>
+                <div style="font-size: 14px; font-weight: 600;"><%= payroll.payment_date || t('hr.payroll.not_paid_yet') %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.payment_method') %></div>
+                <div style="font-size: 14px;"><%= payroll.payment_method || t('hr.payroll.not_set') %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.payment_reference') %></div>
+                <div style="font-size: 14px;"><%= payroll.payment_reference || '-' %></div>
+            </div>
+            
+            <div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('hr.payroll.paid_by') %></div>
+                <div style="font-size: 14px;"><%= payroll.paid_by || '-' %></div>
+            </div>
+        </div>
+        
+        <% if (payroll.payment_status === 'Unpaid') { %>
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                <h4 style="margin-bottom: 15px; font-size: 14px;"><%= t('hr.payroll.mark_as_paid') %></h4>
+                <form method="POST" action="/admin/hr/payroll/<%= payroll.id %>/mark-paid">
+                    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label for="payment_date"><%= t('hr.payroll.payment_date') %> *</label>
+                            <input type="text" name="payment_date" class="form-control" required data-datepicker="jalali" placeholder="مثلاً ۱۴۰۳/۰۱/۰۱" dir="ltr" id="payment_date">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment_method"><%= t('hr.payroll.payment_method') %> *</label>
+                            <select name="payment_method" class="form-control" required id="payment_method">
+                                <option value=""><%= t('forms.select') %></option>
+                                <option value="Cash"><%= t('hr.employees.cash') %></option>
+                                <option value="Bank Transfer"><%= t('hr.employees.bank_transfer') %></option>
+                                <option value="Other"><%= t('hr.employees.other') %></option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="payment_reference"><%= t('hr.payroll.payment_reference') %></label>
+                            <input type="text" name="payment_reference" class="form-control" placeholder="مثلاً: شماره رسید، شناسه تراکنش" dir="ltr" id="payment_reference">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="notes"><%= t('hr.payroll.notes') %></label>
+                        <textarea name="notes" class="form-control" rows="2" dir="rtl" id="notes"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary"><%= t('hr.payroll.mark_as_paid') %></button>
+                </form>
+            </div>
+        <% } %>
+    </div>
+    
+    <!-- Notes -->
+    <div class="card">
+        <h3 style="margin-bottom: 15px; font-size: 16px;">📝 <%= t('hr.payroll.notes') %></h3>
+        <div style="font-size: 14px; color: var(--text-main);"><%= payroll.notes || t('hr.payroll.no_notes') %></div>
+    </div>
+</div>

@@ -1,0 +1,192 @@
+<style>
+    code.customer-id-hover {
+        color: inherit !important;
+        background: transparent !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        font-weight: 600;
+    }
+    code.customer-id-hover:hover {
+        color: var(--accent-blue) !important;
+        text-decoration: underline !important;
+    }
+</style>
+
+<!-- Customer Info Modal -->
+<div id="customerDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); z-index: 9999; align-items: center; justify-content: center;" dir="<%= dir %>"
+    data-loading-customer="<%= t('customer_modal.loading_customer') %>"
+    data-error-loading="<%= t('customer_modal.error_loading') %>"
+    data-close-btn="<%= t('customer_modal.close') %>"
+    data-customer-id="<%= t('customer_modal.customer_id') %>"
+    data-registered-by="<%= t('customer_modal.registered_by') %>"
+    data-customer-type="<%= t('customer_modal.customer_type') %>"
+    data-contact-position="<%= t('customer_modal.contact_position') %>"
+    data-province="<%= t('customer_modal.province') %>"
+    data-agency="<%= t('customer_modal.agency') %>"
+    data-contact-address-title="<%= t('customer_modal.contact_address_title') %>"
+    data-primary-phone="<%= t('customer_modal.primary_phone') %>"
+    data-secondary-phone="<%= t('customer_modal.secondary_phone') %>"
+    data-email="<%= t('customer_modal.email') %>"
+    data-full-address="<%= t('customer_modal.full_address') %>"
+    data-financial-title="<%= t('customer_modal.financial_title') %>"
+    data-total-purchases="<%= t('customer_modal.total_purchases') %>"
+    data-total-payments="<%= t('customer_modal.total_payments') %>"
+    data-afghani="<%= t('customer_modal.afghani') %>"
+    data-agency-banner="<%= t('customer_modal.agency_banner') %>"
+    data-related-agency="<%= t('customer_modal.related_agency') %>"
+    data-not-specified="<%= t('customer_modal.not_specified') %>"
+    data-dealer="<%= t('customer_modal.dealer') %>"
+    data-company="<%= t('customer_modal.company') %>"
+    data-unknown="<%= t('customer_modal.unknown') %>">
+    <div style="background: var(--card-bg); border-radius: 12px; width: 90%; max-width: 650px; padding: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto;">
+        
+        <!-- Modal Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 20px;">
+            <h3 style="margin: 0; color: var(--text-main); font-weight: 800; font-size: 20px;" id="modal_customer_name">--</h3>
+            <button onclick="closeCustomerModal()" style="background: transparent; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div id="modal_loading" style="text-align: center; padding: 30px; color: var(--accent-blue);"><%= t('customer_modal.loading_customer') %></div>
+        
+        <div id="modal_body" style="display: none; color: var(--text-main);">
+            
+            <!-- Basic Info Grid -->
+            <div style="background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 18px; margin-bottom: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div><strong><%= t('customer_modal.customer_id') %>:</strong> <span id="modal_cust_id" style="color: var(--text-main);">-</span></div>
+                    <div><strong><%= t('customer_modal.registered_by') %>:</strong> <span id="modal_registered_by" style="color: var(--accent-blue); font-weight: 700;">-</span></div>
+                    <div id="box_cust_type"><strong><%= t('customer_modal.customer_type') %>:</strong> <span id="modal_cust_type">-</span></div>
+                    <div id="box_contact_position"><strong><%= t('customer_modal.contact_position') %>:</strong> <span id="modal_contact_position">-</span></div>
+                    <div><strong><%= t('customer_modal.province') %>:</strong> <span id="modal_province">-</span></div>
+                    <div><strong><%= t('customer_modal.agency') %>:</strong> <span id="modal_agency" style="color: var(--accent-blue); font-weight: 700;">-</span></div>
+                </div>
+            </div>
+
+            <!-- Contact & Address Section -->
+            <div style="margin-bottom: 22px;">
+                <h4 style="font-weight: 700; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 14px; font-size: 15px;">
+                    📞 <%= t('customer_modal.contact_address_title') %>
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                    <div><strong><%= t('customer_modal.primary_phone') %>:</strong> <span id="modal_phone" style="direction: ltr; display: inline-block;">-</span></div>
+                    <div><strong><%= t('customer_modal.secondary_phone') %>:</strong> <span id="modal_alt_phone" style="direction: ltr; display: inline-block;"><%= t('customer_modal.not_specified') %></span></div>
+                    <div><strong><%= t('customer_modal.email') %>:</strong> <span id="modal_email" style="direction: ltr; display: inline-block;">-</span></div>
+                    <div><strong><%= t('customer_modal.full_address') %>:</strong> <span id="modal_address">-</span></div>
+                </div>
+            </div>
+
+            <!-- Financial Position Section -->
+            <div style="margin-bottom: 20px;">
+                <h4 style="font-weight: 700; color: var(--text-main); border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 14px; font-size: 15px;">
+                    💳 <%= t('customer_modal.financial_title') %>
+                </h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 15px; font-weight: 700;">
+                    <div><span><%= t('customer_modal.total_purchases') %>:</span> <span id="modal_total_debit" style="color: var(--status-error); margin-right: 6px;">0 <%= t('customer_modal.afghani') %></span></div>
+                    <div><span><%= t('customer_modal.total_payments') %>:</span> <span id="modal_total_credit" style="color: var(--status-success); margin-right: 6px;">0 <%= t('customer_modal.afghani') %></span></div>
+                </div>
+            </div>
+
+            <!-- Agency Ownership Callout -->
+            <div id="modal_agency_banner" style="background-color: rgba(9, 105, 218, 0.1); border: 1px solid var(--accent-blue); border-radius: 8px; padding: 14px; display: flex; align-items: center; gap: 12px;">
+                <span style="font-size: 24px;">🏢</span>
+                <div>
+                    <strong style="color: var(--accent-blue); font-size: 12px; display: block; text-transform: uppercase;"><%= t('customer_modal.agency_banner') %></strong>
+                    <span style="font-size: 13px; color: var(--text-main);"><%= t('customer_modal.related_agency') %> <strong id="modal_agency_badge_name" style="color: var(--accent-blue);">-</strong></span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Modal Footer -->
+        <div style="margin-top: 25px; text-align: left; border-top: 1px solid var(--border-color); padding-top: 15px;">
+            <button onclick="closeCustomerModal()" class="btn" style="background-color: var(--text-main); color: var(--bg-color); border-radius: 6px; padding: 8px 20px; font-size: 13px;"><%= t('customer_modal.close') %></button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Helper function to format customer type
+function formatCustomerType(type) {
+    const modal = document.getElementById('customerDetailsModal');
+    if (!type) return modal.dataset.notSpecified || 'Not specified';
+    if (type.toLowerCase() === 'dealer') return modal.dataset.dealer || 'Dealer / Wholesaler';
+    if (type.toLowerCase() === 'company') return modal.dataset.company || 'Company / Contractor';
+    return type;
+}
+
+// Helper function to format alt phone
+function formatAltPhone(phone) {
+    const modal = document.getElementById('customerDetailsModal');
+    const notSpecified = modal.dataset.notSpecified || 'Not specified';
+    return (phone && phone.trim() !== '' && phone !== 'Not provided') ? phone : notSpecified;
+}
+
+// Customer Details Modal Functions
+function openCustomerModal(customerId) {
+    const modal = document.getElementById('customerDetailsModal');
+    const loadingDiv = document.getElementById('modal_loading');
+    const bodyDiv = document.getElementById('modal_body');
+    
+    modal.style.display = 'flex';
+    loadingDiv.style.display = 'block';
+    bodyDiv.style.display = 'none';
+    
+    fetch(`/api/reports/customer-details?customer_id=${customerId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                const errorLoading = modal.dataset.errorLoading || 'Error loading customer details';
+                loadingDiv.innerHTML = `<div style="color: var(--status-error);">${errorLoading}: ${data.error}</div>`;
+                return;
+            }
+            
+            const customer = data.customer;
+            const financial = data.financial;
+            const afghani = modal.dataset.afghani || 'AFN';
+            const notSpecified = modal.dataset.notSpecified || 'Not specified';
+            const unknown = modal.dataset.unknown || 'Unknown';
+            
+            document.getElementById('modal_customer_name').textContent = customer.name;
+            
+            // Clean Customer ID - extract only ID part before any dash/name
+            let cleanId = customer.customer_id || ('PAK-' + customer.id);
+            if (cleanId.includes('-')) {
+                const parts = cleanId.split('-');
+                if (parts.length >= 2) {
+                    cleanId = `${parts[0]}-${parts[1]}`;
+                }
+            }
+            document.getElementById('modal_cust_id').textContent = cleanId;
+            
+            document.getElementById('modal_cust_type').textContent = formatCustomerType(customer.customer_type);
+            document.getElementById('modal_contact_position').textContent = customer.contact_person_position || notSpecified;
+            document.getElementById('modal_province').textContent = customer.province;
+            document.getElementById('modal_phone').textContent = customer.phone || notSpecified;
+            document.getElementById('modal_alt_phone').textContent = formatAltPhone(customer.alternative_phone);
+            document.getElementById('modal_email').textContent = customer.email || notSpecified;
+            document.getElementById('modal_address').textContent = customer.address || notSpecified;
+            document.getElementById('modal_total_debit').textContent = financial.total_debit.toLocaleString() + ' ' + afghani;
+            document.getElementById('modal_total_credit').textContent = financial.total_credit.toLocaleString() + ' ' + afghani;
+            
+            // Display registering user (who owns the customer)
+            const registeredBy = data.creator ? data.creator.username : (customer.created_by || notSpecified);
+            document.getElementById('modal_registered_by').textContent = registeredBy;
+
+            // Display agency name from the user's agency_name field
+            const agencyName = data.creator && data.creator.agency_name ? data.creator.agency_name : notSpecified;
+            document.getElementById('modal_agency').textContent = agencyName;
+            document.getElementById('modal_agency_badge_name').textContent = agencyName;
+            document.getElementById('modal_agency_banner').style.display = 'flex';
+            
+            loadingDiv.style.display = 'none';
+            bodyDiv.style.display = 'block';
+        })
+        .catch(err => {
+            const errorLoading = modal.dataset.errorLoading || 'Error loading customer details';
+            loadingDiv.innerHTML = `<div style="color: var(--status-error);">${errorLoading}: ${err.message}</div>`;
+        });
+}
+
+function closeCustomerModal() {
+    document.getElementById('customerDetailsModal').style.display = 'none';
+}
+</script>

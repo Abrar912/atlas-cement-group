@@ -1,0 +1,308 @@
+<%- include('partials/header') %>
+
+<style>
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-pending {
+        background: #fff8c5;
+        color: #9a6700;
+    }
+    .status-assigned {
+        background: #ddf4ff;
+        color: #0969da;
+    }
+    .status-completed {
+        background: #dcfce7;
+        color: #059669;
+    }
+    .source-badge {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .source-direct {
+        background: #dcfce7;
+        color: #059669;
+    }
+    .source-admin {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+</style>
+
+<div style="border-bottom: 2px solid #eaeef2; padding-bottom: 10px; margin-bottom: 20px;" data-no-requests="<%= t('worker_quotation_requests.no_requests') %>" data-error-loading="<%= t('worker_quotation_requests.error_loading') %>" data-status-success="<%= t('worker_quotation_requests.status_success') %>" data-status-error="<%= t('worker_quotation_requests.status_error') %>" data-network-error="<%= t('worker_quotation_requests.network_error') %>" data-error-details="<%= t('worker_quotation_requests.error_details') %>" data-view="<%= t('worker_quotation_requests.view') %>" data-update="<%= t('worker_quotation_requests.update') %>" data-status-assigned="<%= t('worker_quotation_requests.status_assigned') %>" data-status-completed="<%= t('worker_quotation_requests.status_completed') %>" data-status-rejected="<%= t('worker_quotation_requests.status_rejected') %>" data-source-direct="<%= t('worker_quotation_requests.source_direct') %>" data-source-admin="<%= t('worker_quotation_requests.source_admin') %>">
+    <h2><%= t('worker_quotation_requests.title') %></h2>
+    <p style="font-size: 14px; color: #57606a;"><%= t('worker_quotation_requests.description') %></p>
+</div>
+
+<!-- Filter Row -->
+<div class="filter-row">
+    <div class="filter-item">
+        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; display: block;"><%= t('worker_quotation_requests.status') %></label>
+        <select id="filterStatus" class="form-control" onchange="loadQuotationRequests()">
+            <option value="all"><%= t('worker_quotation_requests.all') %></option>
+            <option value="assigned_to_worker"><%= t('worker_quotation_requests.status_assigned') %></option>
+            <option value="completed"><%= t('worker_quotation_requests.status_completed') %></option>
+            <option value="rejected"><%= t('worker_quotation_requests.status_rejected') %></option>
+        </select>
+    </div>
+    <div class="filter-item">
+        <label style="font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 5px; display: block;"><%= t('worker_quotation_requests.source') %></label>
+        <select id="filterSource" class="form-control" onchange="loadQuotationRequests()">
+            <option value="all"><%= t('worker_quotation_requests.all') %></option>
+            <option value="direct_customer"><%= t('worker_quotation_requests.source_direct') %></option>
+            <option value="admin_assigned"><%= t('worker_quotation_requests.source_admin') %></option>
+        </select>
+    </div>
+</div>
+
+<!-- Requests Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t('worker_quotation_requests.th_request_id') %></th>
+                    <th><%= t('worker_quotation_requests.th_customer') %></th>
+                    <th><%= t('worker_quotation_requests.th_company') %></th>
+                    <th><%= t('worker_quotation_requests.th_phone') %></th>
+                    <th><%= t('worker_quotation_requests.th_province') %></th>
+                    <th><%= t('worker_quotation_requests.th_cement_type') %></th>
+                    <th><%= t('worker_quotation_requests.th_quantity') %></th>
+                    <th><%= t('worker_quotation_requests.th_delivery_address') %></th>
+                    <th><%= t('worker_quotation_requests.th_source') %></th>
+                    <th><%= t('worker_quotation_requests.th_status') %></th>
+                    <th><%= t('worker_quotation_requests.th_date') %></th>
+                    <th><%= t('worker_quotation_requests.th_actions') %></th>
+                </tr>
+            </thead>
+            <tbody id="quotationRequestsTable">
+                <tr><td colspan="12" style="text-align: center; color: #57606a; padding: 20px;"><%= t('worker_quotation_requests.loading') %></td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div id="statusModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 500px; width: 90%;">
+        <h3 style="margin-bottom: 20px;"><%= t('worker_quotation_requests.update_status_title') %></h3>
+        <input type="hidden" id="statusRequestId">
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label><%= t('worker_quotation_requests.new_status') %></label>
+            <select id="statusSelect" class="form-control">
+                <option value="assigned_to_worker"><%= t('worker_quotation_requests.status_assigned') %></option>
+                <option value="completed"><%= t('worker_quotation_requests.status_completed') %></option>
+                <option value="rejected"><%= t('worker_quotation_requests.status_rejected') %></option>
+            </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 15px;">
+            <label><%= t('worker_quotation_requests.notes') %></label>
+            <textarea id="statusNotes" class="form-control" rows="3"></textarea>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button onclick="closeStatusModal()" class="btn" style="background: #6e7781; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;"><%= t('worker_quotation_requests.cancel') %></button>
+            <button onclick="confirmStatusUpdate()" class="btn" style="background: #2ea44f; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;"><%= t('worker_quotation_requests.update_status_btn') %></button>
+        </div>
+    </div>
+</div>
+
+<!-- Request Details Modal -->
+<div id="detailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: white; padding: 30px; border-radius: 8px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+        <h3 style="margin-bottom: 20px;"><%= t('worker_quotation_requests.details_title') %></h3>
+        <div id="requestDetailsContent"></div>
+        <div style="margin-top: 20px; text-align: right;">
+            <button onclick="closeDetailsModal()" class="btn" style="background: #6e7781; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;"><%= t('worker_quotation_requests.close') %></button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load quotation requests
+async function loadQuotationRequests() {
+    const status = document.getElementById('filterStatus').value;
+    const source = document.getElementById('filterSource').value;
+    const pageData = document.querySelector('[data-no-requests]');
+
+    const params = new URLSearchParams();
+    if (status !== 'all') params.append('status', status);
+    if (source !== 'all') params.append('source', source);
+
+    try {
+        const res = await fetch(`/api/worker/quotation-requests?${params}`);
+        const requests = await res.json();
+        const tbody = document.getElementById('quotationRequestsTable');
+
+        if (requests.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: #57606a; padding: 20px;">' + pageData.getAttribute('data-no-requests') + '</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = requests.map(req => {
+            const statusClass = getStatusClass(req.status);
+            const sourceClass = getSourceClass(req.source_type);
+            const sourceLabel = getSourceLabel(req.source_type);
+            const statusLabel = getStatusLabel(req.status);
+            const viewBtn = pageData.getAttribute('data-view');
+            const updateBtn = pageData.getAttribute('data-update');
+
+            return `
+                <tr>
+                    <td><strong>${esc(req.request_id)}</strong></td>
+                    <td>${esc(req.customer_name)}</td>
+                    <td>${esc(req.company_name || '-')}</td>
+                    <td>${esc(req.phone)}</td>
+                    <td>${esc(req.province)}</td>
+                    <td>${esc(req.cement_type)}</td>
+                    <td>${esc(req.quantity)}</td>
+                    <td>${esc(req.delivery_address)}</td>
+                    <td><span class="source-badge ${sourceClass}">${sourceLabel}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                    <td>${esc(new Date(req.created_at).toLocaleDateString())}</td>
+                    <td>
+                        <button onclick="viewDetails(${Number(req.id)})" style="background: #0969da; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 5px;">${viewBtn}</button>
+                        <button onclick="openStatusModal(${Number(req.id)})" style="background: #2ea44f; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">${updateBtn}</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading quotation requests:', error);
+        const pageData = document.querySelector('[data-no-requests]');
+        document.getElementById('quotationRequestsTable').innerHTML = '<tr><td colspan="12" style="text-align: center; color: #dc2626; padding: 20px;">' + pageData.getAttribute('data-error-loading') + '</td></tr>';
+    }
+}
+
+// Open status update modal
+function openStatusModal(requestId) {
+    document.getElementById('statusRequestId').value = requestId;
+    document.getElementById('statusModal').style.display = 'flex';
+}
+
+// Close status modal
+function closeStatusModal() {
+    document.getElementById('statusModal').style.display = 'none';
+}
+
+// Confirm status update
+async function confirmStatusUpdate() {
+    const requestId = document.getElementById('statusRequestId').value;
+    const newStatus = document.getElementById('statusSelect').value;
+    const notes = document.getElementById('statusNotes').value;
+    const pageData = document.querySelector('[data-no-requests]');
+    const statusSuccessMsg = pageData.getAttribute('data-status-success');
+    const statusErrorMsg = pageData.getAttribute('data-status-error');
+    const networkErrorMsg = pageData.getAttribute('data-network-error');
+
+    try {
+        const res = await fetch('/api/worker/quotation-requests/update-status', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ request_id: requestId, status: newStatus, notes: notes })
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+            closeStatusModal();
+            loadQuotationRequests();
+            alert(statusSuccessMsg);
+        } else {
+            alert(statusErrorMsg + (result.error || ''));
+        }
+    } catch (error) {
+        console.error('Error updating status:', error);
+        alert(networkErrorMsg);
+    }
+}
+
+// View request details
+async function viewDetails(requestId) {
+    const pageData = document.querySelector('[data-no-requests]');
+    const errorDetailsMsg = pageData.getAttribute('data-error-details');
+    
+    try {
+        const res = await fetch(`/api/worker/quotation-requests/${requestId}`);
+        const req = await res.json();
+
+        const content = `
+            <div style="line-height: 1.8;">
+                <p><strong><%= t('worker_quotation_requests.detail_request_id') %>:</strong> ${esc(req.request_id)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_customer_name') %>:</strong> ${esc(req.customer_name)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_company_name') %>:</strong> ${esc(req.company_name || '-')}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_phone') %>:</strong> ${esc(req.phone)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_email') %>:</strong> ${esc(req.email || '-')}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_province') %>:</strong> ${esc(req.province)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_delivery_address') %>:</strong> ${esc(req.delivery_address)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_cement_type') %>:</strong> ${esc(req.cement_type)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_quantity') %>:</strong> ${esc(req.quantity)} tons</p>
+                <p><strong><%= t('worker_quotation_requests.detail_message') %>:</strong> ${esc(req.message || '-')}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_status') %>:</strong> ${esc(req.status)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_source') %>:</strong> ${esc(req.source_type)}</p>
+                <p><strong><%= t('worker_quotation_requests.detail_date') %>:</strong> ${esc(new Date(req.created_at).toLocaleString())}</p>
+            </div>
+        `;
+
+        document.getElementById('requestDetailsContent').innerHTML = content;
+        document.getElementById('detailsModal').style.display = 'flex';
+    } catch (error) {
+        console.error('Error loading request details:', error);
+        alert(errorDetailsMsg);
+    }
+}
+
+// Close details modal
+function closeDetailsModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+}
+
+// Helper functions
+function getStatusClass(status) {
+    switch(status) {
+        case 'assigned_to_worker': return 'status-assigned';
+        case 'completed': return 'status-completed';
+        case 'rejected': return 'status-pending';
+        default: return 'status-pending';
+    }
+}
+
+function getStatusLabel(status) {
+    const pageData = document.querySelector('[data-no-requests]');
+    switch(status) {
+        case 'assigned_to_worker': return pageData.getAttribute('data-status-assigned');
+        case 'completed': return pageData.getAttribute('data-status-completed');
+        case 'rejected': return pageData.getAttribute('data-status-rejected');
+        default: return status;
+    }
+}
+
+function getSourceClass(source) {
+    switch(source) {
+        case 'direct_customer': return 'source-direct';
+        case 'admin_assigned': return 'source-admin';
+        default: return 'source-direct';
+    }
+}
+
+function getSourceLabel(source) {
+    const pageData = document.querySelector('[data-no-requests]');
+    switch(source) {
+        case 'direct_customer': return pageData.getAttribute('data-source-direct');
+        case 'admin_assigned': return pageData.getAttribute('data-source-admin');
+        default: return source;
+    }
+}
+
+// Initial load
+document.addEventListener('DOMContentLoaded', loadQuotationRequests);
+</script>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,110 @@
+<%- include('../partials/header') %>
+
+<div class="card">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+        <h2 style="font-size: 22px; font-weight: 700; margin: 0;">⚙ <%= t('hr.work_schedules.title') %></h2>
+        <button class="btn btn-primary" onclick="toggleAddForm()" id="addFormToggleBtn" style="display: inline-flex; align-items: center; gap: 6px;">
+            <span class="chevron" id="addFormChevron" style="transition: transform 0.2s;">▶</span> <%= t('hr.attendance.add') || 'Add' %> <%= t('hr.work_schedules.name') || 'Schedule' %>
+        </button>
+    </div>
+
+    <!-- Collapsible Add Schedule Form -->
+    <div class="collapsible-body" id="addScheduleForm">
+        <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+            <h3 style="margin: 0 0 16px 0; font-size: 16px; font-weight: 700;"><%= t('hr.attendance.add') || 'Add' %> <%= t('hr.work_schedules.name') || 'Schedule' %></h3>
+            <form method="POST" action="/admin/hr/schedules" id="addScheduleFormInner" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600;" for="name"><%= t('hr.work_schedules.name') %> <span style="color: red;">*</span></label>
+                    <input type="text" name="name" class="form-control" placeholder="<%= t('hr.work_schedules.name') %>" required style="width: 100%;" id="name">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600;" for="grace_period"><%= t('hr.work_schedules.grace_period') %> <span style="color: red;">*</span></label>
+                    <input type="number" name="grace_period" class="form-control" value="15" min="0" required style="width: 100%;" id="grace_period">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600;" for="start_time"><%= t('hr.work_schedules.check_in') %> <span style="color: red;">*</span></label>
+                    <input type="time" name="start_time" class="form-control" value="09:00" required style="width: 100%;" id="start_time">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600;" for="end_time"><%= t('hr.work_schedules.check_out') %> <span style="color: red;">*</span></label>
+                    <input type="time" name="end_time" class="form-control" value="17:00" required style="width: 100%;" id="end_time">
+                </div>
+                <div style="grid-column: 1 / -1;">
+                    <label style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600;"><%= t('hr.work_schedules.working_days') %></label>
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <% ['sat','sun','mon','tue','wed','thu','fri'].forEach(function(d) { %>
+                            <label style="display: inline-flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                                <input type="checkbox" name="working_days[]" value="<%= d %>" <%= ['sat','sun','mon','tue','wed','thu'].includes(d) ? 'checked' : '' %> style="width: auto;">
+                                <%= t('hr.days.' + d) %>
+                            </label>
+                        <% }); %>
+                    </div>
+                </div>
+                <div style="grid-column: 1 / -1; display: flex; gap: 8px; justify-content: flex-end; padding-top: 8px; border-top: 1px solid var(--border-color);">
+                    <button type="submit" class="btn btn-primary"><%= t('hr.work_schedules.add') %></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Schedule Cards Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        <% if (schedules && schedules.length > 0) { %>
+            <% schedules.forEach(function(s) { %>
+                <div class="schedule-card">
+                    <div class="schedule-card-title"><%= s.name %></div>
+                    <div class="schedule-card-meta">
+                        <div class="schedule-card-row">
+                            <span>🕐</span>
+                            <span class="time-range">
+                                <%= s.start_time || '--:--' %> <span class="time-range-arrow">→</span> <%= s.end_time || '--:--' %>
+                            </span>
+                        </div>
+                        <div class="schedule-card-row">
+                            <span>⏳</span>
+                            <span><%= t('hr.work_schedules.grace_period') %>: <strong><%= s.grace_period_minutes %> <%= t('hr.dashboard.minutes_short') %></strong></span>
+                        </div>
+                    </div>
+                    <div class="day-badges">
+                        <% var fullDays = ['saturday','sunday','monday','tuesday','wednesday','thursday','friday']; %>
+                        <% var shortDays = ['Sa','Su','Mo','Tu','We','Th','Fr']; %>
+                        <% var abbrDays = ['sat','sun','mon','tue','wed','thu','fri']; %>
+                        <% var daysArr = []; if (s.working_days) { daysArr = s.working_days.split(',').map(function(d){return d.trim().toLowerCase();}); } %>
+                        <% for (var i = 0; i < abbrDays.length; i++) { %>
+                            <% if (daysArr.includes(abbrDays[i])) { %>
+                                <span class="day-badge day-badge-active" title="<%= fullDays[i] %>"><%= shortDays[i] %></span>
+                            <% } else { %>
+                                <span class="day-badge day-badge-inactive" title="<%= fullDays[i] %>"><%= shortDays[i] %></span>
+                            <% } %>
+                        <% } %>
+                    </div>
+                    <div class="schedule-card-actions">
+                        <a href="/admin/hr/schedules/<%= s.id %>/edit" class="btn" style="flex: 1; text-align: center; background: var(--accent-blue); color: #fff; border: none; border-radius: 6px; padding: 8px 12px; text-decoration: none; font-size: 13px; font-weight: 500;">
+                            ✏ <%= t('hr.work_schedules.edit') %>
+                        </a>
+                        <form method="POST" action="/admin/hr/schedules/<%= s.id %>/delete" style="flex: 1;" onsubmit="return confirm('<%= t('hr.work_schedules.delete_confirm') %>');">
+                            <button type="submit" class="btn" style="width: 100%; background: #ef4444; color: #fff; border: none; border-radius: 6px; padding: 8px 12px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                                🗑 <%= t('hr.work_schedules.delete') %>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div style="grid-column: 1 / -1; text-align: center; padding: 50px 20px; color: var(--text-muted);">
+                <%= t('hr.work_schedules.no_schedules') %>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+function toggleAddForm() {
+    var form = document.getElementById('addScheduleForm');
+    var chevron = document.getElementById('addFormChevron');
+    form.classList.toggle('open');
+    chevron.style.transform = form.classList.contains('open') ? 'rotate(90deg)' : 'rotate(0deg)';
+}
+</script>
+
+<%- include('../partials/footer') %>

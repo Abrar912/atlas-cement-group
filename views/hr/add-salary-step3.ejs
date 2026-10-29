@@ -1,0 +1,273 @@
+<%- include('../partials/header') %>
+
+<style>
+.wz-wrap{max-width:920px;margin:0 auto}
+.wz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.wz-title{font-size:23px;font-weight:800;margin:0;letter-spacing:-.3px}
+.wz-sub{font-size:13px;color:var(--text-muted,#6b7280);margin:5px 0 0 0}
+.wz-steps{display:flex;align-items:center;gap:8px;margin-bottom:26px;flex-wrap:wrap}
+.wz-step{display:flex;align-items:center;gap:9px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border-color,#d1d5db);font-size:12.5px;font-weight:700;color:var(--text-muted,#6b7280);background:transparent;white-space:nowrap}
+.wz-step-num{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;background:rgba(107,114,128,.15);color:inherit}
+.wz-step-active{border-color:var(--primary,#FF6F00);color:var(--primary,#FF6F00);background:rgba(255,111,0,.06)}
+.wz-step-active .wz-step-num{background:var(--primary,#FF6F00);color:#fff}
+.wz-step-arrow{color:var(--text-muted,#6b7280);font-size:13px;opacity:.6}
+/* banner */
+.wz-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--primary,#FF6F00);color:#fff;padding:14px 18px;border-radius:12px;margin-bottom:18px}
+.wz-banner-name{font-size:16px;font-weight:800}
+.wz-banner-meta{font-size:12.5px;opacity:.9;display:flex;gap:14px;flex-wrap:wrap;margin-top:3px}
+.wz-banner-meta span{white-space:nowrap}
+/* panels */
+.wz-panel{border:1px solid var(--border-color,#d1d5db);border-radius:14px;padding:16px 18px;background:var(--bg-color,#fafafa);margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+[data-theme="dark"] .wz-panel{box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.wz-panel-head{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:800;margin-bottom:14px}
+.wz-panel-head::after{content:"";flex:1;height:1px;background:var(--border-color,#d1d5db)}
+/* info grid */
+.wz-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:6px}
+.wz-info-cell{border:1px solid var(--border-color,#e5e7eb);border-radius:10px;padding:9px 12px;background:var(--card-bg,#fff)}
+.wz-info-label{font-size:10.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.wz-info-value{font-size:14.5px;font-weight:800;margin-top:2px}
+/* amount rows */
+.wz-sum{width:100%;border-collapse:collapse;font-size:14.5px;margin-top:8px}
+.wz-sum td{padding:12px 8px;border-bottom:1px solid rgba(107,114,128,.16)}
+.wz-sum-label{font-weight:800}
+.wz-sum-val{text-align:end;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.wz-sum-neg{color:#b91c1c}
+.wz-net{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:2px solid var(--primary,#FF6F00);border-radius:14px;padding:16px 20px;background:rgba(255,111,0,.05);margin-top:14px}
+.wz-net-label{font-size:14px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.wz-net-value{font-size:26px;font-weight:900;font-variant-numeric:tabular-nums}
+.wz-note{font-size:12.5px;font-weight:700;color:var(--text-muted,#6b7280);margin-top:12px;line-height:1.5}
+/* boxes */
+.wz-okbox{border:1.5px solid rgba(16,185,129,.4);background:rgba(16,185,129,.09);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.wz-okbox-title{font-size:15px;font-weight:900;color:#047857;display:flex;align-items:center;gap:8px}
+[data-theme="dark"] .wz-okbox-title{color:#3fb950}
+.wz-okbox-meta{font-size:13px;font-weight:700;margin-top:6px;display:flex;gap:16px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.wz-errbox{border:1.5px solid rgba(239,68,68,.4);background:rgba(239,68,68,.08);border-radius:12px;padding:14px 16px;margin-bottom:16px}
+.wz-errbox-title{font-size:14px;font-weight:900;color:#b91c1c}
+[data-theme="dark"] .wz-errbox-title{color:#f85149}
+.wz-errbox ul{margin:8px 0 0;padding-inline-start:20px;font-size:13px;font-weight:700;color:#b91c1c}
+[data-theme="dark"] .wz-errbox ul{color:#f85149}
+.wz-warnbox{border:1.5px solid rgba(245,158,11,.4);background:rgba(245,158,11,.09);border-radius:12px;padding:12px 16px;margin-bottom:16px;font-size:13px;font-weight:700;color:#b45309}
+[data-theme="dark"] .wz-warnbox{color:#fbbf24}
+.wz-chip{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:11.5px;font-weight:800;white-space:nowrap;background:rgba(245,158,11,.14);color:#b45309;margin:10px 4px 0 0}
+.wz-warn{font-size:12px;font-weight:700;color:#b45309;background:rgba(245,158,11,.09);border-inline-start:3px solid #f59e0b;border-radius:7px;padding:7px 11px;margin-top:6px}
+/* footer */
+.wz-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:20px;padding-top:16px;border-top:1px solid var(--border-color,#d1d5db)}
+.wz-back{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--text-muted,#6b7280);text-decoration:none;padding:10px 16px;border-radius:10px;border:1.5px solid var(--border-color,#d1d5db)}
+.wz-back:hover{color:inherit;background:rgba(107,114,128,.06)}
+.wz-actions{display:flex;gap:10px;flex-wrap:wrap}
+.wz-print{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;padding:11px 20px;border-radius:10px;border:1.5px solid var(--border-color,#d1d5db);background:transparent;color:inherit;cursor:pointer}
+.wz-print:hover{background:rgba(107,114,128,.06)}
+.wz-accept{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:800;padding:12px 26px;border:none;border-radius:10px;background:var(--primary,#FF6F00);color:#fff;cursor:pointer;transition:filter .15s}
+.wz-accept:hover{filter:brightness(1.08)}
+@media (max-width:640px){
+  .wz-footer{flex-direction:column-reverse;align-items:stretch}
+  .wz-back,.wz-actions{width:100%}
+  .wz-actions .wz-print,.wz-actions form{flex:1}
+  .wz-accept{width:100%;justify-content:center}
+}
+[dir="rtl"] .wz-step-arrow{transform:scaleX(-1)}
+@media print {
+  .wz-steps,.wz-footer,.wz-banner a{display:none !important}
+  .wz-panel{border:none;box-shadow:none;background:#fff;padding:0}
+  .wz-banner{background:#fff;color:#000;border:1.5px solid #000}
+  .wz-net{border-color:#000;background:#fff}
+  .card{border:none;box-shadow:none}
+}
+</style>
+
+<%
+    function wzMoney(cents) {
+        var n = Number(cents);
+        if (!isFinite(n)) return '—';
+        return (n / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + t('hr.dashboard.afghani');
+    }
+    var WZ_BL = {
+        NO_SCHEDULE: 'hr.payws.bl_NO_SCHEDULE', SCHEDULE_INVALID: 'hr.payws.bl_SCHEDULE_INVALID',
+        EMPLOYMENT_DATA_INVALID: 'hr.payws.bl_EMPLOYMENT_DATA_INVALID', SALARY_HISTORY_MISSING: 'hr.payws.bl_SALARY_HISTORY_MISSING',
+        SALARY_HISTORY_INVALID: 'hr.payws.bl_SALARY_HISTORY_INVALID', SALARY_HISTORY_GAP: 'hr.payws.bl_SALARY_HISTORY_GAP',
+        SALARY_HISTORY_OVERLAP: 'hr.payws.bl_SALARY_HISTORY_OVERLAP', MISSING_CHECK_IN: 'hr.payws.bl_MISSING_CHECK_IN',
+        MISSING_ATTENDANCE: 'hr.payws.bl_MISSING_ATTENDANCE', PENDING_EXCEPTION: 'hr.payws.bl_PENDING_EXCEPTION',
+        EXCEPTION_INVALID: 'hr.payws.bl_EXCEPTION_INVALID', CORRECTED_ATTENDANCE_MISSING: 'hr.payws.bl_CORRECTED_ATTENDANCE_MISSING',
+        NO_SOURCE_ROWS: 'hr.payws.bl_NO_SOURCE_ROWS', NO_ELIGIBLE_ROWS: 'hr.payws.bl_NO_ELIGIBLE_ROWS',
+        NO_EXPECTED_TIME: 'hr.payws.bl_NO_EXPECTED_TIME', GRACE_NOT_CONFIGURED: 'hr.payws.bl_GRACE_NOT_CONFIGURED'
+    };
+    var ent = entitlement;
+    var entWarns = [];
+    if (ent && ent.blockers) ent.blockers.forEach(function (b) { entWarns.push(WZ_BL[b.code] ? t(WZ_BL[b.code]) : b.code); });
+    if (ent && ent.review_items) ent.review_items.forEach(function (r) {
+        // Hidden on request: purely informational (engine ignores the stored
+        // late_minutes column and uses computed minutes - the money math is
+        // unaffected). Other review codes still show normally.
+        if (r.code === 'STORED_LATE_MINUTES_IGNORED') return;
+        var key = WZ_BL[r.code];
+        var label = key ? t(key) : r.code;
+        if (entWarns.indexOf(label) === -1) entWarns.push(label);
+    });
+    var remainingCents = saved ? saved.salaryRemainingAfterCents : remainingAfterCents;
+    var partial = !saved && sel.salary && salaryCapCents !== null && salaryCents !== null && salaryCents < salaryCapCents;
+%>
+
+<div class="card">
+    <div class="wz-wrap">
+        <!-- Header -->
+        <div class="wz-head">
+            <div>
+                <h2 class="wz-title">💰 <%= t('hr.addSalary.title') %></h2>
+                <p class="wz-sub"><%= t('hr.addSalary.wizard_subtitle') %></p>
+            </div>
+        </div>
+
+        <!-- Step indicator -->
+        <div class="wz-steps">
+            <span class="wz-step"><span class="wz-step-num">1</span> <%= t('hr.addSalary.step1_title') %></span>
+            <span class="wz-step-arrow">→</span>
+            <span class="wz-step"><span class="wz-step-num">2</span> <%= t('hr.addSalary.step2_title') %></span>
+            <span class="wz-step-arrow">→</span>
+            <span class="wz-step wz-step-active"><span class="wz-step-num">3</span> <%= t('hr.addSalary.step3_title') %></span>
+        </div>
+
+        <!-- Employee banner -->
+        <div class="wz-banner">
+            <div>
+                <div class="wz-banner-name"><%= employee.full_name %></div>
+                <div class="wz-banner-meta">
+                    <span><%= employee.department_name || '—' %></span>
+                    <% if (employee.position) { %><span><%= employee.position %></span><% } %>
+                    <span dir="ltr"><%= periodLabel %></span>
+                    <span dir="ltr">↔ <%= paymentDate %></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved success -->
+        <% if (saved) { %>
+        <div class="wz-okbox">
+            <div class="wz-okbox-title">✅ <%= t('hr.addSalary.saved_banner') %></div>
+            <div class="wz-okbox-meta">
+                <span><%= t('hr.addSalary.lbl_serial') %>: <b dir="ltr"><%= saved.serial %></b></span>
+                <span>#<%= saved.paymentId %></span>
+                <span dir="ltr"><%= saved.finalizedAt %></span>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Errors -->
+        <% if (errors && errors.length) { %>
+        <div class="wz-errbox">
+            <div class="wz-errbox-title">⛔ <%= t('hr.addSalary.err_refused') %></div>
+            <ul>
+                <% errors.forEach(function(e) { %><li><%= e %></li><% }); %>
+            </ul>
+        </div>
+        <% } %>
+
+        <!-- Duplicate warning -->
+        <% if (!saved && existingPayment) { %>
+        <div class="wz-warnbox">⚠️ <%= t('hr.addSalary.warn_duplicate') %> (#<%= existingPayment.id %>)</div>
+        <% } %>
+
+        <!-- Panel: summary -->
+        <div class="wz-panel">
+            <div class="wz-panel-head"><span><%= t('hr.addSalary.sum_panel') %></span></div>
+
+            <div class="wz-info">
+                <div class="wz-info-cell">
+                    <div class="wz-info-label"><%= t('hr.addSalary.lbl_employee') %></div>
+                    <div class="wz-info-value"><%= employee.full_name %></div>
+                </div>
+                <div class="wz-info-cell">
+                    <div class="wz-info-label"><%= t('hr.addSalary.lbl_department') %></div>
+                    <div class="wz-info-value"><%= employee.department_name || '—' %></div>
+                </div>
+                <div class="wz-info-cell">
+                    <div class="wz-info-label"><%= t('hr.addSalary.lbl_period_month') %></div>
+                    <div class="wz-info-value" dir="ltr"><%= periodLabel %></div>
+                </div>
+                <div class="wz-info-cell">
+                    <div class="wz-info-label"><%= t('hr.addSalary.lbl_payment_date') %></div>
+                    <div class="wz-info-value" dir="ltr"><%= paymentDate %></div>
+                </div>
+            </div>
+
+            <table class="wz-sum">
+                <% if (sel.salary) { %>
+                <tr>
+                    <td class="wz-sum-label"><%= t('hr.addSalary.pay_salary') %></td>
+                    <td class="wz-sum-val" dir="ltr"><%= wzMoney(salaryCents) %></td>
+                </tr>
+                <% } %>
+                <% if (sel.ot) { %>
+                <tr>
+                    <td class="wz-sum-label"><%= t('hr.addSalary.pay_ot') %></td>
+                    <td class="wz-sum-val" dir="ltr"><%= wzMoney(otCents) %></td>
+                </tr>
+                <% } %>
+                <% if (sel.advance) { %>
+                <tr>
+                    <td class="wz-sum-label"><%= t('hr.addSalary.pay_advance') %></td>
+                    <td class="wz-sum-val wz-sum-neg" dir="ltr">− <%= wzMoney(advCents) %></td>
+                </tr>
+                <% } %>
+            </table>
+
+            <div class="wz-net">
+                <span class="wz-net-label"><%= t('hr.addSalary.net_total') %></span>
+                <span class="wz-net-value" dir="ltr"><%= wzMoney(netCents) %></span>
+            </div>
+
+            <% if (sel.salary && remainingCents !== null && remainingCents !== undefined) { %>
+            <div class="wz-note">
+                <%= t('hr.addSalary.lbl_remaining_after') %>: <b dir="ltr"><%= wzMoney(remainingCents) %></b>
+                <% if (partial) { %><br><%= t('hr.addSalary.note_partial') %><% } %>
+            </div>
+            <% } %>
+
+            <% if (!saved && entWarns.length) { %>
+                <% entWarns.forEach(function(w) { %><div class="wz-warn">⚠️ <%= w %></div><% }); %>
+            <% } %>
+
+            <% if (lateWarnCents !== null && lateWarnCents !== undefined) { %>
+            <div class="wz-warn">⚠️ <%= t('hr.addSalary.warn_late_not_deducted') %> (<b dir="ltr"><%= wzMoney(lateWarnCents) %></b>)</div>
+            <% } %>
+        </div>
+
+        <!-- Footer -->
+        <div class="wz-footer">
+            <% if (saved) { %>
+                <a href="/admin/hr/payroll" class="wz-back">← <%= t('hr.addSalary.lbl_done') %></a>
+                <div class="wz-actions">
+                    <button type="button" class="wz-print no-print" onclick="window.print()">🖨 <%= t('hr.addSalary.print') %></button>
+                </div>
+            <% } else { %>
+                <a href="<%= backUrl %>" class="wz-back">← <%= t('hr.addSalary.back') %></a>
+                <div class="wz-actions no-print">
+                    <button type="button" class="wz-print" onclick="window.print()">🖨 <%= t('hr.addSalary.print') %></button>
+                    <% if (!errors.length) { %>
+                    <form method="POST" action="/admin/hr/payroll/add-salary/step3">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <input type="hidden" name="employee_id" value="<%= employee.id %>">
+                        <input type="hidden" name="period_month" value="<%= periodLabel %>">
+                        <input type="hidden" name="payment_date" value="<%= paymentDate %>">
+                        <% if (sel.salary) { %>
+                        <input type="hidden" name="pay_salary" value="1">
+                        <input type="hidden" name="salary_amount" value="<%= raw.salary_amount %>">
+                        <input type="hidden" name="deduct_late" value="<%= lateApplied ? '1' : '0' %>">
+                        <% } %>
+                        <% if (sel.ot) { %>
+                        <input type="hidden" name="pay_ot" value="1">
+                        <input type="hidden" name="ot_amount" value="<%= raw.ot_amount %>">
+                        <% } %>
+                        <% if (sel.advance) { %>
+                        <input type="hidden" name="pay_advance" value="1">
+                        <input type="hidden" name="advance_amount" value="<%= raw.advance_amount %>">
+                        <% } %>
+                        <button type="submit" class="wz-accept">✅ <%= t('hr.addSalary.accept') %></button>
+                    </form>
+                    <% } %>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

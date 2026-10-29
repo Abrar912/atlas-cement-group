@@ -1,0 +1,153 @@
+<%- include('../partials/header') %>
+
+<style>
+.wz-wrap{max-width:760px;margin:0 auto}
+.wz-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:22px}
+.wz-title{font-size:23px;font-weight:800;margin:0;letter-spacing:-.3px}
+.wz-sub{font-size:13px;color:var(--text-muted,#6b7280);margin:5px 0 0 0}
+/* step indicator */
+.wz-steps{display:flex;align-items:center;gap:8px;margin-bottom:26px;flex-wrap:wrap}
+.wz-step{display:flex;align-items:center;gap:9px;padding:8px 16px;border-radius:999px;border:1.5px solid var(--border-color,#d1d5db);font-size:12.5px;font-weight:700;color:var(--text-muted,#6b7280);background:transparent;white-space:nowrap}
+.wz-step-num{width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;background:rgba(107,114,128,.15);color:inherit}
+.wz-step-active{border-color:var(--primary,#FF6F00);color:var(--primary,#FF6F00);background:rgba(255,111,0,.06)}
+.wz-step-active .wz-step-num{background:var(--primary,#FF6F00);color:#fff}
+.wz-step-arrow{color:var(--text-muted,#6b7280);font-size:13px;opacity:.6}
+/* form card */
+.wz-card{border:1px solid var(--border-color,#d1d5db);border-radius:16px;padding:26px 26px 22px;background:var(--bg-color,#fafafa);box-shadow:0 1px 3px rgba(15,23,42,.05)}
+[data-theme="dark"] .wz-card{box-shadow:0 1px 3px rgba(0,0,0,.4)}
+.wz-card-title{font-size:16px;font-weight:800;margin:0 0 18px 0;display:flex;align-items:center;gap:9px}
+.wz-card-title::after{content:"";flex:1;height:1px;background:var(--border-color,#d1d5db)}
+.wz-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.wz-field{display:flex;flex-direction:column;gap:6px}
+.wz-field-full{grid-column:1 / -1}
+.wz-label{font-size:11.5px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.wz-label .wz-req{color:#ef4444;margin-inline-start:2px}
+.wz-input,.wz-select{padding:11px 13px;border:1.5px solid var(--border-color,#d1d5db);border-radius:10px;font-size:14px;font-weight:600;background:var(--card-bg,#fff);color:inherit;width:100%;box-sizing:border-box;transition:border-color .15s, box-shadow .15s}
+.wz-input:focus,.wz-select:focus{outline:none;border-color:var(--primary,#FF6F00);box-shadow:0 0 0 3px rgba(255,111,0,.12)}
+.wz-input::placeholder{color:var(--text-muted,#9ca3af);font-weight:500}
+.wz-hint{font-size:11.5px;color:var(--text-muted,#6b7280);font-variant-numeric:tabular-nums}
+.wz-err{display:none;font-size:12px;font-weight:700;color:#b91c1c;background:rgba(239,68,68,.1);border-radius:7px;padding:5px 9px}
+.wz-field-invalid .wz-err{display:block}
+.wz-field-invalid .wz-input,.wz-field-invalid .wz-select{border-color:#ef4444}
+/* footer */
+.wz-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:22px;padding-top:18px;border-top:1px solid var(--border-color,#d1d5db)}
+.wz-back{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--text-muted,#6b7280);text-decoration:none;padding:10px 16px;border-radius:10px;border:1.5px solid var(--border-color,#d1d5db)}
+.wz-back:hover{color:inherit;background:rgba(107,114,128,.06)}
+.wz-next{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:800;padding:12px 26px;border:none;border-radius:10px;background:var(--primary,#FF6F00);color:#fff;cursor:pointer;transition:filter .15s}
+.wz-next:hover{filter:brightness(1.08)}
+@media (max-width:640px){
+  .wz-grid{grid-template-columns:1fr}
+  .wz-card{padding:18px}
+  .wz-footer{flex-direction:column-reverse;align-items:stretch}
+  .wz-back,.wz-next{justify-content:center}
+}
+[dir="rtl"] .wz-step-arrow{transform:scaleX(-1)}
+</style>
+
+<div class="card">
+    <div class="wz-wrap">
+        <!-- Header -->
+        <div class="wz-head">
+            <div>
+                <h2 class="wz-title">💰 <%= t('hr.addSalary.title') %></h2>
+                <p class="wz-sub"><%= t('hr.addSalary.wizard_subtitle') %></p>
+            </div>
+        </div>
+
+        <!-- Step indicator -->
+        <div class="wz-steps">
+            <span class="wz-step wz-step-active">
+                <span class="wz-step-num">1</span> <%= t('hr.addSalary.step1_title') %>
+            </span>
+            <span class="wz-step-arrow">→</span>
+            <span class="wz-step">
+                <span class="wz-step-num">2</span> <%= t('hr.addSalary.step2_title') %>
+            </span>
+            <span class="wz-step-arrow">→</span>
+            <span class="wz-step">
+                <span class="wz-step-num">3</span> <%= t('hr.addSalary.step3_title') %>
+            </span>
+        </div>
+
+        <!-- Form -->
+        <form method="GET" action="/admin/hr/payroll/add-salary/step2" class="wz-card" id="wzForm" novalidate>
+            <h3 class="wz-card-title"><%= t('hr.addSalary.step1_title') %></h3>
+            <div class="wz-grid">
+                <div class="wz-field wz-field-full" id="f-emp">
+                    <label class="wz-label" for="employee_id"><%= t('hr.addSalary.select_employee') %><span class="wz-req">*</span></label>
+                    <select name="employee_id" id="employee_id" class="wz-select" required>
+                        <option value=""><%= t('hr.addSalary.select_placeholder') %></option>
+                        <% employees.forEach(function(emp) { %>
+                            <option value="<%= emp.id %>"><%= emp.full_name %><% if (emp.department_name) { %> — <%= emp.department_name %><% } %></option>
+                        <% }); %>
+                    </select>
+                    <span class="wz-err" id="e-emp"><%= t('hr.addSalary.err_employee_required') %></span>
+                </div>
+
+                <div class="wz-field" id="f-month">
+                    <label class="wz-label" for="period_month"><%= t('hr.addSalary.lbl_period_month') %><span class="wz-req">*</span></label>
+                    <input type="text" name="period_month" id="period_month" class="wz-input" dir="ltr"
+                           value="<%= defaultMonth %>" placeholder="1405/07" required>
+                    <span class="wz-hint"><%= t('hr.addSalary.period_hint') %></span>
+                    <span class="wz-err" id="e-month"><%= t('hr.addSalary.err_month_format') %></span>
+                </div>
+
+                <div class="wz-field" id="f-date">
+                    <label class="wz-label" for="payment_date"><%= t('hr.addSalary.lbl_payment_date') %><span class="wz-req">*</span></label>
+                    <input type="text" name="payment_date" id="payment_date" class="wz-input" dir="ltr"
+                           value="<%= defaultDate %>" placeholder="1405/07/14" required>
+                    <span class="wz-hint"><%= t('hr.addSalary.date_hint') %></span>
+                    <span class="wz-err" id="e-date"><%= t('hr.addSalary.err_date_format') %></span>
+                </div>
+            </div>
+
+            <div class="wz-footer">
+                <a href="/admin/hr/payroll" class="wz-back">← <%= t('hr.payroll.back_to_payroll') %></a>
+                <button type="submit" class="wz-next"><%= t('hr.addSalary.continue') %> →</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    var form = document.getElementById('wzForm');
+    var MESSAGES = {
+        emp: <%- JSON.stringify(t('hr.addSalary.err_employee_required')) %>,
+        month: <%- JSON.stringify(t('hr.addSalary.err_month_format')) %>,
+        date: <%- JSON.stringify(t('hr.addSalary.err_date_format')) %>
+    };
+    var MONTH_RE = /^\d{4}\/\d{1,2}$/;
+    var DATE_RE = /^\d{4}\/\d{1,2}\/\d{1,2}$/;
+
+    function mark(fieldId, invalid, msg) {
+        var f = document.getElementById(fieldId);
+        f.classList.toggle('wz-field-invalid', invalid);
+        if (msg) { f.querySelector('.wz-err').textContent = msg; }
+    }
+
+    // Clear a field's error as soon as the user fixes it
+    ['employee_id', 'period_month', 'payment_date'].forEach(function (id) {
+        var el = document.getElementById(id);
+        el.addEventListener('input', function () {
+            var map = { employee_id: 'f-emp', period_month: 'f-month', payment_date: 'f-date' };
+            document.getElementById(map[id]).classList.remove('wz-field-invalid');
+        });
+    });
+
+    form.addEventListener('submit', function (e) {
+        var ok = true;
+        var emp = document.getElementById('employee_id').value.trim();
+        var month = document.getElementById('period_month').value.trim();
+        var date = document.getElementById('payment_date').value.trim();
+
+        if (!emp) { mark('f-emp', true, MESSAGES.emp); ok = false; } else { mark('f-emp', false); }
+        if (!MONTH_RE.test(month)) { mark('f-month', true, MESSAGES.month); ok = false; } else { mark('f-month', false); }
+        if (!DATE_RE.test(date)) { mark('f-date', true, MESSAGES.date); ok = false; } else { mark('f-date', false); }
+
+        if (!ok) { e.preventDefault(); }
+    });
+})();
+</script>
+
+<%- include('../partials/footer') %>

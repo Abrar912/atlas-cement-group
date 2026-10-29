@@ -1,0 +1,35 @@
+<header class="site-header">
+        <div class="container">
+            <a href="/" class="brand">
+                <img src="<%= media.logo || '/Logo.png' %>" alt="<%= t('home.logo_alt') %>">
+                <span><%= t('home.header_company_name') %></span>
+            </a>
+            <nav class="nav-links">
+                <a href="/" class="<%= activePage === 'home' ? 'active' : '' %>"><%= t('home.nav_home') %></a>
+                <a href="/products" class="<%= activePage === 'products' ? 'active' : '' %>"><%= t('home.nav_products') %></a>
+                <a href="/about" class="<%= activePage === 'about' ? 'active' : '' %>"><%= t('home.nav_about') %></a>
+                <a href="/quote" class="<%= activePage === 'quote' ? 'active' : '' %>"><%= t('home.nav_quote') %></a>
+            </nav>
+            <div class="nav-actions">
+                <div class="globe-language-selector">
+                    <button class="icon-btn" onclick="toggleGlobeDropdown()" title="<%= t('language.switch_language') %>">🌐</button>
+                    <div id="globeDropdown" class="globe-dropdown">
+                        <a href="javascript:void(0)" onclick="changeLanguage('en')">🇺🇸 <%= t('language.english') %></a>
+                        <a href="javascript:void(0)" onclick="changeLanguage('da')">🇦🇫 <%= t('language.dari') %></a>
+                        <a href="javascript:void(0)" onclick="changeLanguage('ps')">🇦🇫 <%= t('language.pashto') %></a>
+                    </div>
+                </div>
+                <button type="button" id="themeToggle" class="icon-btn" onclick="toggleTheme()" aria-label="Switch to dark mode" title="Switch to dark mode">
+                    <svg id="moonIcon" style="width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; display: block;" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    <svg id="sunIcon" style="width: 18px; height: 18px; stroke: currentColor; stroke-width: 2; fill: none; display: none;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l-1.42-1.42"/></svg>
+                </button>
+                <button type="button" class="icon-btn hamburger" onclick="toggleMobileNav()" aria-label="Menu">☰</button>
+            </div>
+        </div>
+        <div id="mobilePanel" class="mobile-panel">
+            <a href="/" class="<%= activePage === 'home' ? 'active' : '' %>"><%= t('home.nav_home') %></a>
+            <a href="/products" class="<%= activePage === 'products' ? 'active' : '' %>"><%= t('home.nav_products') %></a>
+            <a href="/about" class="<%= activePage === 'about' ? 'active' : '' %>"><%= t('home.nav_about') %></a>
+            <a href="/quote" class="<%= activePage === 'quote' ? 'active' : '' %>"><%= t('home.nav_quote') %></a>
+        </div>
+    </header>

@@ -1,0 +1,160 @@
+<%- include('../partials/header') %>
+
+<style>
+.sh-wrap{max-width:1100px;margin:0 auto}
+.sh-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+.sh-title{font-size:23px;font-weight:800;margin:0;letter-spacing:-.3px}
+.sh-sub{font-size:13px;color:var(--text-muted,#6b7280);margin:5px 0 0 0}
+.sh-card{border:1px solid var(--border-color,#d1d5db);border-radius:14px;padding:16px 18px;background:var(--bg-color,#fafafa);margin-bottom:16px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+[data-theme="dark"] .sh-card{box-shadow:0 1px 2px rgba(0,0,0,.35)}
+.sh-filters{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.sh-field{display:flex;flex-direction:column;gap:5px}
+.sh-label{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280)}
+.sh-input,.sh-select{font-size:13.5px;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border-color,#d1d5db);background:var(--card-bg,#fff);color:inherit;min-width:170px}
+.sh-apply{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;padding:10px 20px;border:none;border-radius:9px;background:var(--primary,#FF6F00);color:#fff;cursor:pointer}
+.sh-apply:hover{filter:brightness(1.08)}
+.sh-actions{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+.sh-print{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:800;padding:10px 18px;border-radius:9px;border:1.5px solid var(--border-color,#d1d5db);background:transparent;color:inherit;cursor:pointer}
+.sh-print:hover{background:rgba(107,114,128,.06)}
+.sh-back{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:var(--text-muted,#6b7280);text-decoration:none;padding:10px 14px;border-radius:9px;border:1.5px solid var(--border-color,#d1d5db)}
+.sh-back:hover{color:inherit;background:rgba(107,114,128,.06)}
+/* table */
+.sh-table{width:100%;border-collapse:collapse;font-size:13.5px}
+.sh-table th{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--text-muted,#6b7280);text-align:start;padding:10px 8px;border-bottom:2px solid var(--border-color,#d1d5db);white-space:nowrap}
+.sh-table td{padding:11px 8px;border-bottom:1px solid rgba(107,114,128,.14);vertical-align:middle}
+.sh-table tbody tr{cursor:pointer}
+.sh-table tbody tr:hover{background:rgba(255,111,0,.05)}
+.sh-num{text-align:end;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sh-serial{font-weight:800;color:var(--primary,#FF6F00);text-decoration:none}
+.sh-serial:hover{text-decoration:underline}
+.sh-neg{color:#b91c1c}
+.sh-net{font-weight:800}
+.sh-method{display:inline-flex;align-items:center;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:800;background:rgba(107,114,128,.12);white-space:nowrap}
+.sh-correct{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:800;color:#b91c1c;text-decoration:none;white-space:nowrap}
+.sh-correct:hover{text-decoration:underline}
+.sh-empty{text-align:center;padding:44px 12px;color:var(--text-muted,#6b7280);font-size:14px;font-weight:700}
+@media (max-width:760px){
+  .sh-actions{margin-left:0;width:100%}
+  .sh-filters{width:100%}
+}
+@media print {
+  .sh-filters,.sh-actions,.sh-back{display:none !important}
+  .sh-card{border:none;box-shadow:none;background:#fff;padding:0}
+  .sh-table th{color:#000;border-bottom:2px solid #000}
+  .sh-table td{border-bottom:1px solid #999}
+  .sh-table tbody tr{cursor:default}
+  .sh-serial{color:#000;text-decoration:none}
+  .card{border:none;box-shadow:none}
+}
+</style>
+
+<%
+    function shMoney(cents) {
+        var n = Number(cents);
+        if (!isFinite(n)) return '—';
+        return (n / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + t('hr.dashboard.afghani');
+    }
+    function shMethod(m) {
+        return m === 'CASH' ? t('hr.salaryHistory.method_cash') : (m || '—');
+    }
+%>
+
+<div class="card">
+    <div class="sh-wrap">
+        <div class="sh-head">
+            <div>
+                <h2 class="sh-title">📜 <%= t('hr.salaryHistory.title') %></h2>
+                <p class="sh-sub"><%= t('hr.salaryHistory.subtitle') %></p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="sh-card sh-filters no-print">
+            <form method="GET" action="/admin/hr/payroll/salary-history" class="sh-filters" id="shFilterForm">
+                <div class="sh-field">
+                    <label class="sh-label" for="sh_emp"><%= t('hr.salaryHistory.filter_employee') %></label>
+                    <select name="employee_id" id="sh_emp" class="sh-select">
+                        <option value=""><%= t('hr.salaryHistory.all_employees') %></option>
+                        <% employees.forEach(function(e) { %>
+                        <option value="<%= e.id %>" <%= String(filters.employee_id) === String(e.id) ? 'selected' : '' %>><%= e.full_name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+                <div class="sh-field">
+                    <label class="sh-label" for="sh_month"><%= t('hr.salaryHistory.filter_month') %></label>
+                    <input type="text" name="period_month" id="sh_month" class="sh-input" dir="ltr"
+                           placeholder="1405/07" value="<%= filters.period_month %>">
+                </div>
+                <button type="submit" class="sh-apply">🔎 <%= t('hr.salaryHistory.filter_btn') %></button>
+            </form>
+            <div class="sh-actions">
+                <a href="/admin/hr/payroll" class="sh-back">← <%= t('hr.salaryHistory.back') %></a>
+                <button type="button" class="sh-print" onclick="window.print()">🖨 <%= t('hr.salaryHistory.print') %></button>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="sh-card">
+            <table class="sh-table">
+                <thead>
+                    <tr>
+                        <th><%= t('hr.salaryHistory.lbl_serial') %></th>
+                        <th><%= t('hr.salaryHistory.lbl_payment_date') %></th>
+                        <th><%= t('hr.salaryHistory.lbl_employee') %></th>
+                        <th><%= t('hr.salaryHistory.lbl_period') %></th>
+                        <th class="sh-num"><%= t('hr.salaryHistory.lbl_salary') %></th>
+                        <th class="sh-num"><%= t('hr.salaryHistory.lbl_ot') %></th>
+                        <th class="sh-num"><%= t('hr.salaryHistory.lbl_advance') %></th>
+                        <th class="sh-num"><%= t('hr.salaryHistory.lbl_net') %></th>
+                        <th class="sh-num"><%= t('hr.salaryHistory.lbl_remaining_after') %></th>
+                        <th><%= t('hr.salaryHistory.lbl_method') %></th>
+                        <th class="no-print"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (payments.length > 0) { %>
+                        <% payments.forEach(function(p) { %>
+                        <tr onclick="location.href='/admin/hr/payments/<%= p.id %>/receipt'">
+                            <td><a class="sh-serial" href="/admin/hr/payments/<%= p.id %>/receipt" dir="ltr"><%= p.payment_serial %></a></td>
+                            <td dir="ltr"><%= p.payment_date %></td>
+                            <td>
+                                <strong><%= p.employee_name %></strong>
+                                <% if (p.department_name) { %><div style="font-size:11.5px;color:var(--text-muted,#6b7280)"><%= p.department_name %></div><% } %>
+                            </td>
+                            <td dir="ltr"><%= String(p.period_month).slice(0, 7) %></td>
+                            <td class="sh-num" dir="ltr"><%= shMoney(p.salary_total) %></td>
+                            <td class="sh-num" dir="ltr"><%= shMoney(p.overtime_total) %></td>
+                            <td class="sh-num sh-neg" dir="ltr"><%= p.advance_deduction_total > 0 ? '− ' + shMoney(p.advance_deduction_total) : shMoney(p.advance_deduction_total) %></td>
+                            <td class="sh-num sh-net" dir="ltr"><%= shMoney(p.net_cash_paid) %></td>
+                            <td class="sh-num" dir="ltr"><%= p.salary_remaining_after === null || p.salary_remaining_after === undefined ? '—' : shMoney(p.salary_remaining_after) %></td>
+                            <td><span class="sh-method"><%= shMethod(p.payment_method) %></span></td>
+                            <td class="no-print" onclick="event.stopPropagation()">
+                                <button type="button" class="sh-correct" onclick="var er=document.getElementById('sh-edit-<%= p.id %>'); er.hidden=!er.hidden;">✏️ <%= t('hr.employees.edit') %></button>
+                            </td>
+                        </tr>
+                        <tr id="sh-edit-<%= p.id %>" <%= String(filters.edit) === String(p.id) ? '' : 'hidden' %>>
+                            <td colspan="11" style="background: rgba(245,158,11,.06);">
+                                <form method="POST" action="/admin/hr/payment-correction/<%= p.id %>" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; padding: 8px 0;" onsubmit="return confirm('<%= t('hr.correction.correct_confirm') %>');">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <div style="flex: 1; min-width: 260px;">
+                                        <div style="font-size: 12px; color: var(--text-muted, #6b7280); margin-bottom: 4px;">⚠️ <%= t('hr.correction.correction_hint') %></div>
+                                        <label style="font-size: 12.5px; font-weight: 600;"><%= t('hr.correction.reason_label') %></label>
+                                        <textarea name="reason" required rows="2" class="form-control" style="width: 100%; font-size: 13px; box-sizing: border-box;" placeholder="<%= t('hr.correction.reason_placeholder') %>"></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" style="font-size: 13px;">✅ <%= t('hr.correction.btn_correct') %></button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="11" class="sh-empty">📭 <%= t('hr.salaryHistory.empty') %></td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

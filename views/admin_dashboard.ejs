@@ -1,0 +1,4012 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Keep page container standard LTR for layout positioning */
+    .dashboard-container {
+        direction: ltr;
+        padding: 20px;
+    }
+
+    /* Content components inside use proper RTL for Dari */
+    .rtl-content {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+
+    /* Header Bar Alignment */
+    .dashboard-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .header-title-group {
+        flex: 1;
+    }
+
+    [data-theme="dark"] .dashboard-header button {
+        background-color: var(--accent-blue) !important;
+    }
+
+    .header-title-group h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        letter-spacing: -0.02em;
+    }
+
+    .header-title-group p {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .filter-row {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 15px;
+        direction: rtl;
+    }
+
+    .form-control-custom {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+    }
+
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        direction: rtl;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .report-filter-bar {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 15px;
+        direction: rtl;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .filter-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-main);
+        white-space: nowrap;
+        margin: 0;
+    }
+
+    /* Quick Search Toolbar */
+    .quick-search-toolbar {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        direction: rtl;
+    }
+
+    .quick-search-toolbar .form-control {
+        flex: 0 0 auto;
+        min-width: 200px;
+        max-width: 240px;
+    }
+
+    @media (max-width: 768px) {
+        .quick-search-toolbar .form-control {
+            min-width: 100%;
+            max-width: 100%;
+        }
+    }
+
+    /* Action Buttons in Table */
+    .action-edit-btn {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+    .action-edit-btn:hover {
+        background-color: #2563eb !important;
+    }
+
+    .action-delete-btn {
+        background-color: #ef4444 !important;
+        color: #ffffff !important;
+        border: none;
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+    .action-delete-btn:hover {
+        background-color: #dc2626 !important;
+    }
+
+    [data-theme="dark"] .action-edit-btn {
+        background-color: #60a5fa !important;
+    }
+
+    [data-theme="dark"] .action-edit-btn:hover {
+        background-color: #3b82f6 !important;
+    }
+
+    [data-theme="dark"] .action-delete-btn {
+        background-color: #f87171 !important;
+    }
+
+    [data-theme="dark"] .action-delete-btn:hover {
+        background-color: #ef4444 !important;
+    }
+
+    /* Modal Save Button */
+    .modal-save-btn {
+        background-color: #3b82f6 !important;
+        color: #ffffff !important;
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.15s ease;
+    }
+
+    .modal-save-btn:hover {
+        background-color: #2563eb !important;
+    }
+
+    [data-theme="dark"] .modal-save-btn {
+        background-color: #60a5fa !important;
+    }
+
+    [data-theme="dark"] .modal-save-btn:hover {
+        background-color: #3b82f6 !important;
+    }
+
+    /* Pagination Controls */
+    .pagination-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .pagination-controls .btn-page-prev {
+        order: 1;
+    }
+
+    .pagination-controls .page-indicator {
+        order: 2;
+        flex: 0 0 auto;
+        text-align: center;
+        min-width: 100px;
+    }
+
+    .pagination-controls .btn-page-next {
+        order: 3;
+    }
+
+    /* Unified Report Control Panel */
+    .agency-report-filter-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 18px;
+    }
+
+    /* Filter Section Wrapper */
+    .filter-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    /* Section Title */
+    .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 4px;
+    }
+
+    /* Main Filters Grid - Independent Layout with RTL/LTR support */
+    .main-filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+        gap: 12px;
+        align-items: start;
+    }
+
+    /* Search Section Grid - Independent Layout with RTL/LTR support */
+    .search-section-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+        gap: 12px;
+        align-items: start;
+    }
+
+    /* Actions Section Grid - Independent Layout with RTL/LTR support */
+    .actions-section-grid {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 12px;
+    }
+
+    /* Individual Control Wrapper */
+    .report-control {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        min-width: 0;
+    }
+
+    .report-control label {
+        text-align: start;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .report-control .form-control {
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Date Range Group - Keep together as one unit */
+    .date-range-group {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 12px;
+        align-items: end;
+        min-width: 0;
+    }
+
+    .date-range-group .report-control {
+        min-width: 0;
+        width: 100%;
+    }
+
+    /* Search Controls - Appropriate Width */
+    .report-control.search-control {
+        min-width: 200px;
+    }
+
+    /* Button Controls - Compact */
+    .report-control.button-control {
+        min-width: 150px;
+        max-width: fit-content;
+    }
+
+    .report-control.button-control .btn {
+        width: auto;
+        white-space: nowrap;
+    }
+
+    /* Responsive Breakpoints */
+    @media (max-width: 1024px) {
+        .main-filters-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+            gap: 10px;
+        }
+
+        .search-section-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+            gap: 10px;
+        }
+
+        .actions-section-grid {
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+            gap: 10px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .main-filters-grid,
+        .search-section-grid,
+        .actions-section-grid,
+        .date-range-group {
+            grid-template-columns: 1fr;
+            flex-direction: column;   /* .actions-section-grid is flex, not grid */
+            align-items: stretch;
+        }
+
+        .report-control,
+        .report-control.search-control,
+        .report-control.button-control {
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .report-control.button-control .btn {
+            width: 100%;
+            white-space: normal;      /* long labels wrap instead of overflowing */
+        }
+    }
+
+    /* Modern KPI Metric Cards */
+    .metric-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .metric-card:hover {
+        border-color: var(--accent-blue);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .metric-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        order: 2;
+    }
+
+    .metric-card-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+    }
+
+    .card-receivables .metric-card-icon {
+        background-color: #ecfdf5;
+        color: var(--success-green);
+    }
+
+    .card-payables .metric-card-icon {
+        background-color: #fef2f2;
+        color: var(--danger-red);
+    }
+
+    .card-sales .metric-card-icon {
+        background-color: #eff6ff;
+        color: var(--accent-blue);
+    }
+
+    .card-received .metric-card-icon {
+        background-color: #fef3c7;
+        color: var(--warning-amber);
+    }
+
+    [data-theme="dark"] .card-receivables .metric-card-icon {
+        background-color: rgba(63, 185, 80, 0.15);
+    }
+
+    [data-theme="dark"] .card-payables .metric-card-icon {
+        background-color: rgba(248, 81, 73, 0.15);
+    }
+
+    [data-theme="dark"] .card-sales .metric-card-icon {
+        background-color: rgba(88, 166, 255, 0.15);
+    }
+
+    [data-theme="dark"] .card-received .metric-card-icon {
+        background-color: rgba(255, 166, 87, 0.15);
+    }
+
+    .metric-card-content {
+        flex: 1;
+        min-width: 0;
+        order: 1;
+    }
+
+    .metric-card-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+    }
+
+    .metric-card-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    .metric-card-value span {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+    }
+
+    .metric-card-description {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    /* Dashboard-specific grid override */
+    .dashboard-container .grid {
+        display: grid;
+        gap: 20px;
+    }
+
+    .dashboard-container .grid-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (max-width: 1024px) {
+        .dashboard-container .grid-4 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-container .grid-4 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .filter-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        direction: rtl;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        align-items: flex-end;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 6px;
+        display: block;
+        text-align: right;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        direction: rtl;
+    }
+
+    .form-control-custom:focus {
+        border-color: var(--accent-blue);
+        outline: none;
+    }
+
+    /* Table RTL Styling */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--card-bg);
+        direction: rtl;
+    }
+
+    .table-container::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+        border-radius: 4px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        direction: rtl;
+        font-size: 13px;
+    }
+
+    .custom-table th {
+        background-color: var(--table-header-bg);
+        color: var(--text-main);
+        font-weight: 600;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+        white-space: nowrap;
+        font-size: 12px;
+        letter-spacing: -0.01em;
+    }
+
+    .custom-table td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+        color: var(--text-main);
+    }
+
+    .custom-table tr:hover {
+        background-color: var(--table-header-bg);
+    }
+
+    .custom-table tfoot {
+        background-color: var(--table-header-bg);
+        font-weight: 600;
+    }
+
+    .custom-table tfoot td {
+        color: var(--text-main);
+        border-top: 2px solid var(--border-color);
+    }
+
+    /* Compact columns */
+    th.col-id, td.col-id { width: 40px; }
+    th.col-shortage, td.col-shortage { width: 60px; }
+    th.col-bags, td.col-bags { width: 75px; }
+    th.col-tonnage, td.col-tonnage { width: 75px; }
+    th.col-action, td.col-action { width: 60px; }
+    th.col-price-bag, td.col-price-bag { width: 90px; }
+    th.col-freight-rate, td.col-freight-rate { width: 90px; }
+    th.col-freight-total, td.col-freight-total { width: 100px; }
+    th.col-sales-total, td.col-sales-total { width: 100px; }
+    th.col-net-cement, td.col-net-cement { width: 110px; }
+    
+    /* Make text/name columns flex naturally */
+    th.col-customer, td.col-customer { min-width: 130px; }
+    th.col-driver, td.col-driver { min-width: 100px; }
+    th.col-phone, td.col-phone { min-width: 90px; }
+    th.col-plate, td.col-plate { min-width: 80px; }
+    th.col-waybill, td.col-waybill { min-width: 90px; }
+    th.col-cement-type, td.col-cement-type { min-width: 100px; }
+    th.col-loading-date, td.col-loading-date { min-width: 90px; }
+    th.col-sale-date, td.col-sale-date { min-width: 90px; }
+
+    @media print {
+        /* 1. Set paper size to landscape and narrow margins to prevent truncation */
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+
+        /* 2. Hide screen-only elements and analytics sections */
+        .no-print,
+        .sidebar,
+        .top-navbar,
+        .filter-card,
+        .filter-row,
+        .filter-section,
+        .agency-report-filter-panel,
+        .pagination-controls,
+        .btn,
+        button,
+        input,
+        select,
+        .dashboard-header,
+        .metric-card,
+        .grid,
+        .card-header button,
+        canvas {
+            display: none !important;
+        }
+
+        /* 3. Hide the Statistics & Analytics Section card entirely */
+        .dashboard-container > .card:nth-child(2) {
+            display: none !important;
+        }
+
+        /* 4. Show only the reports card and reset its positioning */
+        .dashboard-container {
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+            background: #fff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: none !important;
+        }
+
+        /* 5. Show and style the card header with report title */
+        .card-header {
+            display: block !important;
+            border-bottom: 2px solid #000 !important;
+            padding: 15px 0 !important;
+            margin-bottom: 20px !important;
+        }
+
+        .card-title {
+            font-size: 18pt !important;
+            font-weight: bold !important;
+            color: #000 !important;
+            margin: 0 !important;
+        }
+
+        /* 6. Show and style the table container */
+        .table-container {
+            display: block !important;
+            visibility: visible !important;
+            overflow: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: 1px solid #000 !important;
+            border-radius: 0 !important;
+            background: #fff !important;
+            margin: 0 !important;
+        }
+
+        .custom-table {
+            display: table !important;
+            visibility: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+            font-size: 9pt !important;
+            border-collapse: collapse !important;
+            margin: 0 !important;
+        }
+
+        .custom-table thead {
+            display: table-header-group !important;
+            visibility: visible !important;
+        }
+
+        .custom-table tbody {
+            display: table-row-group !important;
+            visibility: visible !important;
+        }
+
+        .custom-table tfoot {
+            display: table-footer-group !important;
+            visibility: visible !important;
+        }
+
+        .custom-table tr {
+            display: table-row !important;
+            visibility: visible !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .custom-table th {
+            display: table-cell !important;
+            visibility: visible !important;
+            background-color: #f0f0f0 !important;
+            color: #000 !important;
+            font-weight: bold !important;
+            padding: 6px 4px !important;
+            border: 1px solid #000 !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            font-size: 8.5pt !important;
+        }
+
+        .custom-table td {
+            display: table-cell !important;
+            visibility: visible !important;
+            padding: 5px 4px !important;
+            text-align: center !important;
+            border: 1px solid #000 !important;
+            white-space: nowrap !important;
+            color: #000 !important;
+            font-size: 8pt !important;
+        }
+
+        /* 7. Hide actions column in print */
+        .custom-table th:last-child,
+        .custom-table td:last-child {
+            display: none !important;
+        }
+
+        /* 8. Preserve RTL/LTR direction */
+        .table-container,
+        .custom-table {
+            direction: <%= dir %> !important;
+        }
+
+        /* 9. Ensure modal-specific print rules don't interfere */
+        #cementSummaryReportModal {
+            display: none !important;
+        }
+
+        /* 10. Remove any page breaks that might push content to page 2 */
+        body,
+        .dashboard-container,
+        .card,
+        .card-header,
+        .table-container {
+            break-before: avoid !important;
+            page-break-before: avoid !important;
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+        }
+    }
+
+    /* Cement Summary Report Print Button - Pure Black Background */
+    #cementSummaryReportModalContent .cement-summary-print-btn {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    #cementSummaryReportModalContent .cement-summary-print-btn svg {
+        stroke: #ffffff !important;
+    }
+    #cementSummaryReportModalContent .cement-summary-print-btn:hover {
+        background-color: #000000 !important;
+        color: #ffffff !important;
+    }
+
+    /* Report Close Button - Red X Icon */
+    .report-close-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #dc2626;
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        padding: 0;
+        transition: background-color 0.2s ease;
+    }
+    .report-close-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: #ffffff;
+        stroke-width: 2.5;
+        fill: none;
+        stroke-linecap: round;
+    }
+    .report-close-btn:hover {
+        background: #b91c1c;
+    }
+
+    /* Agency Reset Filters Button - Dark Theme Fix */
+    [data-theme="dark"] .agency-reset-filters-btn {
+        background-color: #21262d !important;
+        color: #ffffff !important;
+        border: 1px solid #30363d !important;
+    }
+    [data-theme="dark"] .agency-reset-filters-btn:hover {
+        background-color: #30363d !important;
+        color: #ffffff !important;
+    }
+
+    [data-theme="dark"] #cement-summary-rows-per-page {
+        background: var(--card-bg) !important;
+        color: var(--text-main) !important;
+        border-color: var(--border-color) !important;
+    }
+    [data-theme="dark"] #cement-summary-rows-per-page option {
+        background: var(--card-bg) !important;
+        color: var(--text-main) !important;
+    }
+
+</style>
+
+<div class="dashboard-container">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+        <div class="header-title-group">
+            <h2><%= t('admin.dashboard_title') %></h2>
+            <p><%= t('admin.dashboard_subtitle') %></p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="openCementSummaryReportModal()" class="btn no-print" style="background-color: var(--text-main); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                <%= t('admin.cement_summary_report') %>
+            </button>
+            <button type="button" onclick="openCustomerBalanceReportModal()" class="btn no-print" style="background-color: var(--text-main); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                <%= t('admin.customer_balance_report') %>
+            </button>
+            <button onclick="window.print()" class="btn no-print" style="background-color: var(--text-main); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                <%= t('admin.print_report') %>
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics & Analytics Section -->
+    <div class="card" style="padding: 24px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+            <div>
+                <h3 style="margin: 0; color: var(--text-main); font-size: 16px; font-weight: 600;"><%= t('admin.tonnage_statistics_title') %></h3>
+                <p style="margin: 4px 0 0 0; color: var(--text-muted); font-size: 13px;"><%= t('admin.tonnage_statistics_subtitle') %></p>
+            </div>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <span style="font-size: 13px; color: var(--text-muted);"><%= t('admin.total_tonnage') %>: <strong id="tonnage-total" style="color: var(--text-main);">0</strong> <%= t('admin.tons') %></span>
+                <span style="font-size: 13px; color: var(--text-muted);"><%= t('admin.average_daily') %>: <strong id="tonnage-average" style="color: var(--text-main);">0</strong> <%= t('admin.tons') %></span>
+                <span id="tonnage-date-range" style="font-size: 13px; color: var(--text-muted); margin-left: auto;"></span>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-card no-print" style="margin-bottom: 20px;">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label><%= t('admin.period') %></label>
+                    <select id="tonnage-period" class="form-control-custom">
+                        <option value="daily"><%= t('admin.period_daily') %></option>
+                        <option value="monthly"><%= t('admin.period_monthly') %></option>
+                        <option value="yearly"><%= t('admin.period_yearly') %></option>
+                    </select>
+                </div>
+                <div class="form-group" id="tonnage-month-group" style="display: none;">
+                    <label>Month</label>
+                    <select id="tonnage-month" class="form-control-custom">
+                    </select>
+                </div>
+                <div class="form-group" id="tonnage-year-group" style="display: none;">
+                    <label>Year</label>
+                    <select id="tonnage-year" class="form-control-custom">
+                    </select>
+                </div>
+                <div class="form-group" id="tonnage-date-range-group">
+                    <label><%= t('admin.filter_date_range') %></label>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="tonnage-start-date" class="form-control-custom" data-jdp placeholder="1405/01/01">
+                        <span style="font-size: 12px; color: var(--text-muted);"><%= t('admin.filter_to') %></span>
+                        <input type="text" id="tonnage-end-date" class="form-control-custom" data-jdp placeholder="1405/12/30">
+                    </div>
+                    <div id="date-range-error" style="color: var(--status-error); font-size: 12px; margin-top: 4px; display: none;"></div>
+                </div>
+                <div class="form-group">
+                    <label><%= t('admin.filter_cement') %></label>
+                    <select id="tonnage-cement-types" class="form-control-custom" onchange="updateTonnageChart()">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><%= t('admin.filter_agency') %></label>
+                    <select id="tonnage-agency" class="form-control-custom" onchange="updateTonnageChart()">
+                        <option value="all"><%= t('admin.filter_all_agencies') %></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>&nbsp;</label>
+                    <button onclick="resetStatisticsFilters()" id="tonnage-reset-filters-btn" class="btn" style="background-color: var(--text-main); color: #fff; border: none; border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; width: 100%;">
+                        <%= t('admin.reset_filters') %>
+                    </button>
+                    <style>
+                        [data-theme="dark"] #tonnage-reset-filters-btn {
+                            background-color: var(--border-color) !important;
+                            color: var(--text-main) !important;
+                            border: 1px solid var(--border-color) !important;
+                        }
+                        [data-theme="dark"] #tonnage-reset-filters-btn:hover {
+                            background-color: var(--input-bg) !important;
+                        }
+                    </style>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tonnage Statistics Chart -->
+        <div style="position: relative; height: 350px; width: 100%; margin-bottom: 32px;">
+            <canvas id="tonnage-chart"></canvas>
+        </div>
+
+        <!-- Empty State -->
+        <div id="tonnage-empty-state" style="display: none; text-align: center; padding: 60px 20px; color: var(--text-muted);">
+            <svg style="width: 48px; height: 48px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px;" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            <p style="font-size: 14px; margin: 0;"><%= t('admin.no_tonnage_data') %></p>
+        </div>
+
+        <!-- Cement Analytics Charts Container -->
+        <div style="display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;">
+            <!-- Donut Chart -->
+            <div style="flex: 0 0 auto; min-width: 300px;">
+                <h4 style="margin: 0 0 16px 0; color: var(--text-main); font-size: 14px; font-weight: 500;"><%= t('admin.cement_sales_distribution_title') %></h4>
+                <div style="position: relative; width: 300px; height: 300px;">
+                    <canvas id="distribution-chart"></canvas>
+                    <div id="distribution-center-text" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; pointer-events: none;">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;"><%= t('admin.total_sales') %></div>
+                        <div id="distribution-total" style="font-size: 24px; font-weight: 600; color: var(--text-main);">0</div>
+                        <div style="font-size: 12px; color: var(--text-muted);"><%= t('admin.tons') %></div>
+                    </div>
+                </div>
+                <div id="distribution-legend" style="margin-top: 16px; min-width: 200px;"></div>
+                <div id="distribution-empty-state" style="display: none; text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                    <svg style="width: 48px; height: 48px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                    <p style="font-size: 14px; margin: 0;"><%= t('admin.no_cement_sales_data') %></p>
+                </div>
+            </div>
+
+            <!-- Province Bar Chart -->
+            <div style="flex: 1; min-width: 300px;">
+                <h4 style="margin: 0 0 16px 0; color: var(--text-main); font-size: 14px; font-weight: 500;"><%= t('admin.province_sales_title') %></h4>
+                <div id="province-chart-container" style="height: 500px; overflow-y: auto; padding-right: 8px; scrollbar-width: thin; scrollbar-color: #000 transparent;">
+                    <style>
+                        #province-chart-container::-webkit-scrollbar {
+                            width: 6px;
+                        }
+                        #province-chart-container::-webkit-scrollbar-thumb {
+                            background: #000;
+                            border-radius: 10px;
+                        }
+                        #province-chart-container::-webkit-scrollbar-track {
+                            background: transparent;
+                        }
+                    </style>
+                    <div id="province-bars" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Province bars will be populated by JavaScript -->
+                    </div>
+                </div>
+                <div id="province-empty-state" style="display: none; text-align: center; padding: 40px 20px; color: var(--text-muted);">
+                    <svg style="width: 48px; height: 48px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px;" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    <p style="font-size: 14px; margin: 0;"><%= t('admin.no_province_sales_data') %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modern KPI Metric Cards -->
+    <div class="grid grid-4" style="margin-bottom: 20px;">
+        <div class="metric-card card-received">
+            <div class="metric-card-content">
+                <div class="metric-card-label"><%= t('admin.metric_received') %></div>
+                <div class="metric-card-value" id="metric-received" data-currency-label="AFN"><%= total_money_received.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span>AFN</span></div>
+                <div class="metric-card-description"><%= t('admin.metric_received_desc') %></div>
+            </div>
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+        </div>
+        <div class="metric-card card-sales">
+            <div class="metric-card-content">
+                <div class="metric-card-label"><%= t('admin.metric_sales') %></div>
+                <div class="metric-card-value" id="metric-sales" data-currency-label="AFN"><%= total_sales_money.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span>AFN</span></div>
+                <div class="metric-card-description"><%= t('admin.metric_sales_desc') %></div>
+            </div>
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+        </div>
+        <div class="metric-card card-payables">
+            <div class="metric-card-content">
+                <div class="metric-card-label"><%= t('admin.metric_payables') %></div>
+                <div class="metric-card-value" id="metric-payables" data-currency-label="AFN"><%= total_payables.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span>AFN</span></div>
+                <div class="metric-card-description"><%= t('admin.metric_payables_desc') %></div>
+            </div>
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            </div>
+        </div>
+        <div class="metric-card card-receivables">
+            <div class="metric-card-content">
+                <div class="metric-card-label"><%= t('admin.metric_receivables') %></div>
+                <div class="metric-card-value" id="metric-receivables" data-currency-label="AFN"><%= total_receivables.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span>AFN</span></div>
+                <div class="metric-card-description"><%= t('admin.metric_receivables_desc') %></div>
+            </div>
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><%= t('admin.daily_reports_title') %></h3>
+        </div>
+
+    <!-- Unified Report Control Panel -->
+    <div class="card no-print" style="margin-bottom: var(--space-lg);">
+        <div class="agency-report-filter-panel">
+            <!-- Section 1: Main Filters -->
+            <div class="filter-section">
+                <div class="section-title"><%= t('admin.section_filters') %></div>
+                <div class="main-filters-grid">
+                    <div class="report-control">
+                        <label><%= t('admin.filter_province') %></label>
+                        <select id="filter_province" class="form-control" onchange="applyFilters()">
+                            <option value="All"><%= t('admin.filter_all_provinces') %></option>
+                            <option value="Kabul"><%= t('quotation_requests.province_kabul') %></option>
+                            <option value="Herat"><%= t('quotation_requests.province_herat') %></option>
+                            <option value="Balkh"><%= t('quotation_requests.province_balkh') %></option>
+                            <option value="Kandahar"><%= t('quotation_requests.province_kandahar') %></option>
+                            <option value="Nangarhar"><%= t('quotation_requests.province_nangarhar') %></option>
+                            <option value="Khost"><%= t('quotation_requests.province_khost') %></option>
+                            <option value="Paktia"><%= t('quotation_requests.province_paktia') %></option>
+                            <option value="Paktika"><%= t('quotation_requests.province_paktika') %></option>
+                            <option value="Ghazni"><%= t('quotation_requests.province_ghazni') %></option>
+                            <option value="Logar"><%= t('quotation_requests.province_logar') %></option>
+                            <option value="Wardak"><%= t('quotation_requests.province_wardak') %></option>
+                            <option value="Parwan"><%= t('quotation_requests.province_parwan') %></option>
+                            <option value="Kapisa"><%= t('quotation_requests.province_kapisa') %></option>
+                            <option value="Panjshir"><%= t('quotation_requests.province_panjshir') %></option>
+                            <option value="Laghman"><%= t('quotation_requests.province_laghman') %></option>
+                            <option value="Kunar"><%= t('quotation_requests.province_kunar') %></option>
+                            <option value="Nuristan"><%= t('quotation_requests.province_nuristan') %></option>
+                            <option value="Badakhshan"><%= t('quotation_requests.province_badakhshan') %></option>
+                            <option value="Takhar"><%= t('quotation_requests.province_takhar') %></option>
+                            <option value="Baghlan"><%= t('quotation_requests.province_baghlan') %></option>
+                            <option value="Samangan"><%= t('quotation_requests.province_samangan') %></option>
+                            <option value="Jowzjan"><%= t('quotation_requests.province_jowzjan') %></option>
+                            <option value="Sar-e Pol"><%= t('quotation_requests.province_sarepol') %></option>
+                            <option value="Faryab"><%= t('quotation_requests.province_faryab') %></option>
+                            <option value="Kunduz"><%= t('quotation_requests.province_kunduz') %></option>
+                            <option value="Badghis"><%= t('quotation_requests.province_badghis') %></option>
+                            <option value="Ghor"><%= t('quotation_requests.province_ghor') %></option>
+                            <option value="Daikundi"><%= t('quotation_requests.province_daikundi') %></option>
+                            <option value="Bamyan"><%= t('quotation_requests.province_bamyan') %></option>
+                            <option value="Uruzgan"><%= t('quotation_requests.province_uruzgan') %></option>
+                            <option value="Zabul"><%= t('quotation_requests.province_zabul') %></option>
+                            <option value="Helmand"><%= t('quotation_requests.province_helmand') %></option>
+                            <option value="Nimruz"><%= t('quotation_requests.province_nimruz') %></option>
+                            <option value="Farah"><%= t('quotation_requests.province_farah') %></option>
+                        </select>
+                    </div>
+                    <div class="report-control">
+                        <label><%= t('admin.filter_agent') %></label>
+                        <select id="filter_agent" class="form-control" onchange="applyFilters()">
+                            <option value="All"><%= t('admin.filter_all_agents') %></option>
+                            <% if (typeof agentAccounts !== 'undefined' && agentAccounts.length > 0) { %>
+                                <% agentAccounts.forEach(function(agent) { %>
+                                    <option value="<%= agent.agency_name || agent.username %>"><%= agent.agency_name || agent.username %></option>
+                                <% }); %>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="report-control">
+                        <label><%= t('admin.filter_balance') %></label>
+                        <select id="filter_balance" class="form-control" onchange="applyFilters()">
+                            <option value="All"><%= t('admin.filter_all_balances') %></option>
+                            <option value="Green"><%= t('admin.filter_balance_green') %></option>
+                            <option value="Red"><%= t('admin.filter_balance_red') %></option>
+                            <option value="Zero"><%= t('admin.filter_balance_zero') %></option>
+                        </select>
+                    </div>
+                    <div class="report-control">
+                        <label><%= t('admin.filter_customer') %></label>
+                        <select id="filter_customer" class="form-control" onchange="applyFilters()">
+                            <option value="All"><%= t('admin.filter_all_customers') %></option>
+                            <% customers.forEach(function(customer) { %>
+                                <option value="<%= customer.id %>" data-province="<%= customer.province %>"><%= customer.id %> - <%= customer.name %> - <%= customer.province %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="report-control">
+                        <label><%= t('admin.filter_cement') %></label>
+                        <select id="filter_cement" class="form-control" onchange="applyFilters()">
+                            <option value="All"><%= t('admin.filter_all_cement') %></option>
+                        </select>
+                    </div>
+                    <div class="report-control">
+                        <label><%= t('admin.filter_truck') %></label>
+                        <select id="filter_truck" class="form-control" onchange="applyFilters()">
+                            <option value="All"><%= t('admin.filter_all_trucks') %></option>
+                            <option value="Rental"><%= t('admin.filter_truck_rental') %></option>
+                            <option value="Company"><%= t('admin.filter_truck_company') %></option>
+                        </select>
+                    </div>
+                    <div class="date-range-group">
+                        <div class="report-control date-control">
+                            <label><%= t('admin.filter_from_date') %></label>
+                            <input type="text" id="filter_start_date" class="form-control" data-jdp placeholder="<%= t('admin.filter_from_date') %>" onchange="applyFilters()">
+                        </div>
+                        <div class="report-control date-control">
+                            <label><%= t('admin.filter_to_date') %></label>
+                            <input type="text" id="filter_end_date" class="form-control" data-jdp placeholder="<%= t('admin.filter_to_date') %>" onchange="applyFilters()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Search -->
+            <div class="filter-section">
+                <div class="section-title"><%= t('admin.section_search') %></div>
+                <div class="search-section-grid">
+                    <div class="report-control search-control">
+                        <label><%= t('admin.search_waybill') %></label>
+                        <input type="text" id="search_waybill" class="form-control" placeholder="<%= t('admin.search_waybill') %>" oninput="applyFilters()">
+                    </div>
+                    <div class="report-control search-control">
+                        <label><%= t('admin.search_driver') %></label>
+                        <input type="text" id="search_driver" class="form-control" placeholder="<%= t('admin.search_driver') %>" oninput="applyFilters()">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Actions -->
+            <div class="filter-section">
+                <div class="section-title"><%= t('admin.section_actions') %></div>
+                <div class="actions-section-grid">
+                    <div class="report-control button-control">
+                        <button type="button" class="btn" onclick="openCustomerSearchModal()" style="background: #084b35; color: #ffffff; border: none; padding: 8px 16px; font-size: 13px; font-weight: 500; border-radius: 6px; cursor: pointer;">
+                            <%= t('admin.search_customer') %>
+                        </button>
+                    </div>
+                    <div class="report-control button-control">
+                        <button type="button" class="btn" onclick="resetFilters()" style="background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 8px 16px; font-size: 13px; font-weight: 500; border-radius: 6px; cursor: pointer;">
+                            <%= t('admin.reset_filters') %>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th><%= t('admin.loading_date') %></th>
+                    <th><%= t('admin.sale_date') %></th>
+                    <th><%= t('admin.customer_name') %></th>
+                    <th><%= t('admin.agency_name') %></th>
+                    <th><%= t('admin.province') %></th>
+                    <th><%= t('admin.driver_name') %></th>
+                    <th><%= t('admin.driver_phone') %></th>
+                    <th><%= t('admin.plate_number') %></th>
+                    <th><%= t('admin.waybill_serial') %></th>
+                    <th><%= t('admin.cement_type') %></th>
+                    <th><%= t('admin.truck_type') %></th>
+                    <th><%= t('admin.bag_count') %></th>
+                    <th><%= t('admin.tonnage') %></th>
+                    <th style="color: var(--danger-red);"><%= t('admin.shortage') %></th>
+                    <th><%= t('admin.price_per_bag') %></th>
+                    <th><%= t('admin.sales_total') %></th>
+                    <th><%= t('admin.freight_rate_per_ton') %></th>
+                    <th><%= t('admin.freight_total') %></th>
+                    <th><%= t('admin.net_cement') %></th>
+                    <th><%= t('admin.actions') %></th>
+                </tr>
+            </thead>
+            <tbody id="agent-log-submissions-rows">
+                <tr>
+                    <td colspan="21" style="padding: 25px; color: var(--text-muted);"><%= t('admin.loading_data') %></td>
+                </tr>
+            </tbody>
+            <tfoot id="agent-log-submissions-footer" style="background-color: var(--table-header-bg); font-weight: 700;">
+                <tr>
+                    <td colspan="12" style="text-align: center; color: var(--text-main);"><%= t('admin.table_totals') %></td>
+                    <td id="total-bags">0</td>
+                    <td id="total-tonnage">0</td>
+                    <td id="total-shortage">0</td>
+                    <td>-</td>
+                    <td id="total-sales" style="color: var(--success-green);">0</td>
+                    <td>-</td>
+                    <td id="total-freight" style="color: var(--success-green);">0</td>
+                    <td id="total-net-cement" style="background-color: var(--success-green); color: white; opacity: 0.2;">0</td>
+                    <td>-</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <!-- Pagination -->
+    <div id="table-pagination-footer" class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; direction: rtl;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted);">
+            <span><%= t('admin.pagination_rows_per_page') %></span>
+            <select id="select_admin_deck_rows_per_page" class="form-control-custom" style="width: 70px;" onchange="handleRowsPerPageChange(this.value)">
+                <option value="10" selected>۱۰</option>
+                <option value="25">۲۵</option>
+                <option value="50">۵۰</option>
+                <option value="100">۱۰۰</option>
+            </select>
+        </div>
+
+        <div style="font-size: 13px; color: var(--text-muted);">
+            <%= t('admin.pagination_showing') %> <span id="lbl_page_start">0</span> <%= t('admin.pagination_to') %> <span id="lbl_page_end">0</span> <%= t('admin.pagination_of') %> <span id="lbl_total_count">0</span> <%= t('admin.pagination_items') %>
+        </div>
+
+        <div class="pagination-controls">
+            <button id="btn_page_prev" onclick="goToPrevPage()" class="btn btn-page-prev" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; font-size: 12px; font-weight: 500; border-radius: 6px; cursor: pointer;" disabled><%= t('admin.pagination_prev') %></button>
+            <span id="lbl_page_indicator" class="page-indicator" style="font-size: 13px; font-weight: 500; color: var(--text-main);"><%= t('admin.pagination_page') %> ۱</span>
+            <button id="btn_page_next" onclick="goToNextPage()" class="btn btn-page-next" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; font-size: 12px; font-weight: 500; border-radius: 6px; cursor: pointer;" disabled><%= t('admin.pagination_next') %></button>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+document.getElementById('nav-admin-dash').classList.add('active');
+
+// Initialize Jalali datepicker for all inputs with data-jdp attribute
+if (typeof jalaliDatepicker !== 'undefined') {
+    jalaliDatepicker.startWatch({
+        months: [
+            "حمل",   // Hamal
+            "ثور",   // Sawr
+            "جوزا",  // Jawza
+            "سرطان", // Saratan
+            "اسد",   // Asad
+            "سنبله", // Sonbola
+            "میزان", // Mizan
+            "عقرب",  // Aqrab
+            "قوس",   // Qaws
+            "جدی",   // Jadi
+            "دلو",   // Dalwa
+            "حوت"    // Hoot
+        ],
+        changeMonthRotateYear: true
+    });
+}
+
+// Store customer balance data globally for client-side filtering and pagination
+let allCustomerBalanceData = [];
+let filteredCustomerBalanceData = [];
+let customerBalanceCurrentPage = 1;
+let customerBalanceRowsPerPage = 25;
+let customerBalanceCurrentFilter = 'all';
+let customerBalanceSearchTerm = '';
+
+// Load Customer Balances
+function loadCustomerBalances() {
+    const loadingDiv = document.getElementById('customer-balance-loading');
+    const contentDiv = document.getElementById('customer-balance-content');
+    const tbody = document.getElementById('customer-balances-rows');
+    
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    fetch('/api/admin/customer-balances', {
+        credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            tbody.innerHTML = `<tr><td colspan="13" style="padding: 25px; color: var(--danger-red);">Error: ${esc(data.error)}</td></tr>`;
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+            return;
+        }
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="13" style="padding: 25px; color: var(--text-muted);">No customer data found</td></tr>';
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+            return;
+        }
+        
+        // Store all data globally
+        allCustomerBalanceData = data;
+        
+        // Apply current filter
+        applyCustomerBalanceFilter();
+        
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+    })
+    .catch(err => {
+        console.error('[ERROR] Error loading customer balances:', err);
+        tbody.innerHTML = '<tr><td colspan="13" style="padding: 25px; color: var(--danger-red);">Error loading customer balance data</td></tr>';
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+    });
+}
+
+// Apply customer balance filter
+function applyCustomerBalanceFilter() {
+    const filterValue = document.getElementById('customer-balance-filter').value;
+    customerBalanceCurrentFilter = filterValue;
+    
+    // Reset to page 1 when filter changes
+    customerBalanceCurrentPage = 1;
+    
+    // Apply both filter and search
+    applyCustomerBalanceFilterAndSearch();
+}
+
+// Apply customer balance search
+function applyCustomerBalanceSearch() {
+    const searchValue = document.getElementById('customer-balance-search').value;
+    customerBalanceSearchTerm = searchValue.toLowerCase();
+    
+    // Reset to page 1 when search changes
+    customerBalanceCurrentPage = 1;
+    
+    // Apply both filter and search
+    applyCustomerBalanceFilterAndSearch();
+}
+
+// Clear customer balance search
+function clearCustomerBalanceSearch() {
+    document.getElementById('customer-balance-search').value = '';
+    customerBalanceSearchTerm = '';
+    customerBalanceCurrentPage = 1;
+    
+    // Apply both filter and search
+    applyCustomerBalanceFilterAndSearch();
+}
+
+// Apply both filter and search together
+function applyCustomerBalanceFilterAndSearch() {
+    const filterValue = customerBalanceCurrentFilter;
+    const searchValue = customerBalanceSearchTerm;
+    
+    // First apply balance filter
+    let result = allCustomerBalanceData;
+    
+    if (filterValue === 'company_owes') {
+        result = result.filter(c => c['Company Owes Customer'] > 0);
+    } else if (filterValue === 'customer_owes') {
+        result = result.filter(c => c['Customer Owes Company'] > 0);
+    }
+    
+    // Then apply search filter
+    if (searchValue && searchValue.trim() !== '') {
+        result = result.filter(c => {
+            const name = (c['Name'] || '').toLowerCase();
+            const id = (c['ID'] || '').toLowerCase();
+            const agency = (c['Agency'] || '').toLowerCase();
+            const phone = (c['Phone Number'] || '').toLowerCase();
+            
+            return name.includes(searchValue) || 
+                   id.includes(searchValue) || 
+                   agency.includes(searchValue) || 
+                   phone.includes(searchValue);
+        });
+    }
+    
+    filteredCustomerBalanceData = result;
+    renderCustomerBalanceTable();
+}
+
+// Change rows per page
+function changeCustomerBalanceRowsPerPage() {
+    customerBalanceRowsPerPage = parseInt(document.getElementById('customer-balance-rows-per-page').value);
+    customerBalanceCurrentPage = 1;
+    renderCustomerBalanceTable();
+}
+
+// Render customer balance table with pagination
+function renderCustomerBalanceTable() {
+    const tbody = document.getElementById('customer-balances-rows');
+    const paginationDiv = document.getElementById('customer-balance-pagination');
+    
+    if (filteredCustomerBalanceData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="13" style="padding: 25px; color: var(--text-muted);"><%= t('admin.customer_balance_no_customers_found') %></td></tr>`;
+        paginationDiv.style.display = 'none';
+        return;
+    }
+    
+    // Calculate pagination
+    const startIndex = (customerBalanceCurrentPage - 1) * customerBalanceRowsPerPage;
+    const endIndex = Math.min(startIndex + customerBalanceRowsPerPage, filteredCustomerBalanceData.length);
+    const pageData = filteredCustomerBalanceData.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(filteredCustomerBalanceData.length / customerBalanceRowsPerPage);
+    
+    // Render table rows
+    tbody.innerHTML = pageData.map((customer, index) => `
+        <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 12px 10px;">${esc(startIndex + index + 1)}</td>
+            <td style="padding: 12px 10px;">${esc(customer['ID'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Name'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Agency'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Province'])}</td>
+            <td style="padding: 12px 10px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${esc(customer['Full Address'])}">${esc(customer['Full Address'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Customer Type'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Email'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Phone Number'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Total Cement Purchases'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Total Payments / Receipts'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-company-owes" style="padding: 12px 10px;">${esc(customer['Company Owes Customer'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-customer-owes" style="padding: 12px 10px;">${esc(customer['Customer Owes Company'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+        </tr>
+    `).join('');
+    
+    // Update pagination UI
+    document.getElementById('customer-balance-page-start').textContent = startIndex + 1;
+    document.getElementById('customer-balance-page-end').textContent = endIndex;
+    document.getElementById('customer-balance-total-count').textContent = filteredCustomerBalanceData.length;
+    
+    // Update button states
+    document.getElementById('customer-balance-prev-btn').disabled = customerBalanceCurrentPage === 1;
+    document.getElementById('customer-balance-next-btn').disabled = customerBalanceCurrentPage === totalPages;
+    
+    // Generate page numbers
+    const pageNumbersDiv = document.getElementById('customer-balance-page-numbers');
+    pageNumbersDiv.innerHTML = '';
+    
+    for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => customerBalanceGoToPage(i);
+        pageBtn.style.padding = '6px 12px';
+        pageBtn.style.border = '1px solid var(--border-color)';
+        pageBtn.style.borderRadius = '6px';
+        pageBtn.style.cursor = 'pointer';
+        pageBtn.style.fontSize = '13px';
+        pageBtn.style.background = i === customerBalanceCurrentPage ? 'var(--accent-blue)' : 'var(--table-header-bg)';
+        pageBtn.style.color = i === customerBalanceCurrentPage ? '#fff' : 'var(--text-main)';
+        pageNumbersDiv.appendChild(pageBtn);
+    }
+    
+    paginationDiv.style.display = 'flex';
+}
+
+// Go to specific page
+function customerBalanceGoToPage(pageNum) {
+    customerBalanceCurrentPage = pageNum;
+    renderCustomerBalanceTable();
+}
+
+// Go to previous page
+function customerBalanceGoToPrevPage() {
+    if (customerBalanceCurrentPage > 1) {
+        customerBalanceCurrentPage--;
+        renderCustomerBalanceTable();
+    }
+}
+
+// Go to next page
+function customerBalanceGoToNextPage() {
+    const totalPages = Math.ceil(filteredCustomerBalanceData.length / customerBalanceRowsPerPage);
+    if (customerBalanceCurrentPage < totalPages) {
+        customerBalanceCurrentPage++;
+        renderCustomerBalanceTable();
+    }
+}
+
+// Toggle full screen
+function toggleCustomerBalanceFullScreen() {
+    const modal = document.getElementById('customerBalanceReportModal');
+    const modalContent = document.getElementById('customerBalanceReportModalContent');
+    const fullScreenBtn = document.getElementById('customerBalanceFullScreenBtn');
+    
+    modal.classList.toggle('fullscreen-active');
+    modalContent.classList.toggle('full-screen');
+    
+    if (modalContent.classList.contains('full-screen')) {
+        fullScreenBtn.title = 'Exit Full Screen';
+        fullScreenBtn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
+    } else {
+        fullScreenBtn.title = 'Full Screen';
+        fullScreenBtn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>';
+    }
+}
+
+// Print customer balance report
+function printCustomerBalanceReport() {
+    // Create a new window for printing
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert('Please allow popups to print the report');
+        return;
+    }
+
+    // Generate table rows from all filtered data (not just current page)
+    const tableRowsHTML = filteredCustomerBalanceData.map((customer, index) => `
+        <tr>
+            <td>${esc(index + 1)}</td>
+            <td>${esc(customer['ID'])}</td>
+            <td>${esc(customer['Name'])}</td>
+            <td>${esc(customer['Agency'])}</td>
+            <td>${esc(customer['Province'])}</td>
+            <td>${esc(customer['Full Address'])}</td>
+            <td>${esc(customer['Customer Type'])}</td>
+            <td>${esc(customer['Email'])}</td>
+            <td>${esc(customer['Phone Number'])}</td>
+            <td>${esc(customer['Total Cement Purchases'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td>${esc(customer['Total Payments / Receipts'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-company-owes">${esc(customer['Company Owes Customer'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-customer-owes">${esc(customer['Customer Owes Company'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+        </tr>
+    `).join('');
+
+    // Build the print document with self-contained CSS
+    const printDocument = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Balance Report</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9px;
+            color: #000;
+            background: #fff;
+            padding: 10px;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .report-header h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .report-header p {
+            font-size: 10px;
+            color: #333;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+        }
+
+        table th {
+            background-color: #f0f0f0;
+            border: 1px solid #000;
+            padding: 4px 3px;
+            text-align: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        table td {
+            border: 1px solid #000;
+            padding: 4px 3px;
+            text-align: center;
+            color: #000;
+        }
+
+        table tbody tr {
+            page-break-inside: avoid;
+        }
+
+        .customer-balance-company-owes {
+            color: #d97706 !important;
+            font-weight: bold;
+        }
+
+        .customer-balance-customer-owes {
+            color: #dc2626 !important;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <h2>Customer Balance Report</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Agency</th>
+                <th>Province</th>
+                <th>Full Address</th>
+                <th>Customer Type</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Total Cement Purchases</th>
+                <th>Total Payments / Receipts</th>
+                <th>Company Owes Customer</th>
+                <th>Customer Owes Company</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${esc(tableRowsHTML)}
+        </tbody>
+    </table>
+</body>
+</html>`;
+
+    // Write the document and close
+    printWindow.document.open();
+    printWindow.document.write(printDocument);
+    printWindow.document.close();
+
+    // Wait for the document to load before printing
+    printWindow.onload = function() {
+        printWindow.print();
+    };
+}
+
+// Open Customer Balance Report Modal
+function openCustomerBalanceReportModal() {
+    document.getElementById('customerBalanceReportModal').style.display = 'flex';
+    loadCustomerBalances();
+}
+
+// Close Customer Balance Report Modal
+function closeCustomerBalanceReportModal() {
+    document.getElementById('customerBalanceReportModal').style.display = 'none';
+}
+
+// Store all data globally for client-side filtering
+let allAgentLogData = [];
+
+// Load agent log submissions
+function loadAgentLogSubmissions() {
+    console.log('[DEBUG] Loading agent log submissions...');
+    
+    // Get current filter values
+    const province = document.getElementById('filter_province').value;
+    const agent = document.getElementById('filter_agent').value;
+    const balance = document.getElementById('filter_balance').value;
+    const customerId = document.getElementById('filter_customer').value;
+    const cement = document.getElementById('filter_cement').value;
+    const truck = document.getElementById('filter_truck').value;
+    const startDate = document.getElementById('filter_start_date').value;
+    const endDate = document.getElementById('filter_end_date').value;
+    const searchDriver = document.getElementById('search_driver').value;
+    const searchWaybill = document.getElementById('search_waybill').value;
+    
+    // Get customer search criteria from modal
+    const customerSearch = window.customerSearchCriteria || {};
+    
+    // Build query URL with filter parameters
+    let queryUrl = `/api/reports/agent-log-submissions?province=${province}&agent=${agent}&balance=${balance}&customer_id=${customerId}&cement=${cement}&truck=${truck}&start_date=${startDate}&end_date=${endDate}&search_driver=${searchDriver}&search_waybill=${searchWaybill}`;
+    
+    // Add customer search parameters if available
+    if (customerSearch.customerId) queryUrl += `&search_cust_id=${encodeURIComponent(customerSearch.customerId)}`;
+    if (customerSearch.customerName) queryUrl += `&search_cust_name=${encodeURIComponent(customerSearch.customerName)}`;
+    if (customerSearch.province) queryUrl += `&search_cust_province=${encodeURIComponent(customerSearch.province)}`;
+    if (customerSearch.agent) queryUrl += `&search_cust_agent=${encodeURIComponent(customerSearch.agent)}`;
+    if (customerSearch.phone) queryUrl += `&search_cust_phone=${encodeURIComponent(customerSearch.phone)}`;
+    if (customerSearch.address) queryUrl += `&search_cust_address=${encodeURIComponent(customerSearch.address)}`;
+    if (customerSearch.email) queryUrl += `&search_cust_email=${encodeURIComponent(customerSearch.email)}`;
+    
+    fetch(queryUrl)
+        .then(res => {
+            console.log('[DEBUG] Response status:', res.status);
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log('[DEBUG] Data received:', data);
+            currentTableData = data.records || [];
+            filteredTableData = [...currentTableData];
+            renderAgentLogTable(filteredTableData);
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading agent log submissions:', err);
+            document.getElementById('agent-log-submissions-rows').innerHTML = `<tr><td colspan="18" style="text-align: center; color:#cf222e; padding:20px;">Error loading data: ${esc(err.message)}</td></tr>`;
+        });
+}
+
+// Global customer balance cache
+let customerBalancesCache = {};
+
+// Fetch customer balances for status badges
+function fetchCustomerBalances() {
+    fetch('/api/reports/customer-balances')
+        .then(res => res.json())
+        .then(data => {
+            customerBalancesCache = {};
+            if (data.balances) {
+                data.balances.forEach(bal => {
+                    customerBalancesCache[bal.customer_id] = bal.net_balance;
+                });
+            }
+            console.log('[DEBUG] Customer balances loaded:', customerBalancesCache);
+        })
+        .catch(err => {
+            console.error('[ERROR] Error fetching customer balances:', err);
+        });
+}
+
+// Table Pagination State
+let currentTableData = [];
+let filteredTableData = [];
+let currentPage = 1;
+let rowsPerPage = 10; // Default dynamic rows count
+
+// Render table with data and calculate totals
+function renderAgentLogTable(records) {
+    const rowsContainer = document.getElementById('agent-log-submissions-rows');
+    let html = '';
+    
+    if (!records || records.length === 0) {
+        html = `
+            <tr>
+                <td colspan="18" style="text-align: center; color: var(--text-muted); padding: 40px 20px; background-color: var(--table-header-bg);">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;">
+                        <svg style="width: 40px; height: 40px; stroke: var(--text-muted); stroke-width: 1.5; fill: none;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <p style="font-size: 14px; font-weight: 500; color: var(--text-main); margin: 0;">
+                            <%= t('admin.no_records_filter') %>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        // Reset footer totals safely
+        const totalBagsEl = document.getElementById('total-bags');
+        const totalTonnageEl = document.getElementById('total-tonnage');
+        const totalShortageEl = document.getElementById('total-shortage');
+        const totalSalesEl = document.getElementById('total-sales');
+        const totalFreightEl = document.getElementById('total-freight');
+        const totalNetCementEl = document.getElementById('total-net-cement');
+
+        if (totalBagsEl) totalBagsEl.textContent = '0';
+        if (totalTonnageEl) totalTonnageEl.textContent = '0';
+        if (totalShortageEl) totalShortageEl.textContent = '0';
+        if (totalSalesEl) totalSalesEl.textContent = '0';
+        if (totalFreightEl) totalFreightEl.textContent = '0';
+        if (totalNetCementEl) totalNetCementEl.textContent = '0';
+        
+        // Reset pagination display
+        updatePaginationControls(0);
+    } else {
+        // Initialize totals from complete filtered dataset
+        let totalBags = 0;
+        let totalTonnage = 0;
+        let totalShortage = 0;
+        let totalCost = 0;
+        let totalSales = 0;
+        let totalFreight = 0;
+        let totalNetCement = 0;
+        
+        // Calculate totals from ALL filtered records (not just paginated)
+        records.forEach((row) => {
+            const bagsCount = row.bags_count || 0;
+            const unitPriceBag = row.unit_price_bag || 0;
+            const tonnage = row.tonnage || 0;
+            const freightPerTon = row.freight_per_ton || 0;
+            
+            // Calculate: جمله فروش = تعداد کیسه × فی فروش
+            const calculatedTotalSales = row.total_sales_money || 0;
+            
+            // Calculate: جمله کرایه = تناژ × فی تن کرایه
+            const calculatedTotalFreight = tonnage * freightPerTon;
+            
+            // Calculate: پول خالص سمنت = جمله فروش - جمله کرایه
+            const calculatedNetCement = calculatedTotalSales - calculatedTotalFreight;
+            
+            // Update totals from complete dataset
+            totalBags += bagsCount;
+            totalTonnage += tonnage;
+            totalShortage += (row.shortage || 0);
+            totalCost += (bagsCount * unitPriceBag);
+            totalSales += calculatedTotalSales;
+            totalFreight += calculatedTotalFreight;
+            totalNetCement += calculatedNetCement;
+        });
+        
+        // Calculate pagination for display only
+        const totalPages = Math.ceil(records.length / rowsPerPage) || 1;
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginatedRecords = records.slice(startIndex, startIndex + rowsPerPage);
+        
+        paginatedRecords.forEach((row, index) => {
+            // Auto-calculate dynamic fields for display only
+            const bagsCount = row.bags_count || 0;
+            const unitPriceBag = row.unit_price_bag || 0;
+            const tonnage = row.tonnage || 0;
+            const freightPerTon = row.freight_per_ton || 0;
+            
+            // Calculate: جمله = تعداد کیسه × فی بوجی
+            const calculatedCost = bagsCount * unitPriceBag;
+            
+            // Calculate: جمله فروش = تعداد کیسه × فی فروش (using total_sales_money / bags_count as sale price per bag)
+            const salePricePerBag = bagsCount > 0 ? row.total_sales_money / bagsCount : 0;
+            const calculatedTotalSales = row.total_sales_money || 0;
+            
+            // Calculate: جمله کرایه = تناژ × فی تن کرایه
+            const calculatedTotalFreight = tonnage * freightPerTon;
+            
+            // Calculate: پول خالص سمنت = جمله فروش - جمله کرایه
+            const calculatedNetCement = calculatedTotalSales - calculatedTotalFreight;
+            
+            html += `
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td class="col-id" style="padding: 10px 12px; text-align: center; font-weight: 500; color: var(--text-muted); background-color: var(--table-header-bg);">${esc(startIndex + index + 1)}</td>
+                    <td class="col-loading-date" style="padding: 10px 12px; text-align: center;">${esc(row.loading_date || row.created_at || '-')}</td>
+                    <td class="col-sale-date" style="padding: 10px 12px; text-align: center;">${esc(row.sale_date || '-')}</td>
+                    <td class="col-customer" style="padding: 10px 12px; text-align: center; font-weight: 500;">
+                        <span style="color: var(--accent-blue); cursor: pointer; text-decoration: none;"
+                              onclick="openCustomerModal('${esc(row.customer_id)}')"
+                              onmouseover="this.style.textDecoration='underline'"
+                              onmouseout="this.style.textDecoration='none'">
+                            ${esc(row.customer_name || 'Unknown')}
+                        </span>
+                    </td>
+                    <td class="col-agency" style="padding: 10px 12px; text-align: center; font-weight: 500;">${esc(row.customer_agency || '-')}</td>
+                    <td class="col-province" style="padding: 10px 12px; text-align: center;">${esc(row.customer_province || '-')}</td>
+                    <td class="col-driver" style="padding: 10px 12px; text-align: center;">${esc(row.driver_name || '-')}</td>
+                    <td class="col-phone" style="padding: 10px 12px; text-align: center; direction: ltr;">${esc(row.driver_phone || '-')}</td>
+                    <td class="col-plate" style="padding: 10px 12px; text-align: center;">${esc(row.car_plate || '-')}</td>
+                    <td class="col-waybill" style="padding: 10px 12px; text-align: center; font-family: monospace; font-weight: 500;">${esc(row.waybill_number || '-')}</td>
+                    <td class="col-cement-type" style="padding: 10px 12px; text-align: center;">${esc(row.cement_type || '-')}</td>
+                    <td class="col-truck-type" style="padding: 10px 12px; text-align: center;">${esc(row.truck_type === 'company' ? '<%= t("admin.filter_truck_company") %>' : (row.truck_type && row.truck_type.toLowerCase() === 'rent') ? '<%= t("admin.filter_truck_rental") %>' : (row.truck_type && row.truck_type.toLowerCase() === 'rented') ? '<%= t("admin.filter_truck_rental") %>' : row.truck_type || '-')}</td>
+                    <td class="col-bags" style="padding: 10px 12px; text-align: center; font-weight: 500;">${esc(bagsCount.toLocaleString())}</td>
+                    <td class="col-tonnage" style="padding: 10px 12px; text-align: center;">${esc(tonnage.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} <%= t('admin.tonnage') %></td>
+                    <td class="col-shortage" style="padding: 10px 12px; text-align: center; color: var(--danger-red); font-weight: 500;">${esc((row.shortage || 0).toLocaleString())}</td>
+                    <td class="col-price-bag" style="padding: 10px 12px; text-align: center;">${esc(unitPriceBag.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} <%= t('admin.afghani') %></td>
+                    <td class="col-sales-total" style="padding: 10px 12px; text-align: center; font-weight: 500;">${esc(calculatedTotalSales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} <%= t('admin.afghani') %></td>
+                    <td class="col-freight-rate" style="padding: 10px 12px; text-align: center;">${esc(freightPerTon.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} <%= t('admin.afghani') %></td>
+                    <td class="col-freight-total" style="padding: 10px 12px; text-align: center; font-weight: 500;">${esc(calculatedTotalFreight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} <%= t('admin.afghani') %></td>
+                    <td class="col-net-cement" style="padding: 10px 12px; text-align: center; font-weight: 600; background-color: rgba(34, 197, 94, 0.1); color: var(--success-green);">${esc(calculatedNetCement.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} <%= t('admin.afghani') %></td>
+                    <td class="col-action" style="padding: 10px 12px; text-align: center; white-space: nowrap;">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                            <button type="button" onclick="editRow('${esc(row.id)}')" class="action-edit-btn"><%= t('admin.action_edit') %></button>
+                            <button type="button" onclick="deleteRow('${esc(row.id)}')" class="action-delete-btn"><%= t('admin.action_delete') %></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        // Update footer totals safely
+        const totalBagsEl = document.getElementById('total-bags');
+        const totalTonnageEl = document.getElementById('total-tonnage');
+        const totalShortageEl = document.getElementById('total-shortage');
+        const totalSalesEl = document.getElementById('total-sales');
+        const totalFreightEl = document.getElementById('total-freight');
+        const totalNetCementEl = document.getElementById('total-net-cement');
+
+        if (totalBagsEl) totalBagsEl.textContent = totalBags.toLocaleString();
+        if (totalTonnageEl) totalTonnageEl.textContent = totalTonnage.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (totalShortageEl) totalShortageEl.textContent = totalShortage.toLocaleString();
+        if (totalSalesEl) totalSalesEl.textContent = totalSales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (totalFreightEl) totalFreightEl.textContent = totalFreight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (totalNetCementEl) totalNetCementEl.textContent = totalNetCement.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        // Update pagination controls
+        updatePaginationControls(records.length);
+    }
+    
+    rowsContainer.innerHTML = html;
+}
+
+// Update Pagination Counters & Buttons
+function updatePaginationControls(totalRecords) {
+    const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
+    const start = totalRecords === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+    const end = Math.min(currentPage * rowsPerPage, totalRecords);
+
+    if (document.getElementById('lbl_page_start')) document.getElementById('lbl_page_start').textContent = start.toLocaleString();
+    if (document.getElementById('lbl_page_end')) document.getElementById('lbl_page_end').textContent = end.toLocaleString();
+    if (document.getElementById('lbl_total_count')) document.getElementById('lbl_total_count').textContent = totalRecords.toLocaleString();
+    if (document.getElementById('lbl_page_indicator')) document.getElementById('lbl_page_indicator').textContent = `<%= t('admin.pagination_page') %> ${currentPage} <%= t('admin.pagination_of') %> ${totalPages}`;
+
+    if (document.getElementById('btn_page_prev')) document.getElementById('btn_page_prev').disabled = (currentPage === 1 || totalRecords === 0);
+    if (document.getElementById('btn_page_next')) document.getElementById('btn_page_next').disabled = (currentPage === totalPages || totalRecords === 0);
+}
+
+// Handle Rows Per Page Selection Change
+function handleRowsPerPageChange(val) {
+    rowsPerPage = parseInt(val) || 10;
+    currentPage = 1; // Reset to first page when limit changes
+    renderAgentLogTable(filteredTableData);
+}
+
+// Go to previous page
+function goToPrevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderAgentLogTable(filteredTableData);
+    }
+}
+
+// Go to next page
+function goToNextPage() {
+    const totalPages = Math.ceil(filteredTableData.length / rowsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderAgentLogTable(filteredTableData);
+    }
+}
+
+// Apply filters and reload data
+function applyFilters() {
+    console.log('[DEBUG] Applying filters...');
+    currentPage = 1; // Reset to first page when filters change
+    loadAgentLogSubmissions();
+}
+
+// Reset all filters to default
+function resetFilters() {
+    console.log('[DEBUG] Resetting filters...');
+    document.getElementById('filter_province').value = 'All';
+    document.getElementById('filter_agent').value = 'All';
+    document.getElementById('filter_balance').value = 'All';
+    document.getElementById('filter_customer').value = 'All';
+    document.getElementById('filter_cement').value = 'All';
+    document.getElementById('filter_truck').value = 'All';
+    document.getElementById('filter_start_date').value = '';
+    document.getElementById('filter_end_date').value = '';
+    document.getElementById('search_driver').value = '';
+    document.getElementById('search_waybill').value = '';
+    applyFilters();
+}
+
+// Edit row function
+function editRow(id) {
+    // TODO: Implement edit functionality
+    alert('ویرایش رکورد ' + id + ' - این قابلیت به زودی اضافه می‌شود');
+}
+
+
+// Refresh financial metrics periodically
+function refreshFinancialMetrics() {
+    console.log('[DEBUG] Refreshing financial metrics...');
+    fetch('/api/admin/financial-metrics', {
+        headers: {
+            'Cache-Control': 'no-cache, no-store',
+            'Pragma': 'no-cache'
+        }
+    })
+        .then(res => {
+            if (res.status === 401 || res.status === 403) {
+                // Session expired / access denied: stop the push stream/poll so a stale
+                // tab stops emitting errors every cycle (Phase 2 403/401 fix).
+                if (typeof stopMetricsStream === 'function') stopMetricsStream();
+                if (res.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(applyFinancialMetrics)
+        .catch(err => {
+            console.error('[ERROR] Error refreshing financial metrics:', err);
+        });
+}
+
+// Phase 6 — shared metrics renderer (SSE push, fallback fetch, tab-visibility refresh)
+function applyFinancialMetrics(data) {
+            const metricReceivablesEl = document.getElementById('metric-receivables');
+            const metricPayablesEl = document.getElementById('metric-payables');
+            const metricSalesEl = document.getElementById('metric-sales');
+            const metricReceivedEl = document.getElementById('metric-received');
+            
+            const currencyLabelReceivables = metricReceivablesEl ? metricReceivablesEl.getAttribute('data-currency-label') : 'AFN';
+            const currencyLabelPayables = metricPayablesEl ? metricPayablesEl.getAttribute('data-currency-label') : 'AFN';
+            const currencyLabelSales = metricSalesEl ? metricSalesEl.getAttribute('data-currency-label') : 'AFN';
+            const currencyLabelReceived = metricReceivedEl ? metricReceivedEl.getAttribute('data-currency-label') : 'AFN';
+            
+            // F-A4b: apply per field — a partial payload (or a SUM that came
+            // back null on an empty table) must skip its tile instead of
+            // throwing mid-apply and aborting the remaining tiles.
+            if (metricReceivablesEl && Number.isFinite(data.total_receivables)) {
+                metricReceivablesEl.innerHTML = `${esc(data.total_receivables.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}))} <span>${esc(currencyLabelReceivables)}</span>`;
+            }
+            if (metricPayablesEl && Number.isFinite(data.total_payables)) {
+                metricPayablesEl.innerHTML = `${esc(data.total_payables.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}))} <span>${esc(currencyLabelPayables)}</span>`;
+            }
+            if (metricSalesEl && Number.isFinite(data.total_sales_money)) {
+                metricSalesEl.innerHTML = `${esc(data.total_sales_money.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}))} <span>${esc(currencyLabelSales)}</span>`;
+            }
+            if (metricReceivedEl && Number.isFinite(data.total_money_received)) {
+                metricReceivedEl.innerHTML = `${esc(data.total_money_received.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}))} <span>${esc(currencyLabelReceived)}</span>`;
+            }
+            
+    console.log('[DEBUG] Financial metrics updated:', data);
+}
+
+// Phase 6 — server push (SSE) replaces the old 5s poll; stale-tab guarantees kept (stop + redirect)
+var metricsStream = null;
+function stopMetricsStream() {
+    if (metricsStream) { metricsStream.close(); metricsStream = null; }
+}
+function startMetricsStream() {
+    if (!window.EventSource) { refreshFinancialMetrics(); return; }
+    stopMetricsStream();
+    metricsStream = new EventSource('/api/admin/financial-metrics/stream');
+    metricsStream.onmessage = function (e) {
+        try { applyFinancialMetrics(JSON.parse(e.data)); } catch (err) { console.error('[ERROR] metrics parse:', err); }
+    };
+    metricsStream.addEventListener('session-lost', function () {
+        stopMetricsStream();
+        window.location.href = '/login';
+    });
+    metricsStream.onerror = function () {
+        stopMetricsStream();
+        // Mirror the Phase-2 guarantees: check the session once; redirect if gone, else retry later.
+        fetch('/api/admin/financial-metrics', { headers: { 'Cache-Control': 'no-cache' } })
+            .then(function (res) {
+                if (res.redirected || res.status === 401) { window.location.href = '/login'; return; }
+                if (res.status === 403) { return; }
+                setTimeout(startMetricsStream, 10000);
+            })
+            .catch(function () { setTimeout(startMetricsStream, 10000); });
+    };
+}
+startMetricsStream();
+
+// Refresh metrics when page becomes visible again (tab switch)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        refreshFinancialMetrics();
+    }
+});
+
+// Refresh metrics when window gains focus
+window.addEventListener('focus', function() {
+    refreshFinancialMetrics();
+});
+
+// Customer Details Modal Functions
+function openCustomerModal(customerId) {
+    const modal = document.getElementById('customerDetailsModal');
+    const loadingDiv = document.getElementById('modal_loading');
+    const bodyDiv = document.getElementById('modal_body');
+    
+    modal.style.display = 'flex';
+    loadingDiv.style.display = 'block';
+    bodyDiv.style.display = 'none';
+    
+    fetch(`/api/reports/customer-details?customer_id=${customerId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                loadingDiv.innerHTML = `<div style="color: #cf222e;">Error: ${esc(data.error)}</div>`;
+                return;
+            }
+            
+            const customer = data.customer;
+            const creator = data.creator;
+            const financial = data.financial;
+            
+            document.getElementById('modal_customer_name').textContent = customer.name;
+            document.getElementById('modal_cust_id').textContent = customer.customer_id || 'N/A';
+            document.getElementById('modal_cust_type').textContent = customer.customer_type || 'Not specified';
+            document.getElementById('modal_contact_position').textContent = customer.contact_person_position || 'Not specified';
+            document.getElementById('modal_province').textContent = customer.province;
+            document.getElementById('modal_agency').textContent = customer.created_by_agency || 'Unknown';
+            document.getElementById('modal_creator').textContent = creator ? creator.username : 'Not linked';
+            document.getElementById('modal_phone').textContent = customer.phone || 'Not provided';
+            document.getElementById('modal_alt_phone').textContent = customer.alternative_phone || 'Not provided';
+            document.getElementById('modal_email').textContent = customer.email || 'Not provided';
+            document.getElementById('modal_address').textContent = customer.address || 'Not provided';
+            document.getElementById('modal_total_debit').textContent = financial.total_debit.toLocaleString() + ' Afs';
+            document.getElementById('modal_total_credit').textContent = financial.total_credit.toLocaleString() + ' Afs';
+            
+            // Populate agency badge name
+            const agencyValue = customer.created_by_agency || customer.agency || customer.province || 'Unknown';
+            let agencyName = agencyValue;
+            // Format agency name (e.g., kabul_agent -> Kabul Agency)
+            if (agencyValue.includes('_')) {
+                const parts = agencyValue.split('_');
+                agencyName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+            } else {
+                agencyName = agencyValue.charAt(0).toUpperCase() + agencyValue.slice(1);
+                if (agencyName.toLowerCase() !== 'unknown') {
+                    agencyName += ' Agency';
+                }
+            }
+            document.getElementById('modal_agency_badge_name').textContent = agencyName;
+            
+            loadingDiv.style.display = 'none';
+            bodyDiv.style.display = 'block';
+        })
+        .catch(err => {
+            loadingDiv.innerHTML = `<div style="color: #cf222e;">Error: ${esc(err.message)}</div>`;
+        });
+}
+
+function closeCustomerModal() {
+    document.getElementById('customerDetailsModal').style.display = 'none';
+}
+
+// Load Cement Types Dropdown Options
+async function loadCementDropdownOptions() {
+    try {
+        const res = await fetch('/api/config/cement-types');
+        if (!res.ok) {
+            console.error('[ERROR] Failed response from cement-types API:', res.status);
+            return;
+        }
+        const items = await res.json();
+        const select = document.getElementById('filter_cement');
+        if (!select) return;
+
+        select.innerHTML = '<option value="All">همه انواع</option>';
+
+        // Handle array structure safely
+        const list = Array.isArray(items) ? items : (items.data || []);
+        list.forEach(item => {
+            const name = item.cement_name || item.name || item;
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+        
+        console.log('[DEBUG] Cement types loaded:', list);
+    } catch (err) {
+        console.error('[ERROR] Failed to populate cement types:', err);
+    }
+}
+
+// Initial page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAgentLogSubmissions();
+    fetchCustomerBalances();
+    loadCementDropdownOptions();
+});
+
+// Cement Summary Report Modal Functions
+let cementSummaryData = [];
+let cementSummaryCurrentPage = 1;
+let cementSummaryRowsPerPage = 10;
+let cementSummaryIsMaximized = false;
+let cementSummaryPreviousSize = null;
+
+function openCementSummaryReportModal() {
+    const modal = document.getElementById('cementSummaryReportModal');
+    const loadingDiv = document.getElementById('cement-summary-loading');
+    const contentDiv = document.getElementById('cement-summary-content');
+    
+    modal.style.display = 'flex';
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    // Reset to first page when opening
+    cementSummaryCurrentPage = 1;
+    
+    fetchCementSummaryReport();
+}
+
+function toggleMaximizeCementSummaryModal() {
+    const modal = document.getElementById('cementSummaryReportModal');
+    const modalContent = document.getElementById('cementSummaryReportModalContent');
+    const btn = document.getElementById('cementSummaryMaximizeBtn');
+    
+    if (!cementSummaryIsMaximized) {
+        // Store current size before maximizing
+        if (cementSummaryPreviousSize === null) {
+            cementSummaryPreviousSize = {
+                width: modalContent.style.width,
+                maxWidth: modalContent.style.maxWidth,
+                maxHeight: modalContent.style.maxHeight,
+                borderRadius: modalContent.style.borderRadius
+            };
+        }
+        
+        // Make modal content fill entire viewport
+        modalContent.style.width = '100vw';
+        modalContent.style.maxWidth = '100vw';
+        modalContent.style.maxHeight = '100vh';
+        modalContent.style.height = '100vh';
+        modalContent.style.borderRadius = '0';
+        modalContent.style.overflow = 'auto';
+        
+        // Also update the modal container to allow full viewport
+        modal.style.padding = '0';
+        modal.style.alignItems = 'flex-start';
+        modal.style.justifyContent = 'flex-start';
+        
+        btn.title = 'Restore';
+        btn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>';
+        cementSummaryIsMaximized = true;
+    } else {
+        // Restore previous size
+        if (cementSummaryPreviousSize) {
+            modalContent.style.width = cementSummaryPreviousSize.width;
+            modalContent.style.maxWidth = cementSummaryPreviousSize.maxWidth;
+            modalContent.style.maxHeight = cementSummaryPreviousSize.maxHeight;
+            modalContent.style.height = 'auto';
+            modalContent.style.borderRadius = cementSummaryPreviousSize.borderRadius || '8px';
+        } else {
+            modalContent.style.width = '95%';
+            modalContent.style.maxWidth = '1400px';
+            modalContent.style.maxHeight = '90vh';
+            modalContent.style.height = 'auto';
+            modalContent.style.borderRadius = '8px';
+        }
+        modalContent.style.overflow = 'hidden';
+        
+        // Restore modal container
+        modal.style.padding = '';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        
+        btn.title = 'Maximize';
+        btn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>';
+        cementSummaryIsMaximized = false;
+    }
+}
+
+function closeCementSummaryReportModal() {
+    document.getElementById('cementSummaryReportModal').style.display = 'none';
+    // Reset window state
+    cementSummaryIsMaximized = false;
+    cementSummaryPreviousSize = null;
+    const modal = document.getElementById('cementSummaryReportModal');
+    const modalContent = document.getElementById('cementSummaryReportModalContent');
+    modalContent.style.width = '95%';
+    modalContent.style.maxWidth = '1400px';
+    modalContent.style.maxHeight = '90vh';
+    modalContent.style.height = 'auto';
+    modalContent.style.borderRadius = '8px';
+    modalContent.style.overflow = 'hidden';
+    modal.style.padding = '';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    const btn = document.getElementById('cementSummaryMaximizeBtn');
+    btn.title = 'Maximize';
+    btn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>';
+}
+
+function fetchCementSummaryReport() {
+    const startDate = document.getElementById('cement_report_start_date').value;
+    const endDate = document.getElementById('cement_report_end_date').value;
+    
+    let url = '/api/reports/cement-summary';
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (params.toString()) url += '?' + params.toString();
+    
+    const loadingDiv = document.getElementById('cement-summary-loading');
+    const contentDiv = document.getElementById('cement-summary-content');
+    
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    fetch(url)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            cementSummaryData = data.records || [];
+            const totals = data.totals;
+            
+            // Reset to page 1 when filters change
+            cementSummaryCurrentPage = 1;
+            
+            renderCementSummaryTable(cementSummaryData, totals);
+            
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading cement summary report:', err);
+            const translations = window.translations || {};
+            const errorMsg = translations.cement_summary_error_loading || 'Error loading report:';
+            loadingDiv.innerHTML = `<div style="color: #ef4444;">${esc(errorMsg)} ${esc(err.message)}</div>`;
+        });
+}
+
+function renderCementSummaryTable(records, totals) {
+    const tbody = document.getElementById('cement-summary-table-body');
+    
+    // Calculate pagination
+    const totalPages = Math.ceil(records.length / cementSummaryRowsPerPage) || 1;
+    const startIndex = (cementSummaryCurrentPage - 1) * cementSummaryRowsPerPage;
+    const paginatedRecords = records.slice(startIndex, startIndex + cementSummaryRowsPerPage);
+    
+    let html = '';
+    
+    // Render paginated cement type records
+    if (paginatedRecords.length === 0 && records.length === 0) {
+        const translations = window.translations || {};
+        const noDataMsg = translations.cement_summary_no_data || 'No cement types registered or no data available.';
+        html = `<tr><td colspan="11" style="padding: 30px; color: var(--text-muted); text-align: center;">${esc(noDataMsg)}</td></tr>`;
+    } else {
+        paginatedRecords.forEach((record, index) => {
+            html += `
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td style="padding: 10px;">${esc(startIndex + index + 1)}</td>
+                    <td style="padding: 10px; font-weight: 700; color: var(--text-main);">${esc(record.cement_type)}</td>
+                    <td style="padding: 10px;">${esc((record.total_waybills || 0).toLocaleString())}</td>
+                    <td style="padding: 10px;">${esc((record.total_bags || 0).toLocaleString())}</td>
+                    <td style="padding: 10px;">${esc((record.total_tonnage || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                    <td style="padding: 10px;">${esc((record.total_shortage || 0).toLocaleString())}</td>
+                    <td style="padding: 10px;">${esc((record.company_trucks_count || 0).toLocaleString())}</td>
+                    <td style="padding: 10px;">${esc((record.rental_trucks_count || 0).toLocaleString())}</td>
+                    <td style="padding: 10px;">${esc((record.total_freight || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                    <td style="padding: 10px;">${esc((record.total_sales || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                    <td style="padding: 10px; font-weight: 700; color: var(--success-green);">${esc((record.total_net_cement || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                </tr>
+            `;
+        });
+        
+        // Render totals row if available (always show totals at the bottom of current page)
+        if (totals) {
+            html += `
+                <tr style="background-color: var(--table-header-bg); border-top: 2px solid var(--border-color); font-weight: 800;">
+                    <td style="padding: 12px;">-</td>
+                    <td style="padding: 12px; color: var(--text-main);">${esc(totals.cement_type)}</td>
+                    <td style="padding: 12px;">${esc((totals.total_waybills || 0).toLocaleString())}</td>
+                    <td style="padding: 12px;">${esc((totals.total_bags || 0).toLocaleString())}</td>
+                    <td style="padding: 12px;">${esc((totals.total_tonnage || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                    <td style="padding: 12px;">${esc((totals.total_shortage || 0).toLocaleString())}</td>
+                    <td style="padding: 12px;">${esc((totals.company_trucks_count || 0).toLocaleString())}</td>
+                    <td style="padding: 12px;">${esc((totals.rental_trucks_count || 0).toLocaleString())}</td>
+                    <td style="padding: 12px;">${esc((totals.total_freight || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                    <td style="padding: 12px;">${esc((totals.total_sales || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                    <td style="padding: 12px; color: var(--success-green);">${esc((totals.total_net_cement || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                </tr>
+            `;
+        }
+    }
+    
+    tbody.innerHTML = html;
+    
+    // Update pagination controls
+    updateCementSummaryPagination(records.length, totalPages);
+}
+
+function updateCementSummaryPagination(totalRecords, totalPages) {
+    const start = totalRecords === 0 ? 0 : (cementSummaryCurrentPage - 1) * cementSummaryRowsPerPage + 1;
+    const end = Math.min(cementSummaryCurrentPage * cementSummaryRowsPerPage, totalRecords);
+    
+    document.getElementById('cement-summary-page-start').textContent = start.toLocaleString();
+    document.getElementById('cement-summary-page-end').textContent = end.toLocaleString();
+    document.getElementById('cement-summary-total-count').textContent = totalRecords.toLocaleString();
+    
+    // Update page numbers
+    const pageNumbersDiv = document.getElementById('cement-summary-page-numbers');
+    let pageNumbersHtml = '';
+    
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === cementSummaryCurrentPage) {
+            pageNumbersHtml += `<button style="background: var(--accent-blue); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;">${esc(i)}</button>`;
+        } else {
+            pageNumbersHtml += `<button onclick="cementSummaryGoToPage(${esc(i)})" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;">${esc(i)}</button>`;
+        }
+    }
+    
+    pageNumbersDiv.innerHTML = pageNumbersHtml;
+    
+    // Update prev/next buttons
+    document.getElementById('cement-summary-prev-btn').disabled = (cementSummaryCurrentPage === 1 || totalRecords === 0);
+    document.getElementById('cement-summary-next-btn').disabled = (cementSummaryCurrentPage === totalPages || totalRecords === 0);
+}
+
+function handleCementSummaryRowsPerPageChange(val) {
+    cementSummaryRowsPerPage = parseInt(val) || 10;
+    cementSummaryCurrentPage = 1;
+    renderCementSummaryTable(cementSummaryData, null);
+}
+
+function cementSummaryGoToPage(pageNum) {
+    cementSummaryCurrentPage = pageNum;
+    renderCementSummaryTable(cementSummaryData, null);
+}
+
+function cementSummaryGoToPrevPage() {
+    if (cementSummaryCurrentPage > 1) {
+        cementSummaryCurrentPage--;
+        renderCementSummaryTable(cementSummaryData, null);
+    }
+}
+
+function cementSummaryGoToNextPage() {
+    const totalPages = Math.ceil(cementSummaryData.length / cementSummaryRowsPerPage);
+    if (cementSummaryCurrentPage < totalPages) {
+        cementSummaryCurrentPage++;
+        renderCementSummaryTable(cementSummaryData, null);
+    }
+}
+
+function printCementReport() {
+    window.print();
+}
+
+// Advanced Customer Search Modal Functions
+function openCustomerSearchModal() {
+    document.getElementById('customerSearchModal').style.display = 'flex';
+}
+
+function closeCustomerSearchModal() {
+    document.getElementById('customerSearchModal').style.display = 'none';
+}
+
+function applyCustomerSearch() {
+    const customerId = document.getElementById('search_cust_id').value.trim();
+    const customerName = document.getElementById('search_cust_name').value.trim();
+    const province = document.getElementById('search_cust_province').value;
+    const agent = document.getElementById('search_cust_agent').value;
+    const phone = document.getElementById('search_cust_phone').value.trim();
+    const address = document.getElementById('search_cust_address').value.trim();
+    const email = document.getElementById('search_cust_email').value.trim();
+    
+    // Store search criteria in a global object for filtering
+    // Only include non-empty fields
+    window.customerSearchCriteria = {};
+    
+    if (customerId) window.customerSearchCriteria.customerId = customerId;
+    if (customerName) window.customerSearchCriteria.customerName = customerName;
+    if (province !== 'All') window.customerSearchCriteria.province = province;
+    if (agent !== 'All') window.customerSearchCriteria.agent = agent;
+    if (phone) window.customerSearchCriteria.phone = phone;
+    if (address) window.customerSearchCriteria.address = address;
+    if (email) window.customerSearchCriteria.email = email;
+    
+    console.log('[DEBUG] Customer search criteria applied:', window.customerSearchCriteria);
+    
+    // If no criteria provided, clear the search
+    if (Object.keys(window.customerSearchCriteria).length === 0) {
+        window.customerSearchCriteria = null;
+    }
+    
+    applyFilters();
+    closeCustomerSearchModal();
+}
+
+function resetCustomerSearch() {
+    document.getElementById('search_cust_id').value = '';
+    document.getElementById('search_cust_name').value = '';
+    document.getElementById('search_cust_province').value = 'All';
+    document.getElementById('search_cust_agent').value = 'All';
+    document.getElementById('search_cust_phone').value = '';
+    document.getElementById('search_cust_address').value = '';
+    document.getElementById('search_cust_email').value = '';
+    
+    window.customerSearchCriteria = null;
+    applyFilters();
+}
+
+// Admin Edit Row Function
+function editRow(rowId) {
+    const row = currentTableData.find(r => r.id == rowId);
+    if (!row) {
+        console.error('[ERROR] Row not found:', rowId);
+        return;
+    }
+    
+    // Populate edit modal with row data
+    document.getElementById('edit_record_id').value = row.id;
+    document.getElementById('edit_loading_date').value = row.loading_date || '';
+    document.getElementById('edit_sale_date').value = row.sale_date || '';
+    document.getElementById('edit_customer_id').value = row.customer_id || '';
+    document.getElementById('edit_driver_name').value = row.driver_name || '';
+    document.getElementById('edit_driver_phone').value = row.driver_phone || '';
+    document.getElementById('edit_car_plate').value = row.car_plate || '';
+    document.getElementById('edit_waybill_number').value = row.waybill_number || '';
+    document.getElementById('edit_cement_type').value = row.cement_type || '';
+    document.getElementById('edit_bags_count').value = row.bags_count || 0;
+    document.getElementById('edit_tonnage').value = row.tonnage || 0;
+    document.getElementById('edit_shortage').value = row.shortage || 0;
+    document.getElementById('edit_unit_price_bag').value = row.unit_price_bag || 0;
+    document.getElementById('edit_total_sales_money').value = row.total_sales_money || 0;
+    document.getElementById('edit_freight_per_ton').value = row.freight_per_ton || 0;
+    document.getElementById('edit_total_freight').value = row.total_freight || 0;
+    document.getElementById('edit_net_cement_money').value = row.net_cement_money || 0;
+    document.getElementById('edit_province_origin').value = row.province_origin || '';
+    
+    // Show edit modal
+    document.getElementById('editAgentLogModal').style.display = 'flex';
+}
+
+// Admin Delete Row Function
+function deleteRow(rowId) {
+    if (!confirm('آیا از حذف این رکورد اطمینان دارید؟\nAre you sure you want to delete this record?')) {
+        return;
+    }
+    
+    fetch(`/api/reports/agent-log/${rowId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        if (data.success) {
+            console.log('[DEBUG] Record deleted successfully');
+            loadAgentLogSubmissions(); // Reload the table
+        } else {
+            alert('Error deleting record: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error('[ERROR] Error deleting record:', err);
+        alert('Error deleting record: ' + err.message);
+    });
+}
+
+// Save Edited Record
+function saveEditedRecord() {
+    const recordId = document.getElementById('edit_record_id').value;
+    
+    const updateData = {
+        sale_date: document.getElementById('edit_sale_date').value,
+        customer_id: parseInt(document.getElementById('edit_customer_id').value),
+        driver_name: document.getElementById('edit_driver_name').value,
+        car_plate: document.getElementById('edit_car_plate').value,
+        waybill_number: document.getElementById('edit_waybill_number').value,
+        cement_type: document.getElementById('edit_cement_type').value,
+        bags_count: parseInt(document.getElementById('edit_bags_count').value) || 0,
+        tonnage: parseFloat(document.getElementById('edit_tonnage').value) || 0,
+        shortage: parseInt(document.getElementById('edit_shortage').value) || 0,
+        unit_price_bag: parseFloat(document.getElementById('edit_unit_price_bag').value) || 0,
+        total_sales_money: parseFloat(document.getElementById('edit_total_sales_money').value) || 0,
+        freight_per_ton: parseFloat(document.getElementById('edit_freight_per_ton').value) || 0,
+        total_freight: parseFloat(document.getElementById('edit_total_freight').value) || 0,
+        net_cement_money: parseFloat(document.getElementById('edit_net_cement_money').value) || 0,
+        province_origin: document.getElementById('edit_province_origin').value
+    };
+    
+    fetch(`/api/reports/agent-log/${recordId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(updateData)
+    })
+    .then(res => {
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        return res.json();
+    })
+    .then(data => {
+        if (data.success) {
+            console.log('[DEBUG] Record updated successfully');
+            closeEditModal();
+            loadAgentLogSubmissions(); // Reload the table
+        } else {
+            alert('Error updating record: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error('[ERROR] Error updating record:', err);
+        alert('Error updating record: ' + err.message);
+    });
+}
+
+function closeEditModal() {
+    document.getElementById('editAgentLogModal').style.display = 'none';
+}
+</script>
+
+<!-- Advanced Customer Search Modal -->
+<div id="customerSearchModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--modal-overlay); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background-color: var(--modal-bg); border-radius: 8px; padding: 24px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; color: var(--text-main); font-size: 16px; font-weight: 600;">Advanced Customer Search (جستجوی پیشرفته مشتری)</h3>
+            <button onclick="closeCustomerSearchModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">&times;</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;">Customer ID</label>
+                <input type="text" id="search_cust_id" class="form-control" placeholder="e.g., KAB-001" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;">Customer Name</label>
+                <input type="text" id="search_cust_name" class="form-control" placeholder="e.g., Ali Baba" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;">Province</label>
+                <select id="search_cust_province" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+                    <option value="All">All Provinces</option>
+                    <option value="Kabul">Kabul</option>
+                    <option value="Herat">Herat</option>
+                    <option value="Balkh">Balkh</option>
+                    <option value="Kandahar">Kandahar</option>
+                    <option value="Nangarhar">Nangarhar</option>
+                    <option value="Khost">Khost</option>
+                    <option value="Paktia">Paktia</option>
+                    <option value="Paktika">Paktika</option>
+                    <option value="Ghazni">Ghazni</option>
+                    <option value="Logar">Logar</option>
+                    <option value="Wardak">Wardak</option>
+                    <option value="Parwan">Parwan</option>
+                    <option value="Kapisa">Kapisa</option>
+                    <option value="Panjshir">Panjshir</option>
+                    <option value="Laghman">Laghman</option>
+                    <option value="Kunar">Kunar</option>
+                    <option value="Nuristan">Nuristan</option>
+                    <option value="Badakhshan">Badakhshan</option>
+                    <option value="Takhar">Takhar</option>
+                    <option value="Baghlan">Baghlan</option>
+                    <option value="Samangan">Samangan</option>
+                    <option value="Jowzjan">Jowzjan</option>
+                    <option value="Sar-e Pol">Sar-e Pol</option>
+                    <option value="Faryab">Faryab</option>
+                    <option value="Kunduz">Kunduz</option>
+                    <option value="Badghis">Badghis</option>
+                    <option value="Ghor">Ghor</option>
+                    <option value="Daikundi">Daikundi</option>
+                    <option value="Bamyan">Bamyan</option>
+                    <option value="Uruzgan">Uruzgan</option>
+                    <option value="Zabul">Zabul</option>
+                    <option value="Helmand">Helmand</option>
+                    <option value="Nimruz">Nimruz</option>
+                    <option value="Farah">Farah</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;">Registered to Agent</label>
+                <select id="search_cust_agent" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+                    <option value="All">All Agents</option>
+                    <% if (typeof agentAccounts !== 'undefined' && agentAccounts.length > 0) { %>
+                        <% agentAccounts.forEach(function(agent) { %>
+                            <option value="<%= agent.username %>"><%= agent.username %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;">Phone Number</label>
+                <input type="text" id="search_cust_phone" class="form-control" placeholder="e.g., 0799123456" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;">Email</label>
+                <input type="email" id="search_cust_email" class="form-control" placeholder="e.g., customer@email.com" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div style="grid-column: 1 / -1;">
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;">Address</label>
+                <input type="text" id="search_cust_address" class="form-control" placeholder="e.g., Street 123, Kabul" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+            <button onclick="resetCustomerSearch()" class="btn btn-secondary" style="background-color: var(--text-muted); color: white; padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                Reset / Clear Search
+            </button>
+            <button onclick="applyCustomerSearch()" class="btn btn-primary" style="background-color: var(--accent-blue); color: white; padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                Apply Search
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Edit Agent Log Modal -->
+<div id="editAgentLogModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--modal-overlay); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background-color: var(--modal-bg); border-radius: 8px; padding: 24px; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); direction: rtl;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; color: var(--text-main); font-size: 18px; font-weight: 600;">ویرایش گزارش (Edit Report)</h3>
+            <button onclick="closeEditModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px;">&times;</button>
+        </div>
+        
+        <input type="hidden" id="edit_record_id">
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">تاریخ بارگیری (Loading Date)</label>
+                <input type="text" id="edit_loading_date" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);" readonly>
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">تاریخ فروش (Sale Date)</label>
+                <input type="text" id="edit_sale_date" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">نام مشتری (Customer)</label>
+                <select id="edit_customer_id" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+                    <% customers.forEach(function(customer) { %>
+                        <option value="<%= customer.id %>"><%= customer.id %> - <%= customer.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">نام راننده (Driver Name)</label>
+                <input type="text" id="edit_driver_name" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">شماره تماس (Phone)</label>
+                <input type="text" id="edit_driver_phone" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">نمبر پلیت (Car Plate)</label>
+                <input type="text" id="edit_car_plate" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">شماره بارنامه (Waybill Number)</label>
+                <input type="text" id="edit_waybill_number" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">نوعیت سمنت (Cement Type)</label>
+                <input type="text" id="edit_cement_type" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">تعداد کیسه (Bags Count)</label>
+                <input type="number" id="edit_bags_count" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">تناژ (Tonnage)</label>
+                <input type="number" step="0.01" id="edit_tonnage" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">کمبود (Shortage)</label>
+                <input type="number" id="edit_shortage" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">فی کیسه (Unit Price per Bag)</label>
+                <input type="number" step="0.01" id="edit_unit_price_bag" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">جمله فروش (Total Sales)</label>
+                <input type="number" step="0.01" id="edit_total_sales_money" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">فی تن کرایه (Freight per Ton)</label>
+                <input type="number" step="0.01" id="edit_freight_per_ton" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">جمله کرایه (Total Freight)</label>
+                <input type="number" step="0.01" id="edit_total_freight" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">پول خالص سمنت (Net Cement Money)</label>
+                <input type="number" step="0.01" id="edit_net_cement_money" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div style="grid-column: 1 / -1;">
+                <label style="font-size: 13px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:6px;">محل بارگیری (Province Origin)</label>
+                <input type="text" id="edit_province_origin" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+            <button onclick="closeEditModal()" class="btn btn-secondary" style="background-color: var(--text-muted); color: white; padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                انصراف (Cancel)
+            </button>
+            <button onclick="saveEditedRecord()" class="modal-save-btn">
+                ذخیره (Save)
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Cement Summary Report Modal -->
+<div id="cementSummaryReportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; align-items: center; justify-content: center;">
+    <div id="cementSummaryReportModalContent" style="background: var(--modal-bg); border-radius: 8px; width: 95%; max-width: 1400px; max-height: 90vh; overflow: hidden; border: 1px solid var(--border-color); transition: all 0.3s ease;" class="rtl-content">
+        <!-- Window Control Header -->
+        <div class="report-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-main);">
+                    <%= t('admin.cement_summary_report') %>
+                </h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">
+                    <%= t('admin.cement_summary_description') %>
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="window.print()" class="btn no-print cement-summary-print-btn" style="color: #fff; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                    <%= t('admin.print_report') %>
+                </button>
+                <!-- Window Controls -->
+                <div style="display: flex; gap: 4px; margin-right: 8px;">
+                    <button onclick="toggleMaximizeCementSummaryModal()" id="cementSummaryMaximizeBtn" class="btn no-print" style="background: var(--table-header-bg); color: var(--text-main); padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 500; cursor: pointer;" title="Maximize">
+                        <svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    </button>
+                    <button onclick="closeCementSummaryReportModal()" class="btn no-print report-close-btn" aria-label="<%= t('admin.close') %>" title="<%= t('admin.close') %>">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inline Filter Bar -->
+        <div class="report-filter-bar no-print" style="margin: 20px 24px; background: var(--table-header-bg); border: 1px solid var(--border-color);">
+            <div class="filter-group">
+                <label for="cement_report_start_date" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('admin.cement_summary_from_date') %></label>
+                <input type="text" id="cement_report_start_date" class="form-control-custom" data-datepicker="jalali" placeholder="1405/01/01" readonly style="width: 160px; text-align: center; direction: ltr; height: 36px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+
+            <div class="filter-group">
+                <label for="cement_report_end_date" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('admin.cement_summary_to_date') %></label>
+                <input type="text" id="cement_report_end_date" class="form-control-custom" data-datepicker="jalali" placeholder="1405/03/30" readonly style="width: 160px; text-align: center; direction: ltr; height: 36px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+
+            <button onclick="fetchCementSummaryReport()" style="background: var(--accent-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; height: 36px; font-size: 13px;">
+                <%= t('admin.filter') %>
+            </button>
+        </div>
+        
+        <div id="cement-summary-loading" style="padding: 40px; text-align: center; display: block;">
+            <svg style="width: 40px; height: 40px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M12 2a10 10 0 0 1 10 10"/></svg>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;"><%= t('admin.cement_summary_loading') %></p>
+        </div>
+        
+        <div id="cement-summary-content" style="padding: 24px; overflow-x: auto; display: none;">
+            <!-- Rows Per Page Selector -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;" class="no-print">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted);">
+                    <span><%= t('admin.cement_summary_rows_per_page') %></span>
+                    <select id="cement-summary-rows-per-page" onchange="handleCementSummaryRowsPerPageChange(this.value)" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); cursor: pointer;">
+                        <option value="10">۱۰</option>
+                        <option value="50">۵۰</option>
+                        <option value="100">۱۰۰</option>
+                    </select>
+                </div>
+                <div style="font-size: 13px; color: var(--text-muted);">
+                    <%= t('admin.cement_summary_showing') %> <span id="cement-summary-page-start">0</span> <%= t('admin.cement_summary_to') %> <span id="cement-summary-page-end">0</span> <%= t('admin.cement_summary_of') %> <span id="cement-summary-total-count">0</span> <%= t('admin.cement_summary_items') %>
+                </div>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center;">
+                <thead>
+                    <tr style="background-color: #f9fafb; border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 600;">
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_number') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_cement_type') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_waybills') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_bags') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_tons') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_shortages') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_company_vehicles') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_rental_vehicles') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_total_rent') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_total_sales') %></th>
+                        <th style="padding: 12px 10px;"><%= t('admin.cement_summary_header_net_amount') %></th>
+                    </tr>
+                </thead>
+                <tbody id="cement-summary-table-body">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+            
+            <!-- Pagination Controls -->
+            <div id="cement-summary-pagination" class="no-print" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <button id="cement-summary-prev-btn" onclick="cementSummaryGoToPrevPage()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('admin.pagination_previous') %></button>
+                <div id="cement-summary-page-numbers" style="display: flex; gap: 4px;"></div>
+                <button id="cement-summary-next-btn" onclick="cementSummaryGoToNextPage()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('admin.pagination_next') %></button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Customer Balance Report Modal -->
+<div id="customerBalanceReportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; align-items: center; justify-content: center;">
+    <div id="customerBalanceReportModalContent" style="background: var(--modal-bg); border-radius: 8px; width: 95%; max-width: 1600px; max-height: 90vh; overflow: hidden; direction: rtl; text-align: right; border: 1px solid var(--border-color); transition: all 0.3s ease; display: flex; flex-direction: column;">
+        <!-- Window Control Header -->
+        <div class="report-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-main);">
+                    <%= t('admin.customer_balance_report') %>
+                </h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">
+                    <%= t('admin.customer_balance_subtitle') %>
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="printCustomerBalanceReport()" class="btn no-print" style="background: var(--text-main); color: #fff; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                    <%= t('admin.customer_balance_print_report') %>
+                </button>
+                <!-- Window Controls -->
+                <div style="display: flex; gap: 4px; margin-right: 8px;">
+                    <button onclick="toggleCustomerBalanceFullScreen()" id="customerBalanceFullScreenBtn" class="btn no-print" style="background: var(--table-header-bg); color: var(--text-main); padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 500; cursor: pointer;" title="<%= t('admin.full_screen') %>">
+                        <svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    </button>
+                    <button onclick="closeCustomerBalanceReportModal()" class="btn no-print report-close-btn" aria-label="<%= t('admin.close') %>" title="<%= t('admin.close') %>">
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inline Filter Bar -->
+        <div class="report-filter-bar no-print" style="margin: 20px 24px; background: var(--table-header-bg); border: 1px solid var(--border-color); flex-shrink: 0;">
+            <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+                <label for="customer-balance-filter" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('admin.balance_filter_label') %></label>
+                <select id="customer-balance-filter" onchange="applyCustomerBalanceFilter()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main); cursor: pointer;">
+                    <option value="all"><%= t('admin.balance_filter_all') %></option>
+                    <option value="company_owes"><%= t('admin.balance_filter_company_owes') %></option>
+                    <option value="customer_owes"><%= t('admin.balance_filter_customer_owes') %></option>
+                </select>
+            </div>
+            <div class="filter-group" style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                <label for="customer-balance-search" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('admin.customer_balance_search') %></label>
+                <input type="text" id="customer-balance-search" oninput="applyCustomerBalanceSearch()" placeholder="<%= t('admin.customer_balance_search_placeholder') %>" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main); flex: 1; min-width: 200px;">
+                <button onclick="clearCustomerBalanceSearch()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;" title="<%= t('admin.customer_balance_clear_search') %>">
+                    <svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <button onclick="loadCustomerBalances()" style="background: var(--accent-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;">
+                <%= t('admin.refresh') %>
+            </button>
+        </div>
+        
+        <div id="customer-balance-loading" style="padding: 40px; text-align: center; display: block;">
+            <svg style="width: 40px; height: 40px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M12 2a10 10 0 0 1 10 10"/></svg>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;"><%= t('admin.loading_data') %></p>
+        </div>
+        
+        <div id="customer-balance-content" style="padding: 24px; overflow: hidden; display: none;">
+            <!-- Table Container with Vertical Scroll -->
+            <div class="customer-balance-table-container" style="max-height: 45vh; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 6px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.3; text-align: center; direction: rtl;">
+                    <thead>
+                        <tr style="background-color: var(--table-header-bg); border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; position: sticky; top: 0; z-index: 2;">
+                            <th style="padding: 8px 8px;">#</th>
+                            <th style="padding: 8px 8px;">ID</th>
+                            <th style="padding: 8px 8px;">Name</th>
+                            <th style="padding: 8px 8px;">Agency</th>
+                            <th style="padding: 8px 8px;">Province</th>
+                            <th style="padding: 8px 8px;">Full Address</th>
+                            <th style="padding: 8px 8px;">Customer Type</th>
+                            <th style="padding: 8px 8px;">Email</th>
+                            <th style="padding: 8px 8px;">Phone Number</th>
+                            <th style="padding: 8px 8px;">Total Cement Purchases</th>
+                            <th style="padding: 8px 8px;">Total Payments / Receipts</th>
+                            <th style="padding: 8px 8px; color: var(--warning-amber);">Company Owes Customer</th>
+                            <th style="padding: 8px 8px; color: var(--danger-red);">Customer Owes Company</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-balances-rows">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div id="customer-balance-pagination" class="no-print" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-muted);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span><%= t('admin.pagination_rows_per_page') %></span>
+                        <select id="customer-balance-rows-per-page" onchange="changeCustomerBalanceRowsPerPage()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main); cursor: pointer;">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div>
+                        <%= t('admin.pagination_showing') %> <span id="customer-balance-page-start">0</span> <%= t('admin.pagination_to') %> <span id="customer-balance-page-end">0</span> <%= t('admin.pagination_of') %> <span id="customer-balance-total-count">0</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button id="customer-balance-prev-btn" onclick="customerBalanceGoToPrevPage()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('admin.pagination_previous') %></button>
+                    <div id="customer-balance-page-numbers" style="display: flex; gap: 4px;"></div>
+                    <button id="customer-balance-next-btn" onclick="customerBalanceGoToNextPage()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('admin.pagination_next') %></button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<style>
+/* Customer Balance Report Modal Full Screen */
+#customerBalanceReportModal.fullscreen-active {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#customerBalanceReportModalContent.full-screen {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    height: 100vh !important;
+}
+
+/* Customer Balance Report Table Container - Modern Themed Scrollbar */
+.customer-balance-table-container {
+    direction: ltr;
+}
+
+.customer-balance-table-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.customer-balance-table-container::-webkit-scrollbar-track {
+    background: var(--table-header-bg);
+    border-radius: 6px;
+}
+
+.customer-balance-table-container::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 6px;
+    border: 2px solid var(--table-header-bg);
+}
+
+.customer-balance-table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text-main);
+}
+
+/* Firefox scrollbar support */
+.customer-balance-table-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-muted) var(--table-header-bg);
+}
+
+/* Customer Balance Report Value Colors */
+.customer-balance-table-container .customer-balance-company-owes {
+    color: var(--status-warning) !important;
+    font-weight: 600 !important;
+}
+
+.customer-balance-table-container .customer-balance-customer-owes {
+    color: var(--status-error) !important;
+    font-weight: 600 !important;
+}
+
+/* Customer Balance Report Dark Mode Fixes */
+@media (prefers-color-scheme: dark) {
+    #customerBalanceReportModal button[onclick="printCustomerBalanceReport()"] {
+        background: #1a1a1a !important;
+        color: #fff !important;
+    }
+    
+    #customerBalanceReportModal select {
+        background: var(--input-bg) !important;
+        color: var(--text-main) !important;
+        border-color: var(--border-color) !important;
+    }
+    
+    #customerBalanceReportModal #customer-balance-pagination button {
+        background: var(--table-header-bg) !important;
+        color: var(--text-main) !important;
+        border-color: var(--border-color) !important;
+    }
+}
+
+/* Customer Balance Report Print Styles */
+@media print {
+    @page {
+        size: landscape;
+        margin: 0.5cm;
+    }
+    
+    body * {
+        visibility: hidden;
+    }
+    
+    #customerBalanceReportModal,
+    #customerBalanceReportModal * {
+        visibility: visible;
+    }
+    
+    #customerBalanceReportModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: white;
+        z-index: 9999;
+        padding: 20px;
+        overflow: visible;
+    }
+    
+    #customerBalanceReportModalContent {
+        max-width: none;
+        max-height: none;
+        border: none;
+        border-radius: 0;
+        height: auto;
+        overflow: visible;
+    }
+    
+    .no-print,
+    #customer-balance-pagination,
+    .report-filter-bar,
+    .report-header button,
+    .filter-group button,
+    #customer-balance-loading,
+    #customer-balance-rows-per-page {
+        display: none !important;
+    }
+    
+    #customer-balance-content {
+        padding: 0;
+        overflow: visible;
+        display: block !important;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 10px;
+    }
+    
+    table th,
+    table td {
+        border: 1px solid #000;
+        padding: 6px 4px;
+        color: #000;
+    }
+    
+    table th {
+        background-color: #f0f0f0;
+        color: #000;
+        font-weight: 600;
+    }
+    
+    table tbody tr {
+        page-break-inside: avoid;
+    }
+    
+    .report-header {
+        border-bottom: 2px solid #000;
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .report-header h2 {
+        font-size: 18px;
+        color: #000;
+        margin: 0;
+    }
+    
+    .report-header p {
+        color: #000;
+        margin: 4px 0 0 0;
+        font-size: 12px;
+    }
+}
+</style>
+
+<script>
+// Tonnage Statistics Chart
+let tonnageChart = null;
+let cementTypesData = [];
+let agenciesData = [];
+
+// Initialize tonnage chart on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadCementTypes();
+    loadAgencies();
+    loadTonnageFilters().then(() => {
+        initTonnageChart();
+    });
+});
+
+// Load cement types for filter
+function loadCementTypes() {
+    fetch('/api/config/cement-types')
+        .then(res => res.json())
+        .then(data => {
+            cementTypesData = data;
+            const select = document.getElementById('tonnage-cement-types');
+            select.innerHTML = '';
+            data.forEach(ct => {
+                const option = document.createElement('option');
+                option.value = ct.cement_name;
+                option.textContent = ct.cement_name;
+                select.appendChild(option);
+            });
+        })
+        .catch(err => console.error('Error loading cement types:', err));
+}
+
+// Load agencies for filter
+function loadAgencies() {
+    fetch('/api/admin/agencies-list')
+        .then(res => res.json())
+        .then(data => {
+            // F-A3: the endpoint returns { agencies: [...] }; the old code did
+            // data.forEach(...) on the object and threw "forEach is not a
+            // function", leaving the agency filter empty. Normalize the shape
+            // (and tolerate an error payload) before iterating.
+            const list = Array.isArray(data) ? data : (data && Array.isArray(data.agencies) ? data.agencies : []);
+            agenciesData = list;
+            const select = document.getElementById('tonnage-agency');
+            select.innerHTML = '<option value="all"><%= t('admin.filter_all_agencies') %></option>';
+            list.forEach(agency => {
+                const option = document.createElement('option');
+                option.value = agency.agency_name;
+                option.textContent = agency.agency_name;
+                select.appendChild(option);
+            });
+        })
+        .catch(err => console.error('Error loading agencies:', err));
+}
+
+// Load tonnage filters (months and years)
+function loadTonnageFilters() {
+    // Load available years from database
+    return fetch('/api/admin/tonnage-years')
+        .then(res => res.json())
+        .then(data => {
+            const yearSelect = document.getElementById('tonnage-year');
+            yearSelect.innerHTML = '';
+            // Sort years numerically
+            const sortedYears = data.years.sort((a, b) => parseInt(a) - parseInt(b));
+            sortedYears.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            });
+            // Set to latest year
+            if (sortedYears.length > 0) {
+                yearSelect.value = sortedYears[sortedYears.length - 1];
+            }
+        })
+        .catch(err => console.error('Error loading years:', err))
+        .then(() => {
+            // Populate months with Jalali month names
+            const monthSelect = document.getElementById('tonnage-month');
+            const jalaliMonths = [
+                { value: '01', name: '01 — حمل' },
+                { value: '02', name: '02 — ثور' },
+                { value: '03', name: '03 — جوزا' },
+                { value: '04', name: '04 — سرطان' },
+                { value: '05', name: '05 — اسد' },
+                { value: '06', name: '06 — سنبله' },
+                { value: '07', name: '07 — میزان' },
+                { value: '08', name: '08 — عقرب' },
+                { value: '09', name: '09 — قوس' },
+                { value: '10', name: '10 — جدی' },
+                { value: '11', name: '11 — دلو' },
+                { value: '12', name: '12 — حوت' }
+            ];
+            monthSelect.innerHTML = '';
+            jalaliMonths.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month.value;
+                option.textContent = month.name;
+                monthSelect.appendChild(option);
+            });
+            // Set to current month (06 as example)
+            monthSelect.value = '06';
+        })
+        .then(() => {
+            // Attach event listeners after elements are populated
+            attachTonnageEventListeners();
+        });
+}
+
+// Attach event listeners to tonnage filter elements
+function attachTonnageEventListeners() {
+    const periodSelect = document.getElementById('tonnage-period');
+    const yearSelect = document.getElementById('tonnage-year');
+    const monthSelect = document.getElementById('tonnage-month');
+    const cementTypeSelect = document.getElementById('tonnage-cement-types');
+    const agencySelect = document.getElementById('tonnage-agency');
+    const startDateInput = document.getElementById('tonnage-start-date');
+    const endDateInput = document.getElementById('tonnage-end-date');
+
+    // Store current values before cloning
+    const periodValue = periodSelect.value;
+    const yearValue = yearSelect.value;
+    const monthValue = monthSelect.value;
+    const cementTypeValue = cementTypeSelect.value;
+    const agencyValue = agencySelect.value;
+    const startDateValue = startDateInput.value;
+    const endDateValue = endDateInput.value;
+
+    // Remove existing listeners to prevent duplicates
+    const newPeriodSelect = periodSelect.cloneNode(true);
+    periodSelect.parentNode.replaceChild(newPeriodSelect, periodSelect);
+    newPeriodSelect.value = periodValue;
+    newPeriodSelect.addEventListener('change', handlePeriodChange);
+
+    const newYearSelect = yearSelect.cloneNode(true);
+    yearSelect.parentNode.replaceChild(newYearSelect, yearSelect);
+    newYearSelect.value = yearValue;
+    newYearSelect.addEventListener('change', updateTonnageChart);
+
+    const newMonthSelect = monthSelect.cloneNode(true);
+    monthSelect.parentNode.replaceChild(newMonthSelect, monthSelect);
+    newMonthSelect.value = monthValue;
+    newMonthSelect.addEventListener('change', updateTonnageChart);
+
+    const newCementTypeSelect = cementTypeSelect.cloneNode(true);
+    cementTypeSelect.parentNode.replaceChild(newCementTypeSelect, cementTypeSelect);
+    newCementTypeSelect.value = cementTypeValue;
+    newCementTypeSelect.addEventListener('change', updateTonnageChart);
+
+    const newAgencySelect = agencySelect.cloneNode(true);
+    agencySelect.parentNode.replaceChild(newAgencySelect, agencySelect);
+    newAgencySelect.value = agencyValue;
+    newAgencySelect.addEventListener('change', updateTonnageChart);
+
+    const newStartDateInput = startDateInput.cloneNode(true);
+    startDateInput.parentNode.replaceChild(newStartDateInput, startDateInput);
+    newStartDateInput.value = startDateValue;
+    newStartDateInput.addEventListener('change', updateTonnageChart);
+    newStartDateInput.addEventListener('input', updateTonnageChart);
+
+    const newEndDateInput = endDateInput.cloneNode(true);
+    endDateInput.parentNode.replaceChild(newEndDateInput, endDateInput);
+    newEndDateInput.value = endDateValue;
+    newEndDateInput.addEventListener('change', updateTonnageChart);
+    newEndDateInput.addEventListener('input', updateTonnageChart);
+}
+
+// Handle period change to show/hide appropriate filters
+function handlePeriodChange() {
+    const period = document.getElementById('tonnage-period').value;
+    const monthGroup = document.getElementById('tonnage-month-group');
+    const yearGroup = document.getElementById('tonnage-year-group');
+    const dateRangeGroup = document.getElementById('tonnage-date-range-group');
+    const yearSelect = document.getElementById('tonnage-year');
+
+    if (period === 'daily') {
+        monthGroup.style.display = 'none';
+        yearGroup.style.display = 'none';
+        dateRangeGroup.style.display = 'block';
+    } else if (period === 'monthly') {
+        monthGroup.style.display = 'block';
+        yearGroup.style.display = 'block';
+        dateRangeGroup.style.display = 'none';
+    } else if (period === 'yearly') {
+        monthGroup.style.display = 'none';
+        yearGroup.style.display = 'block';
+        dateRangeGroup.style.display = 'none';
+        // Ensure year dropdown has a selected value
+        if (!yearSelect.value && yearSelect.options.length > 0) {
+            yearSelect.value = yearSelect.options[yearSelect.options.length - 1].value;
+        }
+    }
+
+    // Update chart immediately with current period value
+    updateTonnageChart();
+}
+
+// Initialize chart
+function initTonnageChart() {
+    const ctx = document.getElementById('tonnage-chart').getContext('2d');
+    
+    tonnageChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
+                        font: {
+                            size: 12
+                        },
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--bg-surface-elevated').trim(),
+                    titleColor: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
+                    bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--text-primary').trim(),
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border').trim(),
+                    borderWidth: 1,
+                    padding: 12,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + ' <%= t('admin.tons') %>';
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    type: 'category',
+                    grid: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--border').trim(),
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+                        font: {
+                            size: 11
+                        }
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--border').trim(),
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+                        font: {
+                            size: 11
+                        },
+                        callback: function(value) {
+                            return value.toFixed(0);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: '<%= t('admin.tons') %>',
+                        color: getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim(),
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Load initial data
+    loadAnalyticsFilters();
+    updateTonnageChart();
+}
+
+// Update chart with filtered data
+function updateTonnageChart() {
+    const period = document.getElementById('tonnage-period').value;
+    const startDate = document.getElementById('tonnage-start-date').value;
+    const endDate = document.getElementById('tonnage-end-date').value;
+    const cementType = document.getElementById('tonnage-cement-types').value;
+    const cementTypesParam = cementType || 'all';
+    const agency = document.getElementById('tonnage-agency').value;
+    const month = document.getElementById('tonnage-month').value;
+    const year = document.getElementById('tonnage-year').value;
+    
+    // Clear previous error
+    const errorDiv = document.getElementById('date-range-error');
+    errorDiv.style.display = 'none';
+    errorDiv.textContent = '';
+    
+    // Validate date range (datepicker ensures format, just check logical order)
+    if (startDate && endDate && startDate > endDate) {
+        errorDiv.textContent = 'Start date cannot be after end date';
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    const params = new URLSearchParams({
+        period: period,
+        cementTypes: cementTypesParam,
+        agency: agency
+    });
+
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    if (period === 'monthly' && month && year) {
+        params.append('month', month);
+        params.append('year', year);
+    }
+    if (period === 'yearly' && year) {
+        params.append('year', year);
+    }
+
+    fetch(`/api/admin/tonnage-statistics?${params}`)
+        .then(res => res.json())
+        .then(data => {
+            // Update totals
+            document.getElementById('tonnage-total').textContent = data.totals.totalTonnage.toLocaleString();
+            document.getElementById('tonnage-average').textContent = data.totals.averageDaily.toLocaleString();
+
+            // Check for empty data
+            const chartContainer = document.getElementById('tonnage-chart').parentElement;
+            const emptyState = document.getElementById('tonnage-empty-state');
+
+            if (data.labels.length === 0 || data.datasets.every(ds => ds.data.every(v => v === 0))) {
+                chartContainer.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            chartContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            // Transform labels based on period
+            let displayLabels = [...data.labels];
+            if (period === 'daily') {
+                displayLabels = data.labels.map(label => {
+                    if (!label || typeof label !== 'string') {
+                        return '';
+                    }
+                    const parts = label.split('/');
+                    return parts.length === 3 ? `${esc(parts[1])}/${esc(parts[2])}` : label;
+                });
+            } else if (period === 'monthly') {
+                displayLabels = data.labels.map(label => {
+                    if (!label || typeof label !== 'string') {
+                        return '';
+                    }
+                    const parts = label.split('/');
+                    return parts.length === 3 ? `${esc(parts[1])}/${esc(parts[2])}` : label;
+                });
+            }
+            // For yearly, labels are already Jalali month names from backend
+
+            // Update date range display in header
+            updateDateRangeDisplay(period, startDate, endDate, month, year, data.labels);
+
+            // Update chart data
+            tonnageChart.data.labels = displayLabels;
+            tonnageChart.data.datasets = data.datasets;
+            
+            console.log('[TONNAGE AXIS FORENSIC]', {
+                chartType: tonnageChart.config.type,
+                xScaleType: tonnageChart.options.scales?.x?.type,
+                labels: tonnageChart.data.labels,
+                firstLabel: tonnageChart.data.labels[0],
+                lastLabel: tonnageChart.data.labels[tonnageChart.data.labels.length - 1],
+                datasetLength: tonnageChart.data.datasets[0]?.data?.length
+            });
+            
+            tonnageChart.update();
+
+            // Update chart colors for theme
+            updateChartTheme();
+        })
+        .catch(err => {
+            console.error('Error loading tonnage statistics:', err);
+            document.getElementById('tonnage-chart').parentElement.style.display = 'none';
+            document.getElementById('tonnage-empty-state').style.display = 'block';
+        });
+
+    // Also update analytics charts (donut and province)
+    updateAnalytics();
+}
+
+// Update date range display in header
+function updateDateRangeDisplay(period, startDate, endDate, month, year, labels) {
+    const dateRangeEl = document.getElementById('tonnage-date-range');
+    if (!dateRangeEl) return;
+
+    if (period === 'daily' && labels.length > 0) {
+        // Show full date range for Daily mode
+        const firstLabel = labels[0];
+        const lastLabel = labels[labels.length - 1];
+        
+        if (!firstLabel || !lastLabel || typeof firstLabel !== 'string' || typeof lastLabel !== 'string') {
+            dateRangeEl.textContent = '';
+            return;
+        }
+        
+        dateRangeEl.textContent = `Daily • ${firstLabel} → ${lastLabel}`;
+    } else if (period === 'monthly' && month && year && labels.length > 0) {
+        // Show month/year for Monthly mode
+        const firstLabel = labels[0];
+        const lastLabel = labels[labels.length - 1];
+        
+        if (!firstLabel || !lastLabel || typeof firstLabel !== 'string' || typeof lastLabel !== 'string') {
+            dateRangeEl.textContent = `Monthly • ${year}/${month}`;
+            return;
+        }
+        
+        dateRangeEl.textContent = `Monthly • ${year}/${month} • ${firstLabel} → ${lastLabel}`;
+    } else if (period === 'yearly' && year && labels.length > 0) {
+        // Show year for Yearly mode
+        dateRangeEl.textContent = `Yearly • ${year}`;
+    } else {
+        dateRangeEl.textContent = '';
+    }
+}
+
+// Update chart colors based on theme
+function updateChartTheme() {
+    if (!tonnageChart) return;
+
+    const textColor = getComputedStyle(document.documentElement).getPropertyValue('--text-main').trim();
+    const mutedColor = getComputedStyle(document.documentElement).getPropertyValue('--text-muted').trim();
+    const borderColor = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+    const tooltipBg = getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim();
+    const tooltipText = getComputedStyle(document.documentElement).getPropertyValue('--tooltip-text').trim();
+
+    tonnageChart.options.plugins.legend.labels.color = textColor;
+    tonnageChart.options.plugins.tooltip.backgroundColor = tooltipBg;
+    tonnageChart.options.plugins.tooltip.titleColor = tooltipText;
+    tonnageChart.options.plugins.tooltip.bodyColor = tooltipText;
+    tonnageChart.options.plugins.tooltip.borderColor = borderColor;
+    tonnageChart.options.scales.x.grid.color = borderColor;
+    tonnageChart.options.scales.x.ticks.color = mutedColor;
+    tonnageChart.options.scales.y.grid.color = borderColor;
+    tonnageChart.options.scales.y.ticks.color = mutedColor;
+    tonnageChart.options.scales.y.title.color = mutedColor;
+
+    tonnageChart.update();
+}
+
+// Listen for theme changes
+const observer = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+        if (mutation.attributeName === 'data-theme') {
+            updateChartTheme();
+        }
+    });
+});
+
+observer.observe(document.documentElement, { attributes: true });
+
+// Cement Analytics (Donut + Province Bar Charts)
+let distributionChart = null;
+
+// Initialize analytics charts
+function initAnalytics() {
+    // Initialize donut chart
+    const ctx = document.getElementById('distribution-chart').getContext('2d');
+    
+    distributionChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+                borderColor: [],
+                borderWidth: 2,
+                hoverOffset: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            cutout: '65%',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-bg').trim(),
+                    titleColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-text').trim(),
+                    bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-text').trim(),
+                    borderColor: getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim(),
+                    borderWidth: 1,
+                    padding: 12,
+                    displayColors: true,
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                            return `${esc(label)}: ${esc(value.toLocaleString())} Tons (${esc(percentage)}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Load initial data (filters are shared with tonnage statistics)
+    updateAnalytics();
+}
+
+// Load analytics filters (now uses tonnage filters)
+function loadAnalyticsFilters() {
+    // Load cement types into tonnage filter dropdown
+    fetch('/api/config/cement-types')
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('tonnage-cement-types');
+            select.innerHTML = '<option value="all"><%= t('admin.filter_all_cement') %></option>';
+            data.forEach(ct => {
+                const option = document.createElement('option');
+                option.value = ct.cement_name;
+                option.textContent = ct.cement_name;
+                select.appendChild(option);
+            });
+        });
+
+    // Load agencies into tonnage filter dropdown
+    fetch('/api/admin/agencies-list')
+        .then(res => res.json())
+        .then(data => {
+            const select = document.getElementById('tonnage-agency');
+            select.innerHTML = '<option value="all"><%= t('admin.filter_all_agencies') %></option>';
+            const agencies = data.agencies || data; // Handle both object with agencies property and direct array
+            if (Array.isArray(agencies)) {
+                agencies.forEach(agency => {
+                    const option = document.createElement('option');
+                    option.value = agency.agency_name;
+                    option.textContent = agency.agency_name;
+                    select.appendChild(option);
+                });
+            }
+        });
+}
+
+// Reset statistics filters to default state
+function resetStatisticsFilters() {
+    document.getElementById('tonnage-period').value = 'daily';
+    document.getElementById('tonnage-start-date').value = '';
+    document.getElementById('tonnage-end-date').value = '';
+    document.getElementById('tonnage-cement-types').value = 'all';
+    document.getElementById('tonnage-agency').value = 'all';
+    
+    // Refresh all charts
+    updateTonnageChart();
+}
+
+// Update analytics (both donut and province charts)
+function updateAnalytics() {
+    const startDate = document.getElementById('tonnage-start-date').value;
+    const endDate = document.getElementById('tonnage-end-date').value;
+    const period = document.getElementById('tonnage-period').value;
+    const cementType = document.getElementById('tonnage-cement-types').value;
+    const cementTypesParam = cementType || 'all';
+    const agency = document.getElementById('tonnage-agency').value;
+
+    const params = new URLSearchParams({
+        cementTypes: cementTypesParam,
+        agency: agency
+    });
+
+    if (startDate && endDate) {
+        params.append('startDate', startDate);
+        params.append('endDate', endDate);
+    } else if (period === 'monthly') {
+        // Extract month from start date if in monthly mode
+        if (startDate && startDate.length >= 7) {
+            params.append('month', startDate.substring(0, 7));
+        }
+    } else if (period === 'yearly') {
+        // Extract year from start date if in yearly mode
+        if (startDate && startDate.length >= 4) {
+            params.append('year', startDate.substring(0, 4));
+        }
+    }
+
+    // Update donut chart
+    updateDonutChart(params);
+    // Update province chart
+    updateProvinceChart(params);
+}
+
+// Update donut chart
+function updateDonutChart(params) {
+    console.log('[CEMENT ANALYTICS DEBUG] Frontend request params:', params.toString());
+    
+    fetch(`/api/admin/cement-sales-distribution?${params}`)
+        .then(res => res.json())
+        .then(data => {
+            console.log('[CEMENT ANALYTICS DEBUG] Frontend received data:', data);
+            console.log('[CEMENT ANALYTICS DEBUG] Distribution array length:', data.distribution ? data.distribution.length : 'undefined');
+            
+            // Update center total
+            document.getElementById('distribution-total').textContent = data.totalTonnage.toLocaleString();
+
+            // Check for empty data
+            const chartContainer = document.getElementById('distribution-chart').parentElement;
+            const legendContainer = document.getElementById('distribution-legend');
+            const emptyState = document.getElementById('distribution-empty-state');
+            const centerText = document.getElementById('distribution-center-text');
+
+            if (data.distribution.length === 0) {
+                console.log('[CEMENT ANALYTICS DEBUG] Distribution is empty, showing no-data state');
+                chartContainer.style.display = 'none';
+                legendContainer.style.display = 'none';
+                centerText.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            chartContainer.style.display = 'block';
+            legendContainer.style.display = 'block';
+            centerText.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            // Update chart data
+            distributionChart.data.labels = data.distribution.map(d => d.cement_type);
+            distributionChart.data.datasets[0].data = data.distribution.map(d => d.tonnage);
+            distributionChart.data.datasets[0].backgroundColor = data.distribution.map(d => d.color);
+            distributionChart.data.datasets[0].borderColor = getComputedStyle(document.documentElement).getPropertyValue('--card-bg').trim();
+            distributionChart.update();
+
+            // Update legend
+            updateDistributionLegend(data.distribution);
+        })
+        .catch(err => {
+            console.error('[CEMENT ANALYTICS DEBUG] Error loading cement sales distribution:', err);
+            document.getElementById('distribution-chart').parentElement.style.display = 'none';
+            document.getElementById('distribution-legend').style.display = 'none';
+            document.getElementById('distribution-center-text').style.display = 'none';
+            document.getElementById('distribution-empty-state').style.display = 'block';
+        });
+}
+
+// Update province chart
+function updateProvinceChart(params) {
+    fetch(`/api/admin/province-sales?${params}`)
+        .then(res => res.json())
+        .then(data => {
+            const barsContainer = document.getElementById('province-bars');
+            const emptyState = document.getElementById('province-empty-state');
+            const chartContainer = document.getElementById('province-chart-container');
+
+            if (data.provinces.length === 0) {
+                barsContainer.style.display = 'none';
+                chartContainer.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            barsContainer.style.display = 'flex';
+            chartContainer.style.display = 'block';
+            emptyState.style.display = 'none';
+
+            // Render province bars
+            barsContainer.innerHTML = '';
+            data.provinces.forEach((item, index) => {
+                const barRow = document.createElement('div');
+                barRow.style.display = 'flex';
+                barRow.style.alignItems = 'center';
+                barRow.style.gap = '12px';
+                barRow.style.fontSize = '13px';
+
+                const rank = document.createElement('div');
+                rank.style.width = '24px';
+                rank.style.textAlign = 'center';
+                rank.style.color = 'var(--text-muted)';
+                rank.style.fontWeight = '500';
+                rank.textContent = index + 1;
+
+                const provinceName = document.createElement('div');
+                provinceName.style.width = '120px';
+                provinceName.style.color = 'var(--text-main)';
+                provinceName.style.flexShrink = '0';
+                provinceName.textContent = item.province;
+
+                const barContainer = document.createElement('div');
+                barContainer.style.flex = '1';
+                barContainer.style.height = '24px';
+                barContainer.style.backgroundColor = 'var(--border-color)';
+                barContainer.style.borderRadius = '3px';
+                barContainer.style.overflow = 'hidden';
+                barContainer.style.position = 'relative';
+
+                const barFill = document.createElement('div');
+                barFill.style.height = '100%';
+                barFill.style.width = `${item.percentage}%`;
+                barFill.style.backgroundColor = '#3b82f6';
+                barFill.style.transition = 'width 0.3s ease';
+
+                barContainer.appendChild(barFill);
+
+                const tonnage = document.createElement('div');
+                tonnage.style.width = '80px';
+                tonnage.style.textAlign = 'right';
+                tonnage.style.color = 'var(--text-main)';
+                tonnage.style.fontWeight = '500';
+                tonnage.textContent = item.tonnage.toLocaleString();
+
+                const percentage = document.createElement('div');
+                percentage.style.width = '50px';
+                percentage.style.textAlign = 'right';
+                percentage.style.color = 'var(--text-muted)';
+                percentage.textContent = `${item.percentage}%`;
+
+                barRow.appendChild(rank);
+                barRow.appendChild(provinceName);
+                barRow.appendChild(barContainer);
+                barRow.appendChild(tonnage);
+                barRow.appendChild(percentage);
+                barsContainer.appendChild(barRow);
+            });
+        })
+        .catch(err => {
+            console.error('Error loading province sales:', err);
+            document.getElementById('province-bars').style.display = 'none';
+            document.getElementById('province-chart-container').style.display = 'none';
+            document.getElementById('province-empty-state').style.display = 'block';
+        });
+}
+
+// Update distribution legend
+function updateDistributionLegend(distribution) {
+    const legendContainer = document.getElementById('distribution-legend');
+    legendContainer.innerHTML = '';
+
+    distribution.forEach(item => {
+        const legendItem = document.createElement('div');
+        legendItem.style.display = 'flex';
+        legendItem.style.alignItems = 'center';
+        legendItem.style.marginBottom = '8px';
+        legendItem.style.fontSize = '13px';
+
+        const colorBox = document.createElement('div');
+        colorBox.style.width = '12px';
+        colorBox.style.height = '12px';
+        colorBox.style.borderRadius = '3px';
+        colorBox.style.backgroundColor = item.color;
+        colorBox.style.marginRight = '8px';
+        colorBox.style.flexShrink = '0';
+
+        const label = document.createElement('span');
+        label.style.color = 'var(--text-main)';
+        label.style.flex = '1';
+        label.textContent = item.cement_type;
+
+        const percentage = document.createElement('span');
+        percentage.style.color = 'var(--text-muted)';
+        percentage.style.fontWeight = '500';
+        percentage.textContent = `${item.percentage}%`;
+
+        legendItem.appendChild(colorBox);
+        legendItem.appendChild(label);
+        legendItem.appendChild(percentage);
+        legendContainer.appendChild(legendItem);
+    });
+}
+
+// Initialize analytics on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    initAnalytics();
+});
+</script>
+
+<%- include('partials/customer_modal') %>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,168 @@
+<%# ===========================================================================
+    MOBILE RESPONSIVE LAYER (app-shell pages)
+    ---------------------------------------------------------------------------
+    Included from partials/header.ejs so it applies to EVERY page that uses the
+    app shell (admin + HR + worker). Pure CSS — no behaviour, no IDs, no JS.
+
+    Cascade note: header's main <style> block loads BEFORE each page's own
+    <style>, so to win against page-level rules WITHOUT !important everywhere,
+    most selectors here are scoped with .content-scrollable (0,2,0 specificity)
+    which beats a page's single-class rule (0,1,0) regardless of source order.
+
+    Everything is wrapped in @media screen so printing (waybills, reports,
+    payroll sheets) is completely unaffected.
+    =========================================================================== %>
+<style id="mobile-responsive-layer">
+@media screen and (max-width: 768px) {
+
+    /* --- 1. Viewport height -------------------------------------------------
+       100vh is unreliable on mobile browsers (the URL bar inflates it), which
+       leaves the bottom of the page unreachable. 100dvh tracks the real visual
+       viewport. The shell still scrolls inside .content-scrollable. */
+    html,
+    body {
+        height: 100%;
+        height: 100dvh;
+    }
+
+    /* --- 2. Content padding -------------------------------------------------
+       30px of padding eats a third of a phone screen. Tighten it and respect
+       notches / home-indicator via safe-area insets (direction-agnostic). */
+    .content-scrollable {
+        padding: 14px 12px;
+        padding-left: max(12px, env(safe-area-inset-left));
+        padding-right: max(12px, env(safe-area-inset-right));
+    }
+
+    /* --- 3. Flex / grid children must be allowed to shrink ------------------
+       The classic overflow cause: a flex or grid child refuses to shrink below
+       its content width. min-width:0 lets it wrap or scroll instead. Table
+       internals are excluded so data columns keep their proper width (the table
+       itself scrolls instead — see section 4). */
+    .content-scrollable *:not(th):not(td):not(tr):not(thead):not(tbody):not(table):not(col):not(colgroup),
+    .content-scrollable *::before,
+    .content-scrollable *::after {
+        min-width: 0;
+    }
+
+    /* --- 4. Universal table safety net --------------------------------------
+       Any data table that is NOT already inside a horizontal scroll wrapper gets
+       turned into its own scroll container, so it can never push the page wider
+       than the screen. Tables that already have a wrapper (.table-responsive /
+       .table-wrapper) or belong to a print sheet keep native table layout — the
+       wrapper scrolls them as designed. If an older browser can't parse the
+       complex :not(), this reset rule is dropped and every table simply uses the
+       block-scroll fallback above, which is still correct. */
+    .content-scrollable table {
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+
+    .content-scrollable .table-responsive table,
+    .content-scrollable .table-wrapper table,
+    .eway-container table,
+    .waybill-print-sheet table,
+    .content-scrollable .print-sheet table {
+        display: table;
+        overflow-x: visible;
+        max-width: none;
+    }
+
+    /* --- 5. Touch targets ---------------------------------------------------
+       Apple/Google both recommend ~44px. Buttons and primary controls get a
+       40px floor; inputs/selects get 16px text which also stops iOS from
+       auto-zooming the page when a field is focused. Buttons may wrap their
+       label instead of overflowing a narrow phone column. */
+    .content-scrollable button,
+    .content-scrollable .btn,
+    .content-scrollable input[type="submit"],
+    .content-scrollable input[type="button"],
+    .content-scrollable input[type="reset"] {
+        min-height: 40px;
+        padding: 9px 14px;
+        white-space: normal;      /* long labels wrap instead of overflowing */
+    }
+
+    .content-scrollable input,
+    .content-scrollable select,
+    .content-scrollable textarea {
+        font-size: 16px;          /* prevents iOS focus auto-zoom */
+        max-width: 100%;
+        min-height: 40px;
+        padding: 9px 10px;
+    }
+
+    /* Inline editors inside dense data tables stay a little tighter so rows
+       don't balloon, but remain comfortably tappable. */
+    .content-scrollable table input,
+    .content-scrollable table select,
+    .content-scrollable table textarea {
+        min-height: 34px;
+        font-size: 16px;
+        padding: 6px 8px;
+    }
+
+    /* Text links that act as actions (back links, row actions) get breathing
+       room so they are thumb-friendly without changing the visual hierarchy. */
+    .content-scrollable a.back-link,
+    .content-scrollable .customer-link,
+    .content-scrollable [class*="-link"] {
+        display: inline-flex;
+        align-items: center;
+        min-height: 32px;
+        padding-block: 4px;
+    }
+
+    /* --- 6. Toolbars, filter rows and chips wrap instead of overflow ------- */
+    .content-scrollable .filter-row,
+    .content-scrollable .toolbar,
+    .content-scrollable .actions,
+    .content-scrollable .summary-chip,
+    .content-scrollable .pagination,
+    .content-scrollable [class*="-actions"],
+    .content-scrollable [class*="-toolbar"] {
+        flex-wrap: wrap;
+    }
+
+    /* --- 7. Cards / panels -------------------------------------------------- */
+    .content-scrollable .card,
+    .content-scrollable .panel,
+    .content-scrollable [class*="-card"] {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+
+    /* --- 8. Print-oriented layouts scale down instead of overflowing --------
+       The waybill / e-way-bill sheets are authored at A4 width (~373-415px+).
+       On a phone we scale the whole sheet to fit the screen rather than letting
+       it push the page sideways. transform does not affect layout, so we also
+       reserve vertical space with a matching margin. */
+    .eway-container,
+    .waybill-print-sheet {
+        max-width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* --- 9. Very small phones (<= 420px) ---------------------------------------
+   One column everywhere and a touch more compactness for 320-390px devices. */
+@media screen and (max-width: 420px) {
+
+    .content-scrollable {
+        padding: 10px 8px;
+        padding-left: max(8px, env(safe-area-inset-left));
+        padding-right: max(8px, env(safe-area-inset-right));
+    }
+
+    .content-scrollable button,
+    .content-scrollable .btn,
+    .content-scrollable input,
+    .content-scrollable select,
+    .content-scrollable textarea {
+        font-size: 16px;
+    }
+}
+</style>

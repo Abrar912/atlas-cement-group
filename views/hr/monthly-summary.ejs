@@ -1,0 +1,281 @@
+<%- include('../partials/header') %>
+
+<%
+    var displayMonth = selectedYear + '/' + String(selectedMonth).padStart(2, '0');
+
+    var hijriMonthNames = [
+        t('hr.attendance.hijri_month_01') || 'Hamal',
+        t('hr.attendance.hijri_month_02') || 'Sawr',
+        t('hr.attendance.hijri_month_03') || 'Jawza',
+        t('hr.attendance.hijri_month_04') || 'Saratan',
+        t('hr.attendance.hijri_month_05') || 'Asad',
+        t('hr.attendance.hijri_month_06') || 'Sunbula',
+        t('hr.attendance.hijri_month_07') || 'Mizan',
+        t('hr.attendance.hijri_month_08') || 'Aqrab',
+        t('hr.attendance.hijri_month_09') || 'Qaws',
+        t('hr.attendance.hijri_month_10') || 'Jady',
+        t('hr.attendance.hijri_month_11') || 'Dalw',
+        t('hr.attendance.hijri_month_12') || 'Hout'
+    ];
+
+    var monthOptions = [];
+    var startYear = selectedYear - 1;
+    var endYear = selectedYear + 1;
+    for (var y = startYear; y <= endYear; y++) {
+        for (var m = 1; m <= 12; m++) {
+            var val = y + '/' + String(m).padStart(2, '0');
+            var label = y + '/' + String(m).padStart(2, '0') + ' — ' + hijriMonthNames[m - 1];
+            monthOptions.push({ val: val, label: label, selected: (y === selectedYear && m === selectedMonth) });
+        }
+    }
+%>
+
+<style>
+    .ms-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    .ms-toolbar select, .ms-toolbar .btn {
+        height: 36px;
+        font-size: 13px;
+        border-radius: 8px;
+        padding: 0 12px;
+    }
+    .ms-toolbar select {
+        background: var(--card-bg);
+        color: var(--text-main);
+        border: 1px solid var(--border-color);
+        cursor: pointer;
+        min-width: 180px;
+    }
+    .ms-filter-row { display: none; }
+    .emp-avatar { overflow: hidden; }
+    .emp-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: inherit;
+    }
+    @media print {
+        .sidebar, .top-navbar, .no-print,
+        .ms-toolbar, .date-nav-btn, .date-nav-today,
+        .hr-mobile-cards,
+        .back-to-daily { display: none !important; }
+        .main-viewport > div:first-child {
+            display: none !important;
+        }
+        .card { box-shadow: none !important; border: 1px solid #ccc !important; }
+        body { background: #fff !important; color: #000 !important; }
+        .main-viewport { overflow: visible !important; height: auto !important; }
+        .content-scrollable { padding: 0 !important; overflow: visible !important; }
+        .hr-desktop-table { display: block !important; }
+        .date-nav-current { border: 1px solid #000; color: #000; background: #fff !important; }
+        .summary-chip { border: 1px solid #ccc; }
+        .emp-avatar { border: 1px solid #999; overflow: hidden; }
+        .emp-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+        h2 { font-size: 18px !important; }
+        .print-title { display: block !important; font-size: 11px; color: #555; margin-bottom: 8px; }
+    }
+    .print-title { display: none; }
+</style>
+
+<div class="card">
+    <!-- Print-only title -->
+    <div class="print-title"><%= t('hr.attendance.monthly_summary') %> — <%= displayMonth %></div>
+
+    <!-- Title + Solar Hijri Month Navigator -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+        <h2 style="font-size: 22px; font-weight: 700; margin: 0;">📊 <%= t('hr.attendance.monthly_summary') %></h2>
+        <div class="date-nav">
+            <a href="/admin/hr/attendance/monthly-summary?month=<%= encodeURIComponent(prevMonth) %>" class="date-nav-btn">
+                ← <%= t('hr.attendance.previous') %>
+            </a>
+            <div class="date-nav-current"><%= displayMonth %></div>
+            <a href="/admin/hr/attendance/monthly-summary?month=<%= encodeURIComponent(nextMonth) %>" class="date-nav-btn">
+                <%= t('hr.attendance.next') %> →
+            </a>
+        </div>
+    </div>
+
+    <!-- Toolbar: Status Filter + Month Dropdown + Print -->
+    <div class="ms-toolbar no-print">
+        <select id="msStatusFilter" onchange="msFilterByStatus(this.value)">
+            <option value="all"><%= t('hr.attendance.all_statuses') %></option>
+            <option value="recorded"><%= t('hr.attendance.recorded') %></option>
+            <option value="missing"><%= t('hr.attendance.missing') %></option>
+            <option value="present"><%= t('hr.attendance.present') %></option>
+            <option value="absent"><%= t('hr.attendance.absent') %></option>
+            <option value="late"><%= t('hr.attendance.late') %></option>
+            <option value="half_day"><%= t('hr.attendance.half_day') %></option>
+            <option value="holiday"><%= t('hr.attendance.holiday') %></option>
+            <option value="leave"><%= t('hr.attendance.leave') %></option>
+        </select>
+        <select id="msMonthSelect" onchange="msGoToMonth(this.value)">
+            <% monthOptions.forEach(function(opt) { %>
+                <option value="<%= opt.val %>" <%= opt.selected ? 'selected' : '' %>><%= opt.label %></option>
+            <% }); %>
+        </select>
+        <button type="button" class="btn" style="background: var(--accent-blue); color: #fff; border: none; cursor: pointer;" onclick="window.print();">
+            🖨 <%= t('hr.attendance.print_report') %>
+        </button>
+    </div>
+
+    <!-- Back link -->
+    <div style="margin-bottom: 16px;" class="no-print back-to-daily">
+        <a href="/admin/hr/attendance?date=<%= today %>" style="font-size: 13px; color: var(--accent-blue); text-decoration: none; font-weight: 500;">← <%= t('hr.attendance.back_to_daily') %></a>
+    </div>
+
+    <!-- DESKTOP TABLE -->
+    <div class="hr-desktop-table">
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t('hr.attendance.employee') %></th>
+                    <th><%= t('hr.attendance.department') %></th>
+                    <th><%= t('hr.attendance.total') %></th>
+                    <th><%= t('hr.attendance.recorded') %></th>
+                    <th><%= t('hr.attendance.present') %></th>
+                    <th><%= t('hr.attendance.absent') %></th>
+                    <th><%= t('hr.attendance.late') %></th>
+                    <th><%= t('hr.attendance.half_day') %></th>
+                    <th><%= t('hr.attendance.holiday') %></th>
+                    <th><%= t('hr.attendance.leave') %></th>
+                    <th><%= t('hr.attendance.late_minutes') %></th>
+                    <th><%= t('hr.attendance.early') %></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (summaryData && summaryData.length > 0) { %>
+                    <% summaryData.forEach(function(emp) { %>
+                        <%
+                            var isMissing = emp.recordedDays === 0;
+                            var filterKey = isMissing ? 'missing' : (emp.present > 0 ? 'present' : (emp.absent > 0 ? 'absent' : (emp.late > 0 ? 'late' : (emp.halfDay > 0 ? 'half_day' : (emp.holiday > 0 ? 'holiday' : (emp.leave > 0 ? 'leave' : 'recorded'))))));
+                            var initials = '?';
+                            if (emp.full_name) {
+                                var parts = emp.full_name.trim().split(/\s+/);
+                                initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]) : parts[0].substring(0, 2);
+                            }
+                            var avatarColors = ['#10b981','#3b82f6','#8b5cf6','#f97316','#ec4899','#06b6d4','#f59e0b','#ef4444'];
+                            var colorIdx = emp.id % avatarColors.length;
+                            var avatarBg = avatarColors[colorIdx];
+                        %>
+                        <tr class="ms-row" data-filter-recorded="<%= emp.recordedDays > 0 ? '1' : '0' %>" data-filter-missing="<%= emp.recordedDays === 0 ? '1' : '0' %>" data-filter-present="<%= emp.present > 0 ? '1' : '0' %>" data-filter-absent="<%= emp.absent > 0 ? '1' : '0' %>" data-filter-late="<%= emp.late > 0 ? '1' : '0' %>" data-filter-half_day="<%= emp.halfDay > 0 ? '1' : '0' %>" data-filter-holiday="<%= emp.holiday > 0 ? '1' : '0' %>" data-filter-leave="<%= emp.leave > 0 ? '1' : '0' %>">
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div class="emp-avatar" style="background: <%= avatarBg %>;"><% if (emp.photo_path) { %><img src="/<%= emp.photo_path %>" alt="<%= emp.full_name %>"><% } else { %><%= initials %><% } %></div>
+                                    <div>
+                                        <strong style="font-size: 13px;"><%= emp.full_name %></strong>
+                                        <% if (emp.employee_id) { %>
+                                            <div style="font-size: 11px; color: var(--text-muted);"><%= emp.employee_id %></div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="font-size: 12px; color: var(--text-muted);"><%= emp.department_name || '—' %></td>
+                            <td><%= emp.totalDays %></td>
+                            <td><span class="summary-chip" style="background: rgba(59,130,246,0.12); color: var(--accent-blue);"><%= emp.recordedDays %></span></td>
+                            <td><span class="summary-chip" style="background: rgba(16,185,129,0.12); color: #10b981;"><%= emp.present %></span></td>
+                            <td><span class="summary-chip" style="background: rgba(239,68,68,0.12); color: #ef4444;"><%= emp.absent %></span></td>
+                            <td><span class="summary-chip" style="background: rgba(249,115,22,0.12); color: #f97316;"><%= emp.late %></span></td>
+                            <td><span class="summary-chip" style="background: rgba(139,92,246,0.12); color: #8b5cf6;"><%= emp.halfDay %></span></td>
+                            <td><span class="summary-chip" style="background: rgba(107,114,128,0.15); color: #6b7280;"><%= emp.holiday %></span></td>
+                            <td><span class="summary-chip" style="background: rgba(236,72,153,0.12); color: #ec4899;"><%= emp.leave %></span></td>
+                            <td>
+                                <% if (emp.totalLateMinutes > 0) { %>
+                                    <span class="indicator-chip indicator-late">⏰ <%= emp.totalLateMinutes %>m</span>
+                                <% } else { %>
+                                    <span class="indicator-ok">0m</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (emp.totalEarlyDepartureMinutes > 0) { %>
+                                    <span class="indicator-chip indicator-early">🏃 <%= emp.totalEarlyDepartureMinutes %>m</span>
+                                <% } else { %>
+                                    <span class="indicator-ok">0m</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="12" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <%= t('hr.attendance.no_records_found') %>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- MOBILE CARDS -->
+    <div class="hr-mobile-cards">
+        <% if (summaryData && summaryData.length > 0) { %>
+            <% summaryData.forEach(function(emp) { %>
+                <%
+                    var isMissing = emp.recordedDays === 0;
+                    var initials = '?';
+                    if (emp.full_name) {
+                        var parts = emp.full_name.trim().split(/\s+/);
+                        initials = parts.length >= 2 ? (parts[0][0] + parts[parts.length-1][0]) : parts[0].substring(0, 2);
+                    }
+                    var avatarColors = ['#10b981','#3b82f6','#8b5cf6','#f97316','#ec4899','#06b6d4','#f59e0b','#ef4444'];
+                    var colorIdx = emp.id % avatarColors.length;
+                    var avatarBg = avatarColors[colorIdx];
+                %>
+                <div class="att-emp-card ms-row" data-filter-recorded="<%= emp.recordedDays > 0 ? '1' : '0' %>" data-filter-missing="<%= emp.recordedDays === 0 ? '1' : '0' %>" data-filter-present="<%= emp.present > 0 ? '1' : '0' %>" data-filter-absent="<%= emp.absent > 0 ? '1' : '0' %>" data-filter-late="<%= emp.late > 0 ? '1' : '0' %>" data-filter-half_day="<%= emp.halfDay > 0 ? '1' : '0' %>" data-filter-holiday="<%= emp.holiday > 0 ? '1' : '0' %>" data-filter-leave="<%= emp.leave > 0 ? '1' : '0' %>">
+                    <div class="att-emp-card-header">
+                        <div class="emp-avatar" style="background: <%= avatarBg %>;"><% if (emp.photo_path) { %><img src="/<%= emp.photo_path %>" alt="<%= emp.full_name %>"><% } else { %><%= initials %><% } %></div>
+                        <div style="flex: 1;">
+                            <div class="att-emp-card-name"><%= emp.full_name %></div>
+                            <div class="att-emp-card-id"><%= emp.employee_id || '' %> · <%= emp.department_name || '—' %></div>
+                        </div>
+                    </div>
+                    <div class="att-emp-card-detail">
+                        <span>📋 <%= t('hr.attendance.recorded') %>: <strong><%= emp.recordedDays %>/<%= emp.totalDays %></strong></span>
+                    </div>
+                    <div class="att-emp-card-detail">
+                        <span class="summary-chip" style="background: rgba(16,185,129,0.12); color: #10b981;">✅ <%= emp.present %></span>
+                        <span class="summary-chip" style="background: rgba(239,68,68,0.12); color: #ef4444;">❌ <%= emp.absent %></span>
+                        <span class="summary-chip" style="background: rgba(249,115,22,0.12); color: #f97316;">⏰ <%= emp.late %></span>
+                        <span class="summary-chip" style="background: rgba(139,92,246,0.12); color: #8b5cf6;">🟡 <%= emp.halfDay %></span>
+                        <span class="summary-chip" style="background: rgba(107,114,128,0.15); color: #6b7280;">🔵 <%= emp.holiday %></span>
+                        <span class="summary-chip" style="background: rgba(236,72,153,0.12); color: #ec4899;">🏖 <%= emp.leave %></span>
+                    </div>
+                    <div class="att-emp-card-detail">
+                        <% if (emp.totalLateMinutes > 0) { %>
+                            <span class="indicator-chip indicator-late">⏰ <%= emp.totalLateMinutes %>m <%= t('hr.attendance.late_minutes') %></span>
+                        <% } else { %>
+                            <span>⏰ 0m</span>
+                        <% } %>
+                        <% if (emp.totalEarlyDepartureMinutes > 0) { %>
+                            <span class="indicator-chip indicator-early">🏃 <%= emp.totalEarlyDepartureMinutes %>m <%= t('hr.attendance.early') %></span>
+                        <% } else { %>
+                            <span>🏃 0m</span>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        <% } else { %>
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <%= t('hr.attendance.no_records_found') %>
+            </div>
+        <% } %>
+    </div>
+</div>
+
+<script>
+function msFilterByStatus(status) {
+    var rows = document.querySelectorAll('.ms-row');
+    for (var i = 0; i < rows.length; i++) {
+        var row = rows[i];
+        if (status === 'all') {
+            row.style.display = '';
+        } else {
+            var attr = row.getAttribute('data-filter-' + status);
+            row.style.display = attr === '1' ? '' : 'none';
+        }
+    }
+}
+function msGoToMonth(monthVal) {
+    window.location.href = '/admin/hr/attendance/monthly-summary?month=' + encodeURIComponent(monthVal);
+}
+</script>
+
+<%- include('../partials/footer') %>

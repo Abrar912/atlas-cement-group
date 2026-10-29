@@ -1,0 +1,2731 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Page-specific styles - filter-row now handled globally in header.ejs */
+    :root {
+        --accent-blue: #2563eb;
+        --success-green: #059669;
+        --danger-red: #dc2626;
+        --warning-amber: #d97706;
+    }
+
+    /* Keep page container standard LTR for layout positioning */
+    .dashboard-container {
+        direction: ltr;
+        padding: 20px;
+    }
+
+    /* Content components inside use proper RTL for Dari */
+    .rtl-content {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+
+    /* Header Bar Alignment */
+    .dashboard-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .header-title-group {
+        flex: 1;
+    }
+
+    .header-title-group h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        letter-spacing: -0.02em;
+    }
+
+    .header-title-group p {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    .filter-row {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 15px;
+        direction: rtl;
+    }
+
+    .form-control-custom {
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+    }
+
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        direction: rtl;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+    }
+
+    .report-filter-bar {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 15px;
+        direction: rtl;
+    }
+
+    .filter-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .filter-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        white-space: nowrap;
+        margin: 0;
+    }
+
+    /* Modern KPI Metric Cards */
+    .metric-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 16px;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .metric-card:hover {
+        border-color: var(--accent-blue);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .metric-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .metric-card-icon svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        fill: none;
+    }
+
+    .card-receivables .metric-card-icon {
+        background-color: rgba(5, 150, 105, 0.1);
+        color: var(--success-green);
+    }
+
+    .card-payables .metric-card-icon {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--danger-red);
+    }
+
+    .card-sales .metric-card-icon {
+        background-color: rgba(37, 99, 235, 0.1);
+        color: var(--accent-blue);
+    }
+
+    .card-received .metric-card-icon {
+        background-color: rgba(217, 119, 6, 0.1);
+        color: var(--warning-amber);
+    }
+
+    [data-theme="dark"] .card-receivables .metric-card-icon {
+        background-color: rgba(63, 185, 80, 0.15);
+    }
+
+    [data-theme="dark"] .card-payables .metric-card-icon {
+        background-color: rgba(248, 81, 73, 0.15);
+    }
+
+    [data-theme="dark"] .card-sales .metric-card-icon {
+        background-color: rgba(88, 166, 255, 0.15);
+    }
+
+    [data-theme="dark"] .card-received .metric-card-icon {
+        background-color: rgba(255, 166, 87, 0.15);
+    }
+
+    .metric-card-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .metric-card-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin: 0 0 8px 0;
+        line-height: 1.4;
+    }
+
+    .metric-card-value {
+        font-size: 24px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+        letter-spacing: -0.02em;
+        line-height: 1.2;
+    }
+
+    .metric-card-value span {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+    }
+
+    .metric-card-description {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin: 0;
+        line-height: 1.4;
+    }
+
+    .filter-card {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        direction: rtl;
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        align-items: flex-end;
+    }
+
+    .form-group label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin-bottom: 6px;
+        display: block;
+        text-align: right;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        direction: rtl;
+    }
+
+    .form-control-custom:focus {
+        border-color: var(--accent-blue);
+        outline: none;
+    }
+
+    /* Theme-aware button styles */
+    .btn {
+        border: none;
+        border-radius: 6px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s;
+    }
+
+    .btn-primary {
+        background-color: var(--accent-blue);
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0860d4;
+    }
+
+    .btn-secondary {
+        background-color: var(--status-success);
+        color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+        background-color: #2ea043;
+    }
+
+    .btn-tertiary {
+        background-color: var(--text-main);
+        color: #ffffff;
+    }
+
+    .btn-tertiary:hover {
+        opacity: 0.9;
+    }
+
+    [data-theme="dark"] .btn-tertiary {
+        background-color: #374151;
+        color: #f3f4f6;
+    }
+
+    [data-theme="dark"] .btn-tertiary:hover {
+        background-color: #4b5563;
+    }
+
+    .date-separator {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+
+    .search-input {
+        width: 200px;
+    }
+
+    .btn-reset {
+        background-color: var(--text-muted);
+        color: white;
+    }
+
+    .btn-reset:hover {
+        opacity: 0.9;
+    }
+
+    .btn-customer-search {
+        background-color: #1f2937;
+        color: #ffffff;
+        border: 1px solid #111827;
+    }
+
+    .btn-customer-search:hover {
+        background-color: #111827;
+        color: #ffffff;
+    }
+
+    /* Pagination footer styles */
+    .pagination-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 16px;
+        direction: rtl;
+    }
+
+    .pagination-rows {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .pagination-select {
+        width: 70px;
+    }
+
+    .pagination-info {
+        font-size: 13px;
+        color: var(--text-muted);
+    }
+
+    .pagination-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .page-indicator {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-main);
+    }
+
+    /* Main content card styles */
+    .main-content-card {
+        padding: 24px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        background: var(--card-bg);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .card-header h3 {
+        margin: 0;
+        color: var(--text-main);
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    /* Empty state cell styling */
+    .empty-state-cell {
+        text-align: center;
+        padding: 30px 20px;
+        background-color: var(--card-bg);
+    }
+
+    .empty-state-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .empty-state-icon {
+        font-size: 32px;
+    }
+
+    .empty-state-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .empty-state-description {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* Table RTL Styling */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--card-bg);
+        direction: rtl;
+        scrollbar-width: thin;
+        scrollbar-color: #9ca3af #f1f5f9;
+    }
+
+    .table-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: #9ca3af;
+        border-radius: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+    }
+
+    [data-theme="dark"] .table-container {
+        scrollbar-color: #4b5563 #1f2937;
+    }
+
+    [data-theme="dark"] .table-container::-webkit-scrollbar-track {
+        background: #1f2937;
+    }
+
+    [data-theme="dark"] .table-container::-webkit-scrollbar-thumb {
+        background: #4b5563;
+    }
+
+    [data-theme="dark"] .table-container::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        direction: rtl;
+        font-size: 13px;
+    }
+
+    .custom-table th {
+        background-color: var(--table-header-bg);
+        color: var(--text-main);
+        font-weight: 600;
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--border-color);
+        text-align: center;
+        white-space: nowrap;
+        font-size: 12px;
+        letter-spacing: -0.01em;
+    }
+
+    .custom-table td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+        color: var(--text-muted);
+    }
+
+    .custom-table tr:hover {
+        background-color: var(--table-header-bg);
+    }
+
+    .custom-table tfoot {
+        background-color: var(--table-header-bg);
+        font-weight: 600;
+    }
+
+    .custom-table tfoot td {
+        color: var(--text-main);
+        border-top: 2px solid var(--border-color);
+    }
+
+    /* Theme-aware table elements */
+    .th-net-cement {
+        background-color: rgba(5, 150, 105, 0.1);
+        color: #15803d;
+    }
+
+    [data-theme="dark"] .th-net-cement {
+        background-color: rgba(63, 185, 80, 0.15);
+        color: #3fb950;
+    }
+
+    .loading-cell {
+        padding: 25px;
+        color: var(--text-muted);
+        text-align: center;
+    }
+
+    .total-label {
+        text-align: center;
+        color: var(--text-main);
+        font-weight: 600;
+    }
+
+    .total-value {
+        color: #15803d;
+        font-weight: 600;
+    }
+
+    [data-theme="dark"] .total-value {
+        color: #3fb950;
+    }
+
+    .total-net-cement {
+        background-color: rgba(5, 150, 105, 0.1);
+        color: #15803d;
+        font-weight: 600;
+    }
+
+    [data-theme="dark"] .total-net-cement {
+        background-color: rgba(63, 185, 80, 0.15);
+        color: #3fb950;
+    }
+
+    /* Compact columns */
+    th.col-id, td.col-id { width: 40px; }
+    th.col-shortage, td.col-shortage { width: 60px; }
+    th.col-bags, td.col-bags { width: 75px; }
+    th.col-tonnage, td.col-tonnage { width: 75px; }
+    th.col-action, td.col-action { width: 60px; }
+    th.col-price-bag, td.col-price-bag { width: 90px; }
+    th.col-freight-rate, td.col-freight-rate { width: 90px; }
+    th.col-freight-total, td.col-freight-total { width: 100px; }
+    th.col-sales-total, td.col-sales-total { width: 100px; }
+    th.col-net-cement, td.col-net-cement { width: 110px; }
+
+    /* Table row number styling - theme-aware */
+    .table-row-number {
+        font-weight: 600;
+        background-color: var(--table-header-bg);
+        color: var(--text-muted);
+    }
+    
+    /* Make text/name columns flex naturally */
+    th.col-customer, td.col-customer { min-width: 130px; }
+    th.col-driver, td.col-driver { min-width: 100px; }
+    th.col-phone, td.col-phone { min-width: 90px; }
+    th.col-plate, td.col-plate { min-width: 80px; }
+    th.col-waybill, td.col-waybill { min-width: 90px; }
+    th.col-cement-type, td.col-cement-type { min-width: 100px; }
+    th.col-loading-date, td.col-loading-date { min-width: 90px; }
+    th.col-sale-date, td.col-sale-date { min-width: 90px; }
+    th.col-truck-type, td.col-truck-type { min-width: 100px; }
+
+    @media print {
+        /* 1. Set paper size to landscape and narrow margins to prevent truncation */
+        @page {
+            size: A4 landscape;
+            margin: 10mm;
+        }
+
+        /* 2. Force light theme for all print elements */
+        html,
+        body {
+            background: #ffffff !important;
+            color: #111111 !important;
+        }
+
+        /* 3. Override all CSS variables with light theme values */
+        :root,
+        [data-theme="dark"],
+        [data-theme="light"] {
+            --bg-page: #ffffff !important;
+            --bg-surface: #ffffff !important;
+            --bg-surface-elevated: #ffffff !important;
+            --bg-input: #ffffff !important;
+            --bg-table-header: #f0f0f0 !important;
+            --bg-table-row-hover: #f5f5f5 !important;
+            --bg-card: #ffffff !important;
+            --text-primary: #111111 !important;
+            --text-secondary: #333333 !important;
+            --text-muted: #666666 !important;
+            --text-main: #111111 !important;
+            --border: #333333 !important;
+            --border-subtle: #e0e0e0 !important;
+            --border-strong: #333333 !important;
+            --border-color: #333333 !important;
+        }
+
+        /* 4. Hide screen-only elements */
+        .no-print,
+        .sidebar,
+        .top-navbar,
+        .filter-row,
+        .filter-card,
+        .report-filter-bar,
+        .report-header,
+        .dashboard-header,
+        .pagination-controls,
+        .btn,
+        button,
+        input,
+        select,
+        .btn-page,
+        .page-chip {
+            display: none !important;
+        }
+
+        /* 5. Hide the Cement Summary Report modal (not relevant for this page) */
+        #cementSummaryReportModal {
+            display: none !important;
+        }
+
+        /* 6. Show and style the main content area */
+        .dashboard-container {
+            padding: 0 !important;
+            margin: 0 !important;
+            background: #ffffff !important;
+        }
+
+        .card {
+            border: none !important;
+            box-shadow: none !important;
+            background: #ffffff !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+
+        /* 7. Show and style the table container */
+        .table-container {
+            display: block !important;
+            visibility: visible !important;
+            overflow: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            border: 1px solid #333333 !important;
+            border-radius: 0 !important;
+            background: #ffffff !important;
+            margin: 0 !important;
+        }
+
+        .custom-table {
+            display: table !important;
+            visibility: visible !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+            font-size: 9pt !important;
+            border-collapse: collapse !important;
+            background: #ffffff !important;
+            color: #111111 !important;
+        }
+
+        .custom-table thead {
+            display: table-header-group !important;
+            visibility: visible !important;
+        }
+
+        .custom-table tbody {
+            display: table-row-group !important;
+            visibility: visible !important;
+        }
+
+        .custom-table tfoot {
+            display: table-footer-group !important;
+            visibility: visible !important;
+        }
+
+        .custom-table tr {
+            display: table-row !important;
+            visibility: visible !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .custom-table th {
+            display: table-cell !important;
+            visibility: visible !important;
+            background-color: #f0f0f0 !important;
+            color: #111111 !important;
+            font-weight: bold !important;
+            padding: 6px 4px !important;
+            border: 1px solid #333333 !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            font-size: 8.5pt !important;
+        }
+
+        .custom-table td {
+            display: table-cell !important;
+            visibility: visible !important;
+            padding: 5px 4px !important;
+            text-align: center !important;
+            border: 1px solid #333333 !important;
+            white-space: nowrap !important;
+            color: #111111 !important;
+            font-size: 8pt !important;
+            background: #ffffff !important;
+        }
+
+        /* 8. Override theme-aware elements for print */
+        .th-net-cement,
+        .total-net-cement {
+            background-color: rgba(5, 150, 105, 0.1) !important;
+            color: #15803d !important;
+        }
+
+        .total-value {
+            color: #15803d !important;
+        }
+
+        .total-label,
+        .table-row-number {
+            color: #111111 !important;
+        }
+
+        /* 9. Hide actions column in print */
+        .custom-table th:last-child,
+        .custom-table td:last-child {
+            display: none !important;
+        }
+
+        /* 10. Preserve RTL/LTR direction */
+        .table-container,
+        .custom-table {
+            direction: <%= dir %> !important;
+        }
+
+        /* 11. Remove any page breaks that might push content to page 2 */
+        body,
+        .dashboard-container,
+        .card,
+        .table-container {
+            break-before: avoid !important;
+            page-break-before: avoid !important;
+            break-after: avoid !important;
+            page-break-after: avoid !important;
+            break-inside: auto !important;
+            page-break-inside: auto !important;
+        }
+    }
+    
+    /* Pagination button styling */
+    .btn-page {
+        padding: 6px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: var(--card-bg);
+        color: var(--text-main);
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-page:hover:not(:disabled) {
+        background: var(--table-header-bg);
+        border-color: var(--border-color);
+    }
+    .btn-page:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .page-chip:hover {
+        background: var(--table-header-bg);
+    }
+    .page-chip.active {
+        background: var(--accent-blue);
+        color: #ffffff;
+        border-color: var(--accent-blue);
+    }
+
+    /* Dark Mode specific styling for Cement Summary Report buttons */
+    html[data-theme="dark"] .cement-print-btn {
+        background: var(--accent-blue) !important;
+        color: #ffffff !important;
+    }
+
+    html[data-theme="dark"] #cementSummaryMaximizeBtn {
+        background: var(--table-header-bg) !important;
+        color: var(--text-main) !important;
+        border-color: var(--border-color) !important;
+    }
+
+    /* Dark Mode specific styling for Customer Balance Report Print button */
+    html[data-theme="dark"] .customer-balance-print-btn {
+        background: var(--accent-blue) !important;
+        color: #ffffff !important;
+    }
+
+    /* Print styles for Cement Summary Report */
+    @media print {
+        /* Hide everything except the Cement Summary Report modal */
+        body * {
+            visibility: hidden !important;
+        }
+
+        /* Show only the Cement Summary Report modal */
+        #cementSummaryReportModal,
+        #cementSummaryReportModal * {
+            visibility: visible !important;
+        }
+
+        /* Position the modal at the top of the page */
+        #cementSummaryReportModal {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            background: #ffffff !important;
+            z-index: 9999 !important;
+        }
+
+        #cementSummaryReportModalContent {
+            background: #ffffff !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            max-height: none !important;
+            overflow: visible !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        /* Hide modal controls */
+        #cementSummaryReportModal .report-header,
+        #cementSummaryReportModal .report-filter-bar,
+        #cementSummaryReportModal .no-print,
+        #cementSummaryReportModal #cement-summary-pagination,
+        #cementSummaryReportModal #cement-summary-loading {
+            display: none !important;
+        }
+
+        /* Show only the table content */
+        #cement-summary-content {
+            display: block !important;
+            padding: 0 !important;
+            overflow: visible !important;
+        }
+
+        /* Hide rows per page selector and pagination info */
+        #cement-summary-content > div:first-child {
+            display: none !important;
+        }
+
+        /* Style the table for print */
+        #cement-summary-content table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 10pt !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        #cement-summary-content thead tr {
+            background-color: #f0f0f0 !important;
+            color: #000000 !important;
+        }
+
+        #cement-summary-content th {
+            background-color: #f0f0f0 !important;
+            color: #000000 !important;
+            border: 1px solid #000000 !important;
+            padding: 8px !important;
+            font-weight: bold !important;
+        }
+
+        #cement-summary-content tbody tr {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        #cement-summary-content td {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            border: 1px solid #000000 !important;
+            padding: 8px !important;
+        }
+
+        /* Add report title */
+        #cementSummaryReportModal::before {
+            content: "Cement Summary Report";
+            display: block;
+            font-size: 16pt;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #000000 !important;
+            visibility: visible !important;
+        }
+    }
+    
+    /* Table styling for RTL layout */
+    .table-responsive {
+        width: 100% !important;
+        direction: rtl !important;
+        overflow-x: auto;
+    }
+
+    .table-responsive table {
+        width: 100% !important;
+        min-width: 100% !important;
+        direction: rtl !important;
+        table-layout: auto !important;
+        border-collapse: collapse;
+    }
+
+    .table-responsive th, 
+    .table-responsive td {
+        text-align: center !important;
+        vertical-align: middle !important;
+        white-space: nowrap !important;
+        padding: 8px 10px !important;
+    }
+    
+    @media print {
+        .sidebar, .top-navbar, .filter-row, .no-print { display: none !important; }
+        .main-viewport { flex: 1; overflow: visible; }
+        body { background: #fff; color: #000; }
+        .card { border: 1px solid #000 !important; box-shadow: none !important; }
+    }
+
+/* Customer Balance Report Modal Full Screen */
+#customerBalanceReportModal.fullscreen-active {
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+#customerBalanceReportModalContent.full-screen {
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    height: 100vh !important;
+}
+
+/* Customer Balance Report Table Container - Modern Themed Scrollbar */
+.customer-balance-table-container {
+    direction: ltr;
+}
+
+.customer-balance-table-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.customer-balance-table-container::-webkit-scrollbar-track {
+    background: var(--table-header-bg);
+    border-radius: 6px;
+}
+
+.customer-balance-table-container::-webkit-scrollbar-thumb {
+    background: var(--text-muted);
+    border-radius: 6px;
+    border: 2px solid var(--table-header-bg);
+}
+
+.customer-balance-table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text-main);
+}
+
+/* Firefox scrollbar support */
+.customer-balance-table-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-muted) var(--table-header-bg);
+}
+
+/* Customer Balance Report Value Colors */
+.customer-balance-table-container .customer-balance-company-owes {
+    color: var(--status-warning) !important;
+    font-weight: 600 !important;
+}
+
+.customer-balance-table-container .customer-balance-customer-owes {
+    color: var(--status-error) !important;
+    font-weight: 600 !important;
+}
+
+/* Light Mode Button Overrides for Better Contrast */
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn,
+[data-theme="light"] .btn-primary.customer-accounts-btn,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:hover,
+[data-theme="light"] .btn-primary.customer-accounts-btn:hover,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:focus,
+[data-theme="light"] .btn-primary.customer-accounts-btn:focus,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:active,
+[data-theme="light"] .btn-primary.customer-accounts-btn:active,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:focus-visible,
+[data-theme="light"] .btn-primary.customer-accounts-btn:focus-visible {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000 !important;
+    border: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn svg,
+[data-theme="light"] .btn-primary.customer-accounts-btn svg,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:hover svg,
+[data-theme="light"] .btn-primary.customer-accounts-btn:hover svg,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:focus svg,
+[data-theme="light"] .btn-primary.customer-accounts-btn:focus svg,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:active svg,
+[data-theme="light"] .btn-primary.customer-accounts-btn:active svg,
+html:not([data-theme="dark"]) .btn-primary.customer-accounts-btn:focus-visible svg,
+[data-theme="light"] .btn-primary.customer-accounts-btn:focus-visible svg {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn,
+[data-theme="light"] .btn-tertiary.print-generate-btn,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:hover,
+[data-theme="light"] .btn-tertiary.print-generate-btn:hover,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:focus,
+[data-theme="light"] .btn-tertiary.print-generate-btn:focus,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:active,
+[data-theme="light"] .btn-tertiary.print-generate-btn:active,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:focus-visible,
+[data-theme="light"] .btn-tertiary.print-generate-btn:focus-visible {
+    background: #000000 !important;
+    background-color: #000000 !important;
+    color: #ffffff !important;
+    border-color: #000000 !important;
+    border: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn svg,
+[data-theme="light"] .btn-tertiary.print-generate-btn svg,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:hover svg,
+[data-theme="light"] .btn-tertiary.print-generate-btn:hover svg,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:focus svg,
+[data-theme="light"] .btn-tertiary.print-generate-btn:focus svg,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:active svg,
+[data-theme="light"] .btn-tertiary.print-generate-btn:active svg,
+html:not([data-theme="dark"]) .btn-tertiary.print-generate-btn:focus-visible svg,
+[data-theme="light"] .btn-tertiary.print-generate-btn:focus-visible svg {
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+}
+
+</style>
+
+<div class="dashboard-container" data-no-records="<%= t('worker_command_deck.no_records') %>" data-no-records-sub="<%= t('worker_command_deck.no_records_sub') %>" data-error-loading="<%= t('worker_command_deck.error_loading') %>" data-page-of="<%= t('worker_command_deck.page_of_js') %>" data-search-done="<%= t('worker_command_deck.search_done') %>" data-search-fill="<%= t('worker_command_deck.search_fill') %>" data-edit-record="<%= t('worker_command_deck.edit_record') %>" data-delete-confirm="<%= t('worker_command_deck.delete_confirm') %>" data-delete-record="<%= t('worker_command_deck.delete_record') %>" data-truck-rental="<%= t('worker_command_deck.truck_rental_js') %>" data-truck-company="<%= t('worker_command_deck.truck_company_js') %>">
+    <!-- Header Section -->
+    <div class="dashboard-header">
+        <div class="header-title-group">
+            <h2><%= t('worker_command_deck.title') %></h2>
+            <p><%= t('worker_command_deck.description', { agency: user_agency }) %></p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="button" onclick="openCustomerBalanceReportModal()" class="btn btn-primary customer-accounts-btn no-print" style="background-color: #000000 !important; color: #ffffff !important; border-color: #000000 !important; border: none !important; opacity: 1 !important; visibility: visible !important;">
+                <svg style="width: 16px; height: 16px; stroke: #ffffff !important; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                <%= t('worker_command_deck.customer_balance') %>
+            </button>
+            <button type="button" onclick="openCementSummaryReportModal()" class="btn btn-primary no-print">
+                <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                <%= t('worker_command_deck.cement_summary') %>
+            </button>
+            <button onclick="window.print()" class="btn btn-tertiary print-generate-btn no-print" style="background-color: #000000 !important; color: #ffffff !important; border-color: #000000 !important; border: none !important; opacity: 1 !important; visibility: visible !important;">
+                <svg style="width: 16px; height: 16px; stroke: #ffffff !important; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v-5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                <%= t('worker_command_deck.print_export') %>
+            </button>
+        </div>
+    </div>
+
+    <!-- Modern KPI Metric Cards -->
+    <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; direction: rtl;">
+        <div class="metric-card card-receivables">
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="metric-card-content">
+                <p class="metric-card-label"><%= t('worker_command_deck.kpi_receivables') %></p>
+                <h1 class="metric-card-value" id="metric-receivables"><%= (typeof total_receivables !== 'undefined' && total_receivables !== null ? Number(total_receivables) : 0).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span><%= t('worker_command_deck.afs') %></span></h1>
+                <p class="metric-card-description"><%= t('worker_command_deck.kpi_receivables_desc') %></p>
+            </div>
+        </div>
+        <div class="metric-card card-payables">
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+            </div>
+            <div class="metric-card-content">
+                <p class="metric-card-label"><%= t('worker_command_deck.kpi_payables') %></p>
+                <h1 class="metric-card-value" id="metric-payables"><%= (typeof total_payables !== 'undefined' && total_payables !== null ? Number(total_payables) : 0).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span><%= t('worker_command_deck.afs') %></span></h1>
+                <p class="metric-card-description"><%= t('worker_command_deck.kpi_payables_desc') %></p>
+            </div>
+        </div>
+        <div class="metric-card card-sales">
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+            </div>
+            <div class="metric-card-content">
+                <p class="metric-card-label"><%= t('worker_command_deck.kpi_sales') %></p>
+                <h1 class="metric-card-value" id="metric-sales"><%= (typeof total_sales_money !== 'undefined' && total_sales_money !== null ? Number(total_sales_money) : 0).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span><%= t('worker_command_deck.afs') %></span></h1>
+                <p class="metric-card-description"><%= t('worker_command_deck.kpi_sales_desc') %></p>
+            </div>
+        </div>
+        <div class="metric-card card-received">
+            <div class="metric-card-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="metric-card-content">
+                <p class="metric-card-label"><%= t('worker_command_deck.kpi_received') %></p>
+                <h1 class="metric-card-value" id="metric-received"><%= (typeof total_money_received !== 'undefined' && total_money_received !== null ? Number(total_money_received) : 0).toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1}) %> <span><%= t('worker_command_deck.afs') %></span></h1>
+                <p class="metric-card-description"><%= t('worker_command_deck.kpi_received_desc') %></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="card rtl-content main-content-card">
+        <div class="card-header">
+            <h3><%= t('worker_command_deck.daily_reports_title') %></h3>
+        </div>
+    
+    <!-- Filter Bar -->
+    <div class="filter-card no-print">
+        <div class="filter-grid">
+            <div class="form-group">
+                <label><%= t('worker_command_deck.filter_province') %></label>
+                <select id="filter_province" class="form-control-custom" onchange="applyFilters()">
+                    <option value="All"><%= t('worker_command_deck.all_provinces') %></option>
+                    <% if (typeof provinces !== 'undefined' && provinces.length > 0) { %>
+                        <% provinces.forEach(function(province) { %>
+                            <option value="<%= province %>"><%= province %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_command_deck.filter_balance') %></label>
+                <select id="filter_balance" class="form-control-custom" onchange="applyFilters()">
+                    <option value="All"><%= t('worker_command_deck.all_items') %></option>
+                    <option value="Green"><%= t('worker_command_deck.balance_green') %></option>
+                    <option value="Red"><%= t('worker_command_deck.balance_red') %></option>
+                    <option value="Zero"><%= t('worker_command_deck.balance_zero') %></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_command_deck.filter_customer') %></label>
+                <select id="filter_customer" class="form-control-custom" onchange="applyFilters()">
+                    <option value="All"><%= t('worker_command_deck.all_accounts') %></option>
+                    <% if (typeof customers !== 'undefined' && customers.length > 0) { %>
+                        <% customers.forEach(function(customer) { %>
+                            <% 
+                                // Extract clean customer ID (e.g., KAB-004) from full ID that may contain name
+                                const cleanId = customer.customer_id ? customer.customer_id.match(/^([A-Z]{3}-\d+)/i) ? customer.customer_id.match(/^([A-Z]{3}-\d+)/i)[1].toUpperCase() : customer.customer_id : customer.id;
+                            %>
+                            <option value="<%= customer.id %>" data-province="<%= customer.province %>"><%= cleanId %> - <%= customer.name %> - <%= customer.province %></option>
+                        <% }); %>
+                    <% } %>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_command_deck.filter_cement') %></label>
+                <select id="filter_cement" class="form-control-custom" onchange="applyFilters()">
+                    <option value="All"><%= t('worker_command_deck.all_types') %></option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><%= t('worker_command_deck.filter_truck') %></label>
+                <select id="filter_truck" class="form-control-custom" onchange="applyFilters()">
+                    <option value="All"><%= t('worker_command_deck.all_trucks') %></option>
+                    <option value="company"><%= t('worker_command_deck.truck_company') %></option>
+                    <option value="rented"><%= t('worker_command_deck.truck_rental') %></option>
+                </select>
+            </div>
+            <div class="form-group" style="grid-column: span 2;">
+                <label><%= t('worker_command_deck.filter_date_range') %></label>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="filter_start_date" class="form-control-custom" data-datepicker="jalali" placeholder="<%= t('worker_command_deck.from_date_placeholder') %>" onchange="applyFilters()" readonly>
+                    <span class="date-separator"><%= t('worker_command_deck.to') %></span>
+                    <input type="text" id="filter_end_date" class="form-control-custom" data-datepicker="jalali" placeholder="<%= t('worker_command_deck.to_date_placeholder') %>" onchange="applyFilters()" readonly>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Search Controls -->
+    <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;" class="no-print">
+        <input type="text" id="search_driver" class="form-control-custom search-input" placeholder="<%= t('worker_command_deck.search_driver_placeholder') %>" oninput="applyFilters()">
+        <input type="text" id="search_waybill" class="form-control-custom search-input" placeholder="<%= t('worker_command_deck.search_waybill_placeholder') %>" oninput="applyFilters()">
+        <button type="button" onclick="openCustomerSearchModal()" class="btn btn-customer-search">
+            <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            Customer Search
+        </button>
+        <button onclick="resetFilters()" class="btn btn-reset">
+            <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 12"/></svg>
+            <%= t('worker_command_deck.reset_filters') %>
+        </button>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th><%= t('worker_command_deck.th_hash') %></th>
+                    <th><%= t('worker_command_deck.th_loading_date') %></th>
+                    <th><%= t('worker_command_deck.th_sale_date') %></th>
+                    <th><%= t('worker_command_deck.th_customer') %></th>
+                    <th><%= t('worker_command_deck.province') %></th>
+                    <th><%= t('worker_command_deck.th_driver') %></th>
+                    <th><%= t('worker_command_deck.th_driver_phone') %></th>
+                    <th><%= t('worker_command_deck.th_plate') %></th>
+                    <th><%= t('worker_command_deck.th_waybill') %></th>
+                    <th><%= t('worker_command_deck.th_cement_type') %></th>
+                    <th><%= t('worker_command_deck.th_truck_type') %></th>
+                    <th><%= t('worker_command_deck.th_bags') %></th>
+                    <th><%= t('worker_command_deck.th_tonnage') %></th>
+                    <th style="color: var(--danger-red);"><%= t('worker_command_deck.th_shortage') %></th>
+                    <th><%= t('worker_command_deck.th_price_bag') %></th>
+                    <th><%= t('worker_command_deck.th_sales_total') %></th>
+                    <th><%= t('worker_command_deck.th_freight_rate') %></th>
+                    <th><%= t('worker_command_deck.th_freight_total') %></th>
+                    <th class="th-net-cement"><%= t('worker_command_deck.th_net_cement') %></th>
+                </tr>
+            </thead>
+            <tbody id="agent-log-submissions-rows">
+                <tr>
+                    <td colspan="19" class="loading-cell"><%= t('worker_command_deck.loading') %></td>
+                </tr>
+            </tbody>
+            <tfoot id="agent-log-submissions-footer">
+                <tr>
+                    <td colspan="11" class="total-label"><%= t('worker_command_deck.total') %></td>
+                    <td id="total-bags">0</td>
+                    <td id="total-tonnage">0</td>
+                    <td id="total-shortage">0</td>
+                    <td>-</td>
+                    <td id="total-sales" class="total-value">0</td>
+                    <td>-</td>
+                    <td id="total-freight" class="total-value">0</td>
+                    <td id="total-net-cement" class="total-net-cement">0</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+        
+    <!-- Pagination -->
+    <div id="table-pagination-footer" class="pagination-footer no-print">
+        <div class="pagination-rows">
+            <span><%= t('worker_command_deck.rows_per_page') %></span>
+            <select id="select_worker_deck_rows_per_page" class="form-control-custom pagination-select" onchange="handleRowsPerPageChange(this.value)">
+                <option value="10" selected>۱۰</option>
+                <option value="25">۲۵</option>
+                <option value="50">۵۰</option>
+                <option value="100">۱۰۰</option>
+            </select>
+        </div>
+
+        <div class="pagination-info">
+            <%= t('worker_command_deck.showing') %> <span id="lbl_page_start">0</span> <%= t('worker_command_deck.to') %> <span id="lbl_page_end">0</span> <%= t('worker_command_deck.of') %> <span id="lbl_total_count">0</span> <%= t('worker_command_deck.entries') %>
+        </div>
+
+        <div class="pagination-controls">
+            <button id="btn_page_prev" onclick="goToPrevPage()" class="btn btn-page" disabled><%= t('worker_command_deck.previous') %></button>
+            <span id="lbl_page_indicator" class="page-indicator">Page 1</span>
+            <button id="btn_page_next" onclick="goToNextPage()" class="btn btn-page" disabled><%= t('worker_command_deck.next') %></button>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+document.getElementById('nav-worker-command-deck').classList.add('active');
+
+// Table Pagination State
+let currentTableData = [];
+let filteredTableData = [];
+let currentPage = 1;
+let rowsPerPage = 10; // Default dynamic rows count
+
+// Load agent log submissions
+function loadAgentLogSubmissions() {
+    console.log('[DEBUG] Loading agent log submissions...');
+    
+    // Get current filter values
+    const province = document.getElementById('filter_province').value;
+    const balance = document.getElementById('filter_balance').value;
+    const customerId = document.getElementById('filter_customer').value;
+    const cement = document.getElementById('filter_cement').value;
+    const truck = document.getElementById('filter_truck').value;
+    const startDate = document.getElementById('filter_start_date').value;
+    const endDate = document.getElementById('filter_end_date').value;
+    const searchDriver = document.getElementById('search_driver').value;
+    const searchWaybill = document.getElementById('search_waybill').value;
+    
+    // Build query URL with filter parameters (worker-scoped API)
+    let queryUrl = `/api/worker/agent-log-submissions?province=${province}&balance=${balance}&customer_id=${customerId}&cement=${cement}&truck=${truck}&start_date=${startDate}&end_date=${endDate}&search_driver=${searchDriver}&search_waybill=${searchWaybill}`;
+    
+    fetch(queryUrl)
+        .then(res => {
+            console.log('[DEBUG] Response status:', res.status);
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log('[DEBUG] Data received:', data);
+            currentTableData = data.records || [];
+            filteredTableData = [...currentTableData];
+            renderAgentLogTable(filteredTableData);
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading agent log submissions:', err);
+            const pageData = document.querySelector('.dashboard-container');
+            document.getElementById('agent-log-submissions-rows').innerHTML = `<tr><td colspan="16" style="text-align: center; color:#cf222e; padding:20px;">${esc(pageData.getAttribute('data-error-loading'))}: ${esc(err.message)}</td></tr>`;
+        });
+}
+
+// Global customer balance cache
+let customerBalancesCache = {};
+
+// Fetch customer balances for status badges
+function fetchCustomerBalances() {
+    fetch('/api/reports/customer-balances')
+        .then(res => res.json())
+        .then(data => {
+            customerBalancesCache = {};
+            if (data.balances) {
+                data.balances.forEach(bal => {
+                    customerBalancesCache[bal.customer_id] = bal.net_balance;
+                });
+            }
+            console.log('[DEBUG] Customer balances loaded:', customerBalancesCache);
+        })
+        .catch(err => {
+            console.error('[ERROR] Error fetching customer balances:', err);
+        });
+}
+
+// Render table with data and calculate totals
+function renderAgentLogTable(records) {
+    const rowsContainer = document.getElementById('agent-log-submissions-rows');
+    let html = '';
+    
+    // Declare element references once at function level
+    const totalBagsEl = document.getElementById('total-bags');
+    const totalTonnageEl = document.getElementById('total-tonnage');
+    const totalShortageEl = document.getElementById('total-shortage');
+    const totalSalesEl = document.getElementById('total-sales');
+    const totalFreightEl = document.getElementById('total-freight');
+    const totalNetCementEl = document.getElementById('total-net-cement');
+    
+    if (!records || records.length === 0) {
+        const pageData = document.querySelector('.dashboard-container');
+        html = `
+            <tr>
+                <td colspan="19" class="empty-state-cell">
+                    <div class="empty-state-content">
+                        <span class="empty-state-icon">🔍</span>
+                        <p class="empty-state-title">
+                            ${esc(pageData.getAttribute('data-no-records'))}
+                        </p>
+                        <p class="empty-state-description">
+                            ${esc(pageData.getAttribute('data-no-records-sub'))}
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        `;
+        // Reset footer totals safely
+
+        if (totalBagsEl) totalBagsEl.textContent = '0';
+        if (totalTonnageEl) totalTonnageEl.textContent = '0';
+        if (totalShortageEl) totalShortageEl.textContent = '0';
+        if (totalSalesEl) totalSalesEl.textContent = '0';
+        if (totalFreightEl) totalFreightEl.textContent = '0';
+        if (totalNetCementEl) totalNetCementEl.textContent = '0';
+        
+        // Reset pagination display
+        updatePaginationControls(0);
+    } else {
+        // Initialize totals
+        let totalBags = 0;
+        let totalTonnage = 0;
+        let totalShortage = 0;
+        let totalCost = 0;
+        let totalSales = 0;
+        let totalFreight = 0;
+        let totalNetCement = 0;
+        
+        // Calculate pagination
+        const totalPages = Math.ceil(records.length / rowsPerPage) || 1;
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const paginatedRecords = records.slice(startIndex, startIndex + rowsPerPage);
+        
+        paginatedRecords.forEach((row, index) => {
+            // Auto-calculate dynamic fields
+            const bagsCount = row.bags_count || 0;
+            const unitPriceBag = row.unit_price_bag || 0;
+            const tonnage = row.tonnage || 0;
+            const freightPerTon = row.freight_per_ton || 0;
+            const rowTotalFreight = row.total_freight || 0;
+            
+            // Determine truck type from the original waybill's truck_type field
+            const pageData = document.querySelector('.dashboard-container');
+            const truckType = row.truck_type ? row.truck_type : (row.is_company_car === 1 ? pageData.getAttribute('data-truck-company') : pageData.getAttribute('data-truck-rental'));
+            
+            // Calculate: جمله = تعداد کیسه × فی بوجی
+            const calculatedCost = bagsCount * unitPriceBag;
+            
+            // Calculate: جمله فروش = تعداد کیسه × فی فروش (using total_sales_money / bags_count as sale price per bag)
+            const salePricePerBag = bagsCount > 0 ? row.total_sales_money / bagsCount : 0;
+            const calculatedTotalSales = row.total_sales_money || 0;
+            
+            // Calculate: جمله کرایه = تناژ × فی تن کرایه
+            const calculatedTotalFreight = tonnage * freightPerTon;
+            
+            // Calculate: پول خالص سمنت = جمله فروش - جمله کرایه
+            const calculatedNetCement = calculatedTotalSales - calculatedTotalFreight;
+            
+            // Update totals
+            totalBags += bagsCount;
+            totalTonnage += tonnage;
+            totalShortage += (row.shortage || 0);
+            totalCost += calculatedCost;
+            totalSales += calculatedTotalSales;
+            totalFreight += calculatedTotalFreight;
+            totalNetCement += calculatedNetCement;
+            
+            html += `
+                <tr style="border-bottom: 1px solid #eaeef2;">
+                    <td class="table-row-number">${esc(startIndex + index + 1)}</td>
+                    <td>${esc(row.loading_date || row.sale_date || '-')}</td>
+                    <td>${esc(row.sale_date || '-')}</td>
+                    <td style="font-weight: 600;">
+                        <span style="color: #0969da; cursor: pointer;" onclick="openCustomerModal('${esc(row.customer_id)}')">
+                            ${esc(row.customer_name || 'Unknown')}
+                        </span>
+                    </td>
+                    <td>${esc(row.customer_province || '-')}</td>
+                    <td>${esc(row.driver_name || '-')}</td>
+                    <td style="direction: ltr;">${esc(row.driver_phone || '-')}</td>
+                    <td>${esc(row.car_plate || '-')}</td>
+                    <td>${esc(row.waybill_number || '-')}</td>
+                    <td>${esc(row.cement_type || '-')}</td>
+                    <td>${esc(truckType)}</td>
+                    <td style="font-weight: 600;">${esc(bagsCount.toLocaleString())}</td>
+                    <td>${esc(tonnage.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                    <td>${esc((row.shortage || 0).toLocaleString())}</td>
+                    <td>${esc(unitPriceBag.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                    <td style="font-weight: 600;">${esc(calculatedTotalSales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                    <td>${esc(freightPerTon.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                    <td style="font-weight: 600;">${esc(calculatedTotalFreight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                    <td style="font-weight: 700; color: #166534;">${esc(calculatedNetCement.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                </tr>
+            `;
+        });
+        
+        // Update footer totals safely
+        if (totalBagsEl) totalBagsEl.textContent = totalBags.toLocaleString();
+        if (totalTonnageEl) totalTonnageEl.textContent = totalTonnage.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (totalShortageEl) totalShortageEl.textContent = totalShortage.toLocaleString();
+        if (totalSalesEl) totalSalesEl.textContent = totalSales.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (totalFreightEl) totalFreightEl.textContent = totalFreight.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        if (totalNetCementEl) totalNetCementEl.textContent = totalNetCement.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        
+        // Update pagination controls
+        updatePaginationControls(records.length);
+    }
+    
+    rowsContainer.innerHTML = html;
+}
+
+// Update Pagination Counters & Buttons
+function updatePaginationControls(totalRecords) {
+    const totalPages = Math.ceil(totalRecords / rowsPerPage) || 1;
+    const start = totalRecords === 0 ? 0 : (currentPage - 1) * rowsPerPage + 1;
+    const end = Math.min(currentPage * rowsPerPage, totalRecords);
+
+    if (document.getElementById('lbl_page_start')) document.getElementById('lbl_page_start').textContent = start.toLocaleString();
+    if (document.getElementById('lbl_page_end')) document.getElementById('lbl_page_end').textContent = end.toLocaleString();
+    if (document.getElementById('lbl_total_count')) document.getElementById('lbl_total_count').textContent = totalRecords.toLocaleString();
+    const pageData = document.querySelector('.dashboard-container');
+    const pageOfTemplate = pageData.getAttribute('data-page-of');
+    if (document.getElementById('lbl_page_indicator')) document.getElementById('lbl_page_indicator').textContent = pageOfTemplate.replace('{current}', currentPage).replace('{total}', totalPages);
+
+    if (document.getElementById('btn_page_prev')) document.getElementById('btn_page_prev').disabled = (currentPage === 1 || totalRecords === 0);
+    if (document.getElementById('btn_page_next')) document.getElementById('btn_page_next').disabled = (currentPage === totalPages || totalRecords === 0);
+}
+
+// Handle Rows Per Page Selection Change
+function handleRowsPerPageChange(val) {
+    rowsPerPage = parseInt(val) || 10;
+    currentPage = 1; // Reset to first page when limit changes
+    renderAgentLogTable(filteredTableData);
+}
+
+// Go to previous page
+function goToPrevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderAgentLogTable(filteredTableData);
+    }
+}
+
+// Go to next page
+function goToNextPage() {
+    const totalPages = Math.ceil(filteredTableData.length / rowsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderAgentLogTable(filteredTableData);
+    }
+}
+
+// Apply filters and reload data
+function applyFilters() {
+    console.log('[DEBUG] Applying filters...');
+    currentPage = 1; // Reset to first page when filters change
+    loadAgentLogSubmissions();
+}
+
+// Reset all filters to default
+function resetFilters() {
+    console.log('[DEBUG] Resetting filters...');
+    document.getElementById('filter_province').value = 'All';
+    document.getElementById('filter_balance').value = 'All';
+    document.getElementById('filter_customer').value = 'All';
+    document.getElementById('filter_cement').value = 'All';
+    document.getElementById('filter_truck').value = 'All';
+    document.getElementById('filter_start_date').value = '';
+    document.getElementById('filter_end_date').value = '';
+    document.getElementById('search_driver').value = '';
+    document.getElementById('search_waybill').value = '';
+    
+    currentPage = 1; // Reset to first page
+    applyFilters();
+}
+
+// Refresh financial metrics periodically
+function refreshFinancialMetrics() {
+    console.log('[DEBUG] Refreshing financial metrics...');
+    fetch('/api/worker/financial-metrics', {
+        headers: {
+            'Cache-Control': 'no-cache, no-store',
+            'Pragma': 'no-cache'
+        }
+    })
+        .then(res => {
+            if (res.redirected || res.status === 401 || res.status === 403) {
+                // Session lost (requireRole redirects to /login) or denied: stop the
+                // stream/poll so a stale tab stops emitting errors (Phase 2 403/401 fix).
+                if (typeof stopMetricsStream === 'function') stopMetricsStream();
+                if (res.redirected || res.status === 401) {
+                    window.location.href = '/login';
+                    return;
+                }
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(applyFinancialMetrics)
+        .catch(err => {
+            console.error('[ERROR] Error refreshing financial metrics:', err);
+        });
+}
+
+// Phase 6 — shared metrics renderer (SSE push, fallback fetch, visibility refresh)
+function applyFinancialMetrics(data) {
+            const metricReceivablesEl = document.getElementById('metric-receivables');
+            const metricPayablesEl = document.getElementById('metric-payables');
+            
+            if (metricReceivablesEl) {
+                // Preserve the span with translation, only update the numeric value
+                const afsSpan = metricReceivablesEl.querySelector('span');
+                const formattedValue = data.total_receivables.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+                if (afsSpan) {
+                    metricReceivablesEl.childNodes[0].textContent = formattedValue + ' ';
+                } else {
+                    metricReceivablesEl.innerHTML = `${esc(formattedValue)} <span><%= t('worker_command_deck.afs') %></span>`;
+                }
+            }
+            if (metricPayablesEl) {
+                // Preserve the span with translation, only update the numeric value
+                const afsSpan = metricPayablesEl.querySelector('span');
+                const formattedValue = data.total_payables.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+                if (afsSpan) {
+                    metricPayablesEl.childNodes[0].textContent = formattedValue + ' ';
+                } else {
+                    metricPayablesEl.innerHTML = `${esc(formattedValue)} <span><%= t('worker_command_deck.afs') %></span>`;
+                }
+            }
+            
+    console.log('[DEBUG] Financial metrics updated:', data);
+}
+
+// Phase 6 — server push (SSE) replaces the old 5s poll; stale-tab guarantees kept (stop + redirect)
+var metricsStream = null;
+function stopMetricsStream() {
+    if (metricsStream) { metricsStream.close(); metricsStream = null; }
+}
+function startMetricsStream() {
+    if (!window.EventSource) { refreshFinancialMetrics(); return; }
+    stopMetricsStream();
+    metricsStream = new EventSource('/api/worker/financial-metrics/stream');
+    metricsStream.onmessage = function (e) {
+        try { applyFinancialMetrics(JSON.parse(e.data)); } catch (err) { console.error('[ERROR] metrics parse:', err); }
+    };
+    metricsStream.addEventListener('session-lost', function () {
+        stopMetricsStream();
+        window.location.href = '/login';
+    });
+    metricsStream.onerror = function () {
+        stopMetricsStream();
+        // Mirror the Phase-2 guarantees: check the session once; redirect if gone, else retry later.
+        fetch('/api/worker/financial-metrics', { headers: { 'Cache-Control': 'no-cache' } })
+            .then(function (res) {
+                if (res.redirected || res.status === 401) { window.location.href = '/login'; return; }
+                if (res.status === 403) { return; }
+                setTimeout(startMetricsStream, 10000);
+            })
+            .catch(function () { setTimeout(startMetricsStream, 10000); });
+    };
+}
+startMetricsStream();
+
+// Refresh metrics when page becomes visible again (tab switch)
+document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+        refreshFinancialMetrics();
+    }
+});
+
+// Refresh metrics when window gains focus
+window.addEventListener('focus', function() {
+    refreshFinancialMetrics();
+});
+
+// Customer Details Modal Functions
+function openCustomerModal(customerId) {
+    const modal = document.getElementById('customerDetailsModal');
+    // TODO: Implement customer modal logic
+    console.log('[DEBUG] Opening customer modal for:', customerId);
+}
+
+// Customer Search Modal Functions
+function openCustomerSearchModal() {
+    document.getElementById('customerSearchModal').style.display = 'flex';
+}
+
+function closeCustomerSearchModal() {
+    document.getElementById('customerSearchModal').style.display = 'none';
+}
+
+function resetCustomerSearch() {
+    document.getElementById('search_cust_id').value = '';
+    document.getElementById('search_cust_name').value = '';
+    document.getElementById('search_cust_province').value = 'All';
+    document.getElementById('search_cust_phone').value = '';
+    document.getElementById('search_cust_address').value = '';
+}
+
+function applyCustomerSearch() {
+    const customerId = document.getElementById('search_cust_id').value;
+    const customerName = document.getElementById('search_cust_name').value;
+    const province = document.getElementById('search_cust_province').value;
+    const phone = document.getElementById('search_cust_phone').value;
+    const address = document.getElementById('search_cust_address').value;
+    
+    // Build query parameters
+    const queryParams = new URLSearchParams();
+    if (customerId) queryParams.append('customer_id', customerId);
+    if (customerName) queryParams.append('customer_name', customerName);
+    if (province) queryParams.append('province', province);
+    if (phone) queryParams.append('phone', phone);
+    if (address) queryParams.append('address', address);
+    
+    // Call the API with search parameters
+    fetch(`/api/agency/customers?${queryParams.toString()}`, {
+        credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            console.error('[ERROR] Search error:', data.error);
+            alert('Error: ' + data.error);
+            return;
+        }
+        
+        // Update the customer dropdown with search results
+        const customerSelect = document.getElementById('filter_customer');
+        if (customerSelect) {
+            // Clear existing options except "All"
+            customerSelect.innerHTML = '<option value="All">-- All Customers --</option>';
+            
+            // Add search results
+            data.customers.forEach(customer => {
+                const option = document.createElement('option');
+                option.value = customer.id;
+                option.textContent = `${customer.customer_id || customer.id} - ${customer.name}`;
+                customerSelect.appendChild(option);
+            });
+            
+            // Select the first customer if results exist
+            if (data.customers.length > 0) {
+                customerSelect.value = data.customers[0].id;
+            }
+        }
+        
+        // Close the modal
+        closeCustomerSearchModal();
+        
+        // Apply filters to refresh the table with the selected customer
+        applyFilters();
+        
+        // Show result count
+        const resultCount = data.customers.length;
+        if (resultCount === 0) {
+            alert('No customers found matching your search criteria.');
+        } else {
+            console.log(`[DEBUG] Found ${resultCount} customer(s) matching search criteria.`);
+        }
+    })
+    .catch(err => {
+        console.error('[ERROR] Search failed:', err);
+        alert('Error searching customers. Please try again.');
+    });
+}
+
+// Edit agent log row function
+function editAgentLogRow(rowId) {
+    console.log('[DEBUG] Editing agent log row:', rowId);
+    // Add logic or open edit modal for agent record
+    const pageData = document.querySelector('.dashboard-container');
+    const message = pageData.getAttribute('data-edit-record').replace('{id}', rowId);
+    alert(message);
+}
+
+// Delete agent log row function
+function deleteAgentLogRow(rowId) {
+    const pageData = document.querySelector('.dashboard-container');
+    if (confirm(pageData.getAttribute('data-delete-confirm'))) {
+        console.log('[DEBUG] Deleting agent log row:', rowId);
+        // Add delete API request logic
+        const message = pageData.getAttribute('data-delete-record').replace('{id}', rowId);
+        alert(message);
+    }
+}
+
+// Load Cement Types Dropdown Options
+async function loadCementDropdownOptions() {
+    try {
+        const res = await fetch('/api/config/cement-types');
+        if (!res.ok) {
+            console.error('[ERROR] Failed response from cement-types API:', res.status);
+            return;
+        }
+        const items = await res.json();
+        const select = document.getElementById('filter_cement');
+        if (!select) return;
+
+        select.innerHTML = '<option value="All">All Types (همه)</option>';
+
+        // Handle array structure safely
+        const list = Array.isArray(items) ? items : (items.data || []);
+        list.forEach(item => {
+            const name = item.cement_name || item.name || item;
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            select.appendChild(opt);
+        });
+        
+        console.log('[DEBUG] Cement types loaded:', list);
+    } catch (err) {
+        console.error('[ERROR] Failed to populate cement types:', err);
+    }
+}
+
+// Initial page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadAgentLogSubmissions();
+    fetchCustomerBalances();
+    loadCementDropdownOptions();
+});
+
+// Customer Details Modal Functions
+function openCustomerModal(customerId) {
+    const modal = document.getElementById('customerDetailsModal');
+    const loadingDiv = document.getElementById('modal_loading');
+    const bodyDiv = document.getElementById('modal_body');
+    
+    modal.style.display = 'flex';
+    loadingDiv.style.display = 'block';
+    bodyDiv.style.display = 'none';
+    
+    fetch(`/api/reports/customer-details?customer_id=${customerId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                loadingDiv.innerHTML = `<div style="color: #cf222e;">Error: ${esc(data.error)}</div>`;
+                return;
+            }
+            
+            const customer = data.customer;
+            const creator = data.creator;
+            const financial = data.financial;
+            
+            document.getElementById('modal_customer_name').textContent = customer.name;
+            document.getElementById('modal_cust_id').textContent = customer.customer_id || 'N/A';
+            document.getElementById('modal_cust_type').textContent = customer.customer_type || 'Not specified';
+            document.getElementById('modal_contact_position').textContent = customer.contact_person_position || 'Not specified';
+            document.getElementById('modal_province').textContent = customer.province;
+            document.getElementById('modal_agency').textContent = customer.created_by_agency || 'Unknown';
+            document.getElementById('modal_creator').textContent = creator ? creator.username : 'Not linked';
+            document.getElementById('modal_phone').textContent = customer.phone || 'Not provided';
+            document.getElementById('modal_alt_phone').textContent = customer.alternative_phone || 'Not provided';
+            document.getElementById('modal_email').textContent = customer.email || 'Not provided';
+            document.getElementById('modal_address').textContent = customer.address || 'Not provided';
+            document.getElementById('modal_total_debit').textContent = financial.total_debit.toLocaleString() + ' Afs';
+            document.getElementById('modal_total_credit').textContent = financial.total_credit.toLocaleString() + ' Afs';
+            
+            // Populate agency badge name
+            const agencyValue = customer.created_by_agency || customer.agency || customer.province || 'Unknown';
+            let agencyName = agencyValue;
+            // Format agency name (e.g., kabul_agent -> Kabul Agency)
+            if (agencyValue.includes('_')) {
+                const parts = agencyValue.split('_');
+                agencyName = parts.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(' ');
+            } else {
+                agencyName = agencyValue.charAt(0).toUpperCase() + agencyValue.slice(1);
+                if (agencyName.toLowerCase() !== 'unknown') {
+                    agencyName += ' Agency';
+                }
+            }
+            
+            document.getElementById('modal_agency_badge_name').textContent = agencyName;
+            
+            loadingDiv.style.display = 'none';
+            bodyDiv.style.display = 'block';
+        })
+        .catch(err => {
+            loadingDiv.innerHTML = `<div style="color: #cf222e;">Error: ${esc(err.message)}</div>`;
+        });
+}
+
+function closeCustomerModal() {
+    document.getElementById('customerDetailsModal').style.display = 'none';
+}
+
+// Cement Summary Report Modal Functions
+function openCementSummaryReportModal() {
+    const modal = document.getElementById('cementSummaryReportModal');
+    const loadingDiv = document.getElementById('cement-summary-loading');
+    const contentDiv = document.getElementById('cement-summary-content');
+    
+    modal.style.display = 'flex';
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    fetchCementSummaryReport();
+}
+
+function fetchCementSummaryReport() {
+    const loadingDiv = document.getElementById('cement-summary-loading');
+    const contentDiv = document.getElementById('cement-summary-content');
+    const startDate = document.getElementById('cement_report_start_date').value;
+    const endDate = document.getElementById('cement_report_end_date').value;
+    
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    // Call worker-scoped API endpoint
+    let queryUrl = `/api/worker/cement-summary?startDate=${startDate}&endDate=${endDate}`;
+    
+    fetch(queryUrl)
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        })
+        .then(data => {
+            cementSummaryData = data.records || [];
+            cementSummaryCurrentPage = 1;
+            renderCementSummaryTable();
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading cement summary report:', err);
+            loadingDiv.innerHTML = `<div style="color: #ef4444;">خطا در بارگیری گزارش: ${esc(err.message)}</div>`;
+        });
+}
+
+function closeCementSummaryReportModal() {
+    document.getElementById('cementSummaryReportModal').style.display = 'none';
+}
+
+// Cement Summary Modal Window Controls
+let isCementSummaryMaximized = false;
+
+function toggleMaximizeCementSummaryModal() {
+    const modal = document.getElementById('cementSummaryReportModalContent');
+    const btn = document.getElementById('cementSummaryMaximizeBtn');
+    
+    if (!isCementSummaryMaximized) {
+        // Maximize: fill entire viewport
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.width = '100vw';
+        modal.style.height = '100vh';
+        modal.style.maxWidth = 'none';
+        modal.style.maxHeight = 'none';
+        modal.style.borderRadius = '0';
+        modal.style.border = 'none';
+        btn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+        btn.title = 'Restore';
+        isCementSummaryMaximized = true;
+    } else {
+        // Restore: original size
+        modal.style.position = 'relative';
+        modal.style.width = '95%';
+        modal.style.maxWidth = '1400px';
+        modal.style.maxHeight = '90vh';
+        modal.style.borderRadius = '8px';
+        modal.style.border = '1px solid var(--border-color)';
+        btn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>';
+        btn.title = 'Maximize';
+        isCementSummaryMaximized = false;
+    }
+}
+
+// Cement Summary Pagination State
+let cementSummaryData = [];
+let cementSummaryCurrentPage = 1;
+let cementSummaryRowsPerPage = 10;
+
+function handleCementSummaryRowsPerPageChange(value) {
+    cementSummaryRowsPerPage = parseInt(value);
+    cementSummaryCurrentPage = 1;
+    renderCementSummaryTable();
+}
+
+function cementSummaryGoToPage(pageNum) {
+    cementSummaryCurrentPage = pageNum;
+    renderCementSummaryTable();
+}
+
+function cementSummaryGoToPrevPage() {
+    if (cementSummaryCurrentPage > 1) {
+        cementSummaryCurrentPage--;
+        renderCementSummaryTable();
+    }
+}
+
+function cementSummaryGoToNextPage() {
+    const totalPages = Math.ceil(cementSummaryData.length / cementSummaryRowsPerPage);
+    if (cementSummaryCurrentPage < totalPages) {
+        cementSummaryCurrentPage++;
+        renderCementSummaryTable();
+    }
+}
+
+function renderCementSummaryTable() {
+    const tbody = document.getElementById('cement-summary-table-body');
+    const totalPages = Math.ceil(cementSummaryData.length / cementSummaryRowsPerPage) || 1;
+    const startIndex = (cementSummaryCurrentPage - 1) * cementSummaryRowsPerPage;
+    const endIndex = Math.min(startIndex + cementSummaryRowsPerPage, cementSummaryData.length);
+    const paginatedData = cementSummaryData.slice(startIndex, endIndex);
+    
+    let html = '';
+    paginatedData.forEach((row, index) => {
+        html += `
+            <tr style="background-color: var(--card-bg); border-bottom: 1px solid var(--border-color);">
+                <td style="padding: 12px;">${esc(startIndex + index + 1)}</td>
+                <td style="padding: 12px; font-weight: 600;">${esc(row.cement_type || '-')}</td>
+                <td style="padding: 12px;">${esc((row.waybill_count || 0).toLocaleString())}</td>
+                <td style="padding: 12px;">${esc((row.total_bags || 0).toLocaleString())}</td>
+                <td style="padding: 12px;">${esc((row.total_tonnage || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+                <td style="padding: 12px;">${esc((row.total_shortage || 0).toLocaleString())}</td>
+                <td style="padding: 12px;">${esc((row.company_trucks_count || 0).toLocaleString())}</td>
+                <td style="padding: 12px;">${esc((row.rental_trucks_count || 0).toLocaleString())}</td>
+                <td style="padding: 12px;">${esc((row.total_freight || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                <td style="padding: 12px;">${esc((row.total_sales || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+                <td style="padding: 12px; color: #16a34a;">${esc((row.total_net_cement || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))} Afs</td>
+            </tr>
+        `;
+    });
+    
+    tbody.innerHTML = html;
+    
+    // Update pagination controls
+    document.getElementById('cement-summary-page-start').textContent = cementSummaryData.length === 0 ? 0 : startIndex + 1;
+    document.getElementById('cement-summary-page-end').textContent = endIndex;
+    document.getElementById('cement-summary-total-count').textContent = cementSummaryData.length;
+    document.getElementById('cement-summary-prev-btn').disabled = cementSummaryCurrentPage === 1;
+    document.getElementById('cement-summary-next-btn').disabled = cementSummaryCurrentPage === totalPages;
+    
+    // Update page numbers
+    const pageNumbersDiv = document.getElementById('cement-summary-page-numbers');
+    let pageNumbersHtml = '';
+    for (let i = 1; i <= totalPages; i++) {
+        if (i === cementSummaryCurrentPage) {
+            pageNumbersHtml += `<button onclick="cementSummaryGoToPage(${esc(i)})" style="background: var(--accent-blue); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px;">${esc(i)}</button>`;
+        } else if (i === 1 || i === totalPages || (i >= cementSummaryCurrentPage - 1 && i <= cementSummaryCurrentPage + 1)) {
+            pageNumbersHtml += `<button onclick="cementSummaryGoToPage(${esc(i)})" style="background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 13px;">${esc(i)}</button>`;
+        } else if (i === cementSummaryCurrentPage - 2 || i === cementSummaryCurrentPage + 2) {
+            pageNumbersHtml += `<span style="color: var(--text-muted);">...</span>`;
+        }
+    }
+    pageNumbersDiv.innerHTML = pageNumbersHtml;
+}
+</script>
+
+<!-- Customer Search Modal -->
+<div id="customerSearchModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div class="customer-search-modal-content" style="background: var(--modal-bg); border-radius: 8px; padding: 24px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 1px solid var(--border-color); opacity: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);">
+            <h3 style="margin: 0; color: var(--text-main); font-size: 16px; font-weight: 600;"><%= t('worker_command_deck.customer_search_title') %></h3>
+            <button onclick="closeCustomerSearchModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-muted); padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center;">&times;</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;"><%= t('worker_command_deck.customer_id') %></label>
+                <input type="text" id="search_cust_id" class="form-control" placeholder="<%= t('worker_command_deck.customer_id_placeholder') %>" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;"><%= t('worker_command_deck.customer_name') %></label>
+                <input type="text" id="search_cust_name" class="form-control" placeholder="<%= t('worker_command_deck.customer_name_placeholder') %>" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;"><%= t('worker_command_deck.province') %></label>
+                <select id="search_cust_province" class="form-control" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+                    <option value="All"><%= t('worker_command_deck.all_provinces') %></option>
+                    <option value="Kabul">Kabul</option>
+                    <option value="Herat">Herat</option>
+                    <option value="Balkh">Balkh</option>
+                    <option value="Kandahar">Kandahar</option>
+                    <option value="Nangarhar">Nangarhar</option>
+                    <option value="Khost">Khost</option>
+                    <option value="Paktia">Paktia</option>
+                    <option value="Paktika">Paktika</option>
+                    <option value="Ghazni">Ghazni</option>
+                    <option value="Logar">Logar</option>
+                    <option value="Wardak">Wardak</option>
+                    <option value="Parwan">Parwan</option>
+                    <option value="Kapisa">Kapisa</option>
+                    <option value="Panjshir">Panjshir</option>
+                    <option value="Laghman">Laghman</option>
+                    <option value="Kunar">Kunar</option>
+                    <option value="Nuristan">Nuristan</option>
+                    <option value="Badakhshan">Badakhshan</option>
+                    <option value="Takhar">Takhar</option>
+                    <option value="Baghlan">Baghlan</option>
+                    <option value="Samangan">Samangan</option>
+                    <option value="Jowzjan">Jowzjan</option>
+                    <option value="Sar-e Pol">Sar-e Pol</option>
+                    <option value="Faryab">Faryab</option>
+                    <option value="Kunduz">Kunduz</option>
+                    <option value="Badghis">Badghis</option>
+                    <option value="Ghor">Ghor</option>
+                    <option value="Daikundi">Daikundi</option>
+                    <option value="Bamyan">Bamyan</option>
+                    <option value="Uruzgan">Uruzgan</option>
+                    <option value="Zabul">Zabul</option>
+                    <option value="Helmand">Helmand</option>
+                    <option value="Nimruz">Nimruz</option>
+                    <option value="Farah">Farah</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;"><%= t('worker_command_deck.phone_number') %></label>
+                <input type="text" id="search_cust_phone" class="form-control" placeholder="<%= t('worker_command_deck.phone_placeholder') %>" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+            <div style="grid-column: 1 / -1;">
+                <label style="font-size: 12px; font-weight: 500; color: var(--text-muted); display:block; margin-bottom:6px;"><%= t('worker_command_deck.address') %></label>
+                <input type="text" id="search_cust_address" class="form-control" placeholder="<%= t('worker_command_deck.address_placeholder') %>" style="padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main);">
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end;">
+            <button onclick="resetCustomerSearch()" class="btn btn-secondary" style="background-color: var(--text-muted); color: white; padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                <%= t('worker_command_deck.reset') %>
+            </button>
+            <button onclick="applyCustomerSearch()" class="btn btn-primary" style="background-color: var(--accent-blue); color: white; padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                <%= t('worker_command_deck.search') %>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Cement Summary Report Modal -->
+<div id="cementSummaryReportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div id="cementSummaryReportModalContent" style="background: var(--card-bg); border-radius: 8px; width: 95%; max-width: 1400px; max-height: 90vh; overflow: hidden; direction: rtl; text-align: right; border: 1px solid var(--border-color); transition: all 0.3s ease;">
+        <!-- Window Control Header -->
+        <div class="report-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-main);">
+                    <%= t('worker_command_deck.cement_summary_title') %>
+                </h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">
+                    <%= t('worker_command_deck.cement_summary_desc') %>
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="window.print()" class="btn no-print cement-print-btn" style="background: var(--text-main); color: #fff; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                    <%= t('worker_command_deck.print_export') %>
+                </button>
+                <!-- Window Controls -->
+                <div style="display: flex; gap: 4px; margin-right: 8px;">
+                    <button onclick="toggleMaximizeCementSummaryModal()" id="cementSummaryMaximizeBtn" class="btn no-print" style="background: var(--card-bg); color: var(--text-main); padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 500; cursor: pointer;" title="Maximize">
+                        <svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    </button>
+                    <button onclick="closeCementSummaryReportModal()" class="btn no-print" style="background: var(--danger-red); color: #fff; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                        <%= t('worker_command_deck.close') %>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inline Filter Bar -->
+        <div class="report-filter-bar no-print" style="margin: 20px 24px; background: var(--card-bg); border: 1px solid var(--border-color);">
+            <div class="filter-group">
+                <label for="cement_report_start_date" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('worker_command_deck.from_date') %></label>
+                <input type="text" id="cement_report_start_date" class="form-control-custom" data-datepicker="jalali" placeholder="<%= t('worker_command_deck.date_placeholder') %>" readonly style="width: 160px; text-align: center; direction: ltr; height: 36px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px;">
+            </div>
+
+            <div class="filter-group">
+                <label for="cement_report_end_date" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('worker_command_deck.to_date') %></label>
+                <input type="text" id="cement_report_end_date" class="form-control-custom" data-datepicker="jalali" placeholder="<%= t('worker_command_deck.date_placeholder') %>" readonly style="width: 160px; text-align: center; direction: ltr; height: 36px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px;">
+            </div>
+
+            <button onclick="fetchCementSummaryReport()" style="background: var(--accent-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; height: 36px; font-size: 13px;">
+                <%= t('worker_command_deck.filter') %>
+            </button>
+        </div>
+        
+        <div id="cement-summary-loading" style="padding: 40px; text-align: center; display: block;">
+            <svg style="width: 40px; height: 40px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M12 2a10 10 0 0 1 10 10"/></svg>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;"><%= t('worker_command_deck.loading') %></p>
+        </div>
+        
+        <div id="cement-summary-content" style="padding: 24px; overflow-x: auto; display: none;">
+            <!-- Rows Per Page Selector -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;" class="no-print">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted);">
+                    <span><%= t('worker_command_deck.show_per_page') %></span>
+                    <select id="cement-summary-rows-per-page" onchange="handleCementSummaryRowsPerPageChange(this.value)" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main); cursor: pointer;">
+                        <option value="10">۱۰</option>
+                        <option value="50">۵۰</option>
+                        <option value="100">۱۰۰</option>
+                    </select>
+                </div>
+                <div style="font-size: 13px; color: var(--text-muted);">
+                    <%= t('worker_command_deck.showing') %> <span id="cement-summary-page-start">0</span> <%= t('worker_command_deck.to') %> <span id="cement-summary-page-end">0</span> <%= t('worker_command_deck.of') %> <span id="cement-summary-total-count">0</span> <%= t('worker_command_deck.entries') %>
+                </div>
+            </div>
+            
+            <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: center;">
+                <thead>
+                    <tr style="background-color: var(--table-header-bg); border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 600;">
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_hash') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_type') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_waybills') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_bags') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_tonnage') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_shortage') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_company_trucks') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_rental_trucks') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_freight') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_sales') %></th>
+                        <th style="padding: 12px 10px;"><%= t('worker_command_deck.cement_th_net') %></th>
+                    </tr>
+                </thead>
+                <tbody id="cement-summary-table-body">
+                    <!-- Dynamically populated -->
+                </tbody>
+            </table>
+            
+            <!-- Pagination Controls -->
+            <div id="cement-summary-pagination" class="no-print" style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <button id="cement-summary-prev-btn" onclick="cementSummaryGoToPrevPage()" style="background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('worker_command_deck.previous') %></button>
+                <div id="cement-summary-page-numbers" style="display: flex; gap: 4px;"></div>
+                <button id="cement-summary-next-btn" onclick="cementSummaryGoToNextPage()" style="background: var(--card-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('worker_command_deck.next') %></button>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<!-- Customer Balance Report Modal -->
+<div id="customerBalanceReportModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; align-items: center; justify-content: center;">
+    <div id="customerBalanceReportModalContent" style="background: var(--modal-bg); border-radius: 8px; width: 95%; max-width: 1600px; max-height: 90vh; overflow: hidden; direction: rtl; text-align: right; border: 1px solid var(--border-color); transition: all 0.3s ease; display: flex; flex-direction: column;">
+        <!-- Window Control Header -->
+        <div class="report-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+            <div>
+                <h2 style="margin: 0; font-size: 18px; font-weight: 600; color: var(--text-main);">
+                    <%= t('admin.customer_balance_report') %>
+                </h2>
+                <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--text-muted);">
+                    <%= t('admin.customer_balance_subtitle') %>
+                </p>
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button onclick="printCustomerBalanceReport()" class="btn customer-balance-print-btn no-print" style="background: var(--text-main); color: #fff; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <svg style="width: 16px; height: 16px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect width="12" height="12" x="6" y="10" rx="2"/></svg>
+                    <%= t('admin.customer_balance_print_report') %>
+                </button>
+                <!-- Window Controls -->
+                <div style="display: flex; gap: 4px; margin-right: 8px;">
+                    <button onclick="toggleCustomerBalanceFullScreen()" id="customerBalanceFullScreenBtn" class="btn no-print" style="background: var(--table-header-bg); color: var(--text-main); padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 500; cursor: pointer;" title="<%= t('admin.full_screen') %>">
+                        <svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                    </button>
+                    <button onclick="closeCustomerBalanceReportModal()" class="btn no-print" style="background: var(--danger-red); color: #fff; padding: 8px 16px; border: none; border-radius: 6px; font-weight: 500; cursor: pointer;">
+                        <%= t('admin.close') %>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Inline Filter Bar -->
+        <div class="report-filter-bar no-print" style="margin: 20px 24px; background: var(--table-header-bg); border: 1px solid var(--border-color); flex-shrink: 0;">
+            <div class="filter-group" style="display: flex; align-items: center; gap: 8px;">
+                <label for="customer-balance-filter" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('admin.balance_filter_label') %></label>
+                <select id="customer-balance-filter" onchange="applyCustomerBalanceFilter()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main); cursor: pointer;">
+                    <option value="all"><%= t('admin.balance_filter_all') %></option>
+                    <option value="company_owes"><%= t('admin.balance_filter_company_owes') %></option>
+                    <option value="customer_owes"><%= t('admin.balance_filter_customer_owes') %></option>
+                </select>
+            </div>
+            <div class="filter-group" style="display: flex; align-items: center; gap: 8px; flex: 1;">
+                <label for="customer-balance-search" style="font-size: 13px; font-weight: 500; color: var(--text-muted);"><%= t('admin.customer_balance_search') %></label>
+                <input type="text" id="customer-balance-search" oninput="applyCustomerBalanceSearch()" placeholder="<%= t('admin.customer_balance_search_placeholder') %>" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main); flex: 1; min-width: 200px;">
+                <button onclick="clearCustomerBalanceSearch()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;" title="<%= t('admin.customer_balance_clear_search') %>">
+                    <svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <button onclick="loadCustomerBalances()" style="background: var(--accent-blue); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; font-size: 13px;">
+                <%= t('admin.refresh') %>
+            </button>
+        </div>
+        
+        <div id="customer-balance-loading" style="padding: 40px; text-align: center; display: block;">
+            <svg style="width: 40px; height: 40px; stroke: var(--text-muted); stroke-width: 1.5; fill: none; margin-bottom: 16px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/> <path d="M12 2a10 10 0 0 1 10 10"/></svg>
+            <p style="color: var(--text-muted); font-size: 14px; margin: 0;"><%= t('admin.loading_data') %></p>
+        </div>
+        
+        <div id="customer-balance-content" style="padding: 24px; overflow: hidden; display: none;">
+            <!-- Table Container with Vertical Scroll -->
+            <div class="customer-balance-table-container" style="max-height: 45vh; overflow-y: auto; overflow-x: auto; border: 1px solid var(--border-color); border-radius: 6px;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; line-height: 1.3; text-align: center; direction: rtl;">
+                    <thead>
+                        <tr style="background-color: var(--table-header-bg); border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 600; position: sticky; top: 0; z-index: 2;">
+                            <th style="padding: 8px 8px;">#</th>
+                            <th style="padding: 8px 8px;">ID</th>
+                            <th style="padding: 8px 8px;">Name</th>
+                            <th style="padding: 8px 8px;">Agency</th>
+                            <th style="padding: 8px 8px;">Province</th>
+                            <th style="padding: 8px 8px;">Full Address</th>
+                            <th style="padding: 8px 8px;">Customer Type</th>
+                            <th style="padding: 8px 8px;">Email</th>
+                            <th style="padding: 8px 8px;">Phone Number</th>
+                            <th style="padding: 8px 8px;">Total Cement Purchases</th>
+                            <th style="padding: 8px 8px;">Total Payments / Receipts</th>
+                            <th style="padding: 8px 8px; color: var(--warning-amber);">Company Owes Customer</th>
+                            <th style="padding: 8px 8px; color: var(--danger-red);">Customer Owes Company</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-balances-rows">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination Controls -->
+            <div id="customer-balance-pagination" class="no-print" style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-color); flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: var(--text-muted);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span><%= t('admin.pagination_rows_per_page') %></span>
+                        <select id="customer-balance-rows-per-page" onchange="changeCustomerBalanceRowsPerPage()" style="padding: 6px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; background: var(--input-bg); color: var(--text-main); cursor: pointer;">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+                    <div>
+                        <%= t('admin.pagination_showing') %> <span id="customer-balance-page-start">0</span> <%= t('admin.pagination_to') %> <span id="customer-balance-page-end">0</span> <%= t('admin.pagination_of') %> <span id="customer-balance-total-count">0</span>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <button id="customer-balance-prev-btn" onclick="customerBalanceGoToPrevPage()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('admin.pagination_previous') %></button>
+                    <div id="customer-balance-page-numbers" style="display: flex; gap: 4px;"></div>
+                    <button id="customer-balance-next-btn" onclick="customerBalanceGoToNextPage()" style="background: var(--table-header-bg); color: var(--text-main); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 13px;" disabled><%= t('admin.pagination_next') %></button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+
+<%- include('partials/customer_modal') %>
+
+<%- include('partials/footer') %>
+
+<script>
+// Store customer balance data globally for client-side filtering and pagination
+let allCustomerBalanceData = [];
+let filteredCustomerBalanceData = [];
+let customerBalanceCurrentPage = 1;
+let customerBalanceRowsPerPage = 25;
+let customerBalanceCurrentFilter = 'all';
+let customerBalanceSearchTerm = '';
+
+// Open Customer Balance Report Modal
+function openCustomerBalanceReportModal() {
+    document.getElementById('customerBalanceReportModal').style.display = 'flex';
+    loadCustomerBalances();
+}
+
+// Close Customer Balance Report Modal
+function closeCustomerBalanceReportModal() {
+    document.getElementById('customerBalanceReportModal').style.display = 'none';
+}
+
+// Load Customer Balances (Worker-specific endpoint)
+function loadCustomerBalances() {
+    const loadingDiv = document.getElementById('customer-balance-loading');
+    const contentDiv = document.getElementById('customer-balance-content');
+    const tbody = document.getElementById('customer-balances-rows');
+    
+    loadingDiv.style.display = 'block';
+    contentDiv.style.display = 'none';
+    
+    fetch('/api/worker/customer-balances', {
+        credentials: 'include'
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.error) {
+            tbody.innerHTML = `<tr><td colspan="13" style="padding: 25px; color: var(--danger-red);">Error: ${esc(data.error)}</td></tr>`;
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+            return;
+        }
+        
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="13" style="padding: 25px; color: var(--text-muted);">No customer data found</td></tr>';
+            loadingDiv.style.display = 'none';
+            contentDiv.style.display = 'block';
+            return;
+        }
+        
+        // Store all data globally
+        allCustomerBalanceData = data;
+        
+        // Apply current filter
+        applyCustomerBalanceFilter();
+        
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+    })
+    .catch(err => {
+        console.error('[ERROR] Error loading customer balances:', err);
+        tbody.innerHTML = '<tr><td colspan="13" style="padding: 25px; color: var(--danger-red);">Error loading customer balance data</td></tr>';
+        loadingDiv.style.display = 'none';
+        contentDiv.style.display = 'block';
+    });
+}
+
+// Apply customer balance filter
+function applyCustomerBalanceFilter() {
+    const filterValue = document.getElementById('customer-balance-filter').value;
+    customerBalanceCurrentFilter = filterValue;
+    
+    // Reset to page 1 when filter changes
+    customerBalanceCurrentPage = 1;
+    
+    // Apply both filter and search
+    applyCustomerBalanceFilterAndSearch();
+}
+
+// Apply customer balance search
+function applyCustomerBalanceSearch() {
+    const searchValue = document.getElementById('customer-balance-search').value;
+    customerBalanceSearchTerm = searchValue.toLowerCase();
+    
+    // Reset to page 1 when search changes
+    customerBalanceCurrentPage = 1;
+    
+    // Apply both filter and search
+    applyCustomerBalanceFilterAndSearch();
+}
+
+// Clear customer balance search
+function clearCustomerBalanceSearch() {
+    document.getElementById('customer-balance-search').value = '';
+    customerBalanceSearchTerm = '';
+    customerBalanceCurrentPage = 1;
+    
+    // Apply both filter and search
+    applyCustomerBalanceFilterAndSearch();
+}
+
+// Apply both filter and search together
+function applyCustomerBalanceFilterAndSearch() {
+    const filterValue = customerBalanceCurrentFilter;
+    const searchValue = customerBalanceSearchTerm;
+    
+    // First apply balance filter
+    let result = allCustomerBalanceData;
+    
+    if (filterValue === 'company_owes') {
+        result = result.filter(c => c['Company Owes Customer'] > 0);
+    } else if (filterValue === 'customer_owes') {
+        result = result.filter(c => c['Customer Owes Company'] > 0);
+    }
+    
+    // Then apply search filter
+    if (searchValue && searchValue.trim() !== '') {
+        result = result.filter(c => {
+            const name = (c['Name'] || '').toLowerCase();
+            const id = (c['ID'] || '').toLowerCase();
+            const agency = (c['Agency'] || '').toLowerCase();
+            const phone = (c['Phone Number'] || '').toLowerCase();
+            
+            return name.includes(searchValue) || 
+                   id.includes(searchValue) || 
+                   agency.includes(searchValue) || 
+                   phone.includes(searchValue);
+        });
+    }
+    
+    filteredCustomerBalanceData = result;
+    renderCustomerBalanceTable();
+}
+
+// Change rows per page
+function changeCustomerBalanceRowsPerPage() {
+    customerBalanceRowsPerPage = parseInt(document.getElementById('customer-balance-rows-per-page').value);
+    customerBalanceCurrentPage = 1;
+    renderCustomerBalanceTable();
+}
+
+// Render customer balance table with pagination
+function renderCustomerBalanceTable() {
+    const tbody = document.getElementById('customer-balances-rows');
+    const paginationDiv = document.getElementById('customer-balance-pagination');
+    
+    if (filteredCustomerBalanceData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="13" style="padding: 25px; color: var(--text-muted);">No customers found</td></tr>`;
+        paginationDiv.style.display = 'none';
+        return;
+    }
+    
+    // Calculate pagination
+    const startIndex = (customerBalanceCurrentPage - 1) * customerBalanceRowsPerPage;
+    const endIndex = Math.min(startIndex + customerBalanceRowsPerPage, filteredCustomerBalanceData.length);
+    const pageData = filteredCustomerBalanceData.slice(startIndex, endIndex);
+    const totalPages = Math.ceil(filteredCustomerBalanceData.length / customerBalanceRowsPerPage);
+    
+    // Render table rows
+    tbody.innerHTML = pageData.map((customer, index) => `
+        <tr style="border-bottom: 1px solid var(--border-color);">
+            <td style="padding: 12px 10px;">${esc(startIndex + index + 1)}</td>
+            <td style="padding: 12px 10px;">${esc(customer['ID'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Name'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Agency'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Province'])}</td>
+            <td style="padding: 12px 10px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${esc(customer['Full Address'])}">${esc(customer['Full Address'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Customer Type'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Email'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Phone Number'])}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Total Cement Purchases'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td style="padding: 12px 10px;">${esc(customer['Total Payments / Receipts'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-company-owes" style="padding: 12px 10px;">${esc(customer['Company Owes Customer'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-customer-owes" style="padding: 12px 10px;">${esc(customer['Customer Owes Company'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+        </tr>
+    `).join('');
+    
+    // Update pagination UI
+    document.getElementById('customer-balance-page-start').textContent = startIndex + 1;
+    document.getElementById('customer-balance-page-end').textContent = endIndex;
+    document.getElementById('customer-balance-total-count').textContent = filteredCustomerBalanceData.length;
+    
+    // Update button states
+    document.getElementById('customer-balance-prev-btn').disabled = customerBalanceCurrentPage === 1;
+    document.getElementById('customer-balance-next-btn').disabled = customerBalanceCurrentPage === totalPages;
+    
+    // Generate page numbers
+    const pageNumbersDiv = document.getElementById('customer-balance-page-numbers');
+    pageNumbersDiv.innerHTML = '';
+    
+    for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => customerBalanceGoToPage(i);
+        pageBtn.style.padding = '6px 12px';
+        pageBtn.style.border = '1px solid var(--border-color)';
+        pageBtn.style.borderRadius = '6px';
+        pageBtn.style.cursor = 'pointer';
+        pageBtn.style.fontSize = '13px';
+        pageBtn.style.background = i === customerBalanceCurrentPage ? 'var(--accent-blue)' : 'var(--table-header-bg)';
+        pageBtn.style.color = i === customerBalanceCurrentPage ? '#fff' : 'var(--text-main)';
+        pageNumbersDiv.appendChild(pageBtn);
+    }
+    
+    paginationDiv.style.display = 'flex';
+}
+
+// Go to specific page
+function customerBalanceGoToPage(pageNum) {
+    customerBalanceCurrentPage = pageNum;
+    renderCustomerBalanceTable();
+}
+
+// Go to previous page
+function customerBalanceGoToPrevPage() {
+    if (customerBalanceCurrentPage > 1) {
+        customerBalanceCurrentPage--;
+        renderCustomerBalanceTable();
+    }
+}
+
+// Go to next page
+function customerBalanceGoToNextPage() {
+    const totalPages = Math.ceil(filteredCustomerBalanceData.length / customerBalanceRowsPerPage);
+    if (customerBalanceCurrentPage < totalPages) {
+        customerBalanceCurrentPage++;
+        renderCustomerBalanceTable();
+    }
+}
+
+// Toggle full screen
+function toggleCustomerBalanceFullScreen() {
+    const modal = document.getElementById('customerBalanceReportModal');
+    const modalContent = document.getElementById('customerBalanceReportModalContent');
+    const fullScreenBtn = document.getElementById('customerBalanceFullScreenBtn');
+    
+    modal.classList.toggle('fullscreen-active');
+    modalContent.classList.toggle('full-screen');
+    
+    if (modalContent.classList.contains('full-screen')) {
+        fullScreenBtn.title = 'Exit Full Screen';
+        fullScreenBtn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>';
+    } else {
+        fullScreenBtn.title = 'Full Screen';
+        fullScreenBtn.innerHTML = '<svg style="width: 14px; height: 14px; stroke: currentColor; stroke-width: 2; fill: none;" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>';
+    }
+}
+
+// Print customer balance report (same as Admin)
+function printCustomerBalanceReport() {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+        alert('Please allow popups to print the report');
+        return;
+    }
+
+    const tableRowsHTML = filteredCustomerBalanceData.map((customer, index) => `
+        <tr>
+            <td>${esc(index + 1)}</td>
+            <td>${esc(customer['ID'])}</td>
+            <td>${esc(customer['Name'])}</td>
+            <td>${esc(customer['Agency'])}</td>
+            <td>${esc(customer['Province'])}</td>
+            <td>${esc(customer['Full Address'])}</td>
+            <td>${esc(customer['Customer Type'])}</td>
+            <td>${esc(customer['Email'])}</td>
+            <td>${esc(customer['Phone Number'])}</td>
+            <td>${esc(customer['Total Cement Purchases'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td>${esc(customer['Total Payments / Receipts'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-company-owes">${esc(customer['Company Owes Customer'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+            <td class="customer-balance-customer-owes">${esc(customer['Customer Owes Company'].toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}))}</td>
+        </tr>
+    `).join('');
+
+    const printDocument = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Customer Balance Report</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9px;
+            color: #000;
+            background: #fff;
+            padding: 10px;
+        }
+
+        .report-header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        .report-header h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8px;
+        }
+
+        table th {
+            background-color: #f0f0f0;
+            border: 1px solid #000;
+            padding: 4px 3px;
+            text-align: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        table td {
+            border: 1px solid #000;
+            padding: 4px 3px;
+            text-align: center;
+            color: #000;
+        }
+
+        table tbody tr {
+            page-break-inside: avoid;
+        }
+
+        .customer-balance-company-owes {
+            color: #d97706 !important;
+            font-weight: bold;
+        }
+
+        .customer-balance-customer-owes {
+            color: #dc2626 !important;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <h2>Customer Balance Report</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Agency</th>
+                <th>Province</th>
+                <th>Full Address</th>
+                <th>Customer Type</th>
+                <th>Email</th>
+                <th>Phone Number</th>
+                <th>Total Cement Purchases</th>
+                <th>Total Payments / Receipts</th>
+                <th>Company Owes Customer</th>
+                <th>Customer Owes Company</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${esc(tableRowsHTML)}
+        </tbody>
+    </table>
+</body>
+</html>`;
+
+    printWindow.document.open();
+    printWindow.document.write(printDocument);
+    printWindow.document.close();
+
+    printWindow.onload = function() {
+        printWindow.print();
+    };
+}
+</script>

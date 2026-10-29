@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <title><%= t('recovery.admin_code_method') %></title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <style>
+        :root {
+            --bg-color: #f6f8fa;
+            --card-bg: #ffffff;
+            --border-color: #d0d7de;
+            --text-main: #24292f;
+            --text-muted: #57606a;
+            --input-bg: #ffffff;
+            --input-border: #d0d7de;
+            --status-success: #059669;
+            --status-error: #cf222e;
+            --accent-blue: #0969da;
+            --divider-color: #e1e4e8;
+            --btn-hover-bg: #f0f6fc;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --border-color: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --input-bg: #0d1117;
+            --input-border: #30363d;
+            --status-success: #3fb950;
+            --status-error: #f85149;
+            --accent-blue: #58a6ff;
+            --divider-color: #30363d;
+            --btn-hover-bg: #1f2328;
+        }
+
+        body { background-color: var(--bg-color); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .recovery-box { background: var(--card-bg); width: 100%; max-width: 480px; border: 1px solid var(--border-color); border-radius: 12px; padding: 48px 40px; box-shadow: 0 8px 24px rgba(0,0,0,0.08); margin: 20px; }
+        .logo { text-align: center; margin-bottom: 32px; }
+        .logo img { width: 72px; height: 72px; }
+        h1 { text-align: center; margin-bottom: 8px; color: var(--text-main); font-size: 28px; font-weight: 600; }
+        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 32px; font-size: 15px; line-height: 1.5; }
+        .divider { height: 1px; background: var(--divider-color); margin: 32px 0; }
+        .form-group { margin-bottom: 24px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
+        .form-control { width: 100%; padding: 12px 16px; border: 1px solid var(--input-border); border-radius: 8px; box-sizing: border-box; font-size: 15px; transition: border-color 0.2s, box-shadow 0.2s; background: var(--input-bg); color: var(--text-main); }
+        .form-control:focus { outline: none; border-color: var(--accent-blue); box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15); }
+        .form-control::placeholder { color: var(--text-muted); }
+        .btn { width: 100%; background-color: #2ea44f; color: #fff; padding: 14px 20px; font-weight: 600; border: 0; border-radius: 8px; cursor: pointer; font-size: 15px; transition: background-color 0.2s; }
+        .btn:hover { background-color: #2c974b; }
+        .btn:active { background-color: #298e46; }
+        .btn-secondary { background-color: transparent; color: var(--accent-blue); padding: 12px 16px; font-weight: 500; margin-top: 16px; }
+        .btn-secondary:hover { background-color: var(--btn-hover-bg); }
+        .back-link { display: block; text-align: center; margin-top: 24px; color: var(--accent-blue); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .back-link:hover { text-decoration: underline; }
+        .message { padding: 12px 16px; border-radius: 8px; margin-bottom: 24px; font-size: 14px; text-align: center; }
+        .message.error { background-color: rgba(207, 34, 46, 0.1); color: var(--status-error); border: 1px solid rgba(255,129,130,0.4); }
+        .message.success { background-color: rgba(5, 150, 105, 0.1); color: var(--status-success); border: 1px solid rgba(187, 247, 208, 0.4); }
+        @media (max-width: 520px) {
+            .recovery-box { padding: 32px 24px; margin: 16px; }
+            h1 { font-size: 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="recovery-box">
+        <div class="logo">
+            <img src="/Logo.png" alt="<%= t('auth.logo_alt') %>">
+        </div>
+        
+        <h1><%= t('recovery.admin_code_method') %></h1>
+        <p class="subtitle"><%= t('recovery.admin_code_description') %></p>
+        
+        <% if (message) { %>
+            <p class="message <%= message.type === 'error' ? 'error' : 'success' %>"><%= message.text %></p>
+        <% } %>
+        
+        <div class="divider"></div>
+        
+        <form action="/recovery/admin/verify-code" method="POST">
+            <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+            <div class="form-group">
+                <label class="form-label"><%= t('auth.username_label') %></label>
+                <input type="text" name="username" class="form-control" required placeholder="<%= t('auth.username_placeholder') %>" dir="ltr" autocomplete="username">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label"><%= t('recovery.recovery_code_label') %></label>
+                <input type="text" name="recoveryCode" class="form-control" required placeholder="XXXX-XXXX-XXXX-XXXX" dir="ltr" style="font-family: 'Courier New', monospace; letter-spacing: 1px;" autocomplete="off">
+            </div>
+            
+            <button type="submit" class="btn"><%= t('recovery.verify_code') %></button>
+        </form>
+        
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='/recovery/admin/long-key'"><%= t('recovery.admin_long_key_method') %></button>
+        
+        <a href="/recovery/admin" class="back-link"><%= t('recovery.back_to_recovery') %></a>
+    </div>
+</body>
+</html>

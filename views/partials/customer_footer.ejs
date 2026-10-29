@@ -1,0 +1,24 @@
+<footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h4><%= t('home.footer_company') %></h4>
+                    <p><%= t('home.footer_description') %></p>
+                </div>
+                <div class="footer-col">
+                    <h4><%= t('home.footer_quick_ops') %></h4>
+                    <a href="/"><%= t('home.footer_home_registry') %></a>
+                    <a href="/products"><%= t('home.footer_material_specs') %></a>
+                </div>
+                <div class="footer-col">
+                    <h4><%= t('home.footer_contact') %></h4>
+                    <p><%= content.footer_address || t('home.footer_kabul_station') %></p>
+                    <p><%= content.footer_phone || t('home.footer_phone') %></p>
+                    <a href="mailto:<%= content.footer_email || 'info@example.com' %>"><%= content.footer_email || 'info@example.com' %></a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <%= t('home.footer_copyright') %>
+            </div>
+        </div>
+    </footer>

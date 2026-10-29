@@ -1,0 +1,1562 @@
+<%- include('partials/header') %>
+
+<style>
+    /* Page-specific styles - scoped to daily-expenses-page */
+    .daily-expenses-page .kpi-card {
+        border-radius: 8px;
+        padding: 16px;
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+    
+    .daily-expenses-page .kpi-green {
+        background: linear-gradient(135deg, #2ea44f 0%, #1a7f37 100%);
+    }
+    
+    .daily-expenses-page .kpi-red {
+        background: linear-gradient(135deg, #da3633 0%, #cf222e 100%);
+    }
+    
+    .daily-expenses-page .kpi-blue {
+        background: linear-gradient(135deg, #0969da 0%, #0550ae 100%);
+    }
+    
+    .daily-expenses-page .kpi-orange {
+        background: linear-gradient(135deg, #d29922 0%, #9a6700 100%);
+    }
+    
+    /* Compact form grid layout */
+    .daily-expenses-page .expense-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr 0.8fr 1.2fr;
+        gap: 12px;
+        margin-bottom: 12px;
+        align-items: start;
+    }
+    
+    .daily-expenses-page .expense-form-grid .col-span-2 {
+        grid-column: span 2;
+    }
+    
+    .daily-expenses-page .expense-form-grid .col-span-3 {
+        grid-column: span 3;
+    }
+    
+    .daily-expenses-page .expense-form-grid .col-span-4 {
+        grid-column: span 4;
+    }
+    
+    .daily-expenses-page .form-field {
+        display: flex;
+        flex-direction: column;
+        text-align: left;
+    }
+    
+    .daily-expenses-page .form-field label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+    }
+    
+    .daily-expenses-page .form-field input,
+    .daily-expenses-page .form-field select {
+        padding: 8px 12px;
+        font-size: 13px;
+        border: 1px solid var(--input-border);
+        border-radius: 6px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        height: 38px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+    
+    .daily-expenses-page .form-field input:focus,
+    .daily-expenses-page .form-field select:focus {
+        outline: none;
+        border-color: var(--sidebar-active);
+    }
+    
+    /* Auto-growing textarea styling */
+    .daily-expenses-page .form-field textarea {
+        padding: 8px 12px;
+        font-size: 13px;
+        border: 1px solid var(--input-border);
+        border-radius: 6px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        min-height: 38px;
+        max-height: 100px;
+        box-sizing: border-box;
+        resize: none;
+        overflow-y: auto;
+        font-family: inherit;
+        width: 100%;
+    }
+    
+    .daily-expenses-page .form-field textarea:focus {
+        outline: none;
+        border-color: var(--sidebar-active);
+    }
+    
+    /* Form actions row */
+    .daily-expenses-page .form-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 12px;
+    }
+    
+    .daily-expenses-page .form-actions button {
+        padding: 8px 16px;
+        font-size: 13px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    /* Compact card styling */
+    .daily-expenses-page .compact-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    
+    .daily-expenses-page .compact-card h3 {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 12px 0;
+    }
+    
+    /* Table row number styling - theme-aware */
+    .daily-expenses-page .table-row-number {
+        padding: 8px;
+        text-align: center;
+        font-weight: 600;
+        background-color: var(--table-header-bg);
+        color: var(--text-muted);
+    }
+    
+    /* Queue table header - theme-aware */
+    .daily-expenses-page .queue-table-header {
+        background-color: var(--table-header-bg);
+        border-bottom: 2px solid var(--border-color);
+        color: var(--text-main);
+        font-weight: 700;
+    }
+    
+    [data-theme="dark"] .daily-expenses-page .queue-table-header {
+        background-color: #1a2f1a;
+        border-bottom-color: #3fb950;
+    }
+    
+    /* Compact filter row */
+    .daily-expenses-page .filter-row {
+        display: flex;
+        gap: 8px;
+        align-items: flex-end;
+        flex-wrap: nowrap;
+    }
+    
+    .daily-expenses-page .filter-row .filter-item {
+        flex-shrink: 0;
+    }
+    
+    /* Advanced Filters button */
+    .daily-expenses-page .filter-row .filter-item:first-child button {
+        width: 120px;
+        height: 34px;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* Category Filter dropdown button */
+    .daily-expenses-page .filter-row .filter-item:nth-child(2) button {
+        width: 160px;
+        height: 34px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    /* Date inputs */
+    .daily-expenses-page .filter-row .filter-item:nth-child(3) input,
+    .daily-expenses-page .filter-row .filter-item:nth-child(4) input {
+        width: 135px;
+        height: 34px;
+        padding: 6px 10px;
+        font-size: 12px;
+    }
+    
+    /* Reset Filters button */
+    .daily-expenses-page .filter-row .filter-item:last-child button {
+        width: 100px;
+        height: 34px;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    /* Filter labels */
+    .daily-expenses-page .filter-row .filter-item label {
+        margin-bottom: 4px;
+        font-size: 12px;
+    }
+    
+    /* Responsive filter row */
+    @media (max-width: 1200px) {
+        .daily-expenses-page .filter-row {
+            flex-wrap: wrap;
+        }
+        
+        .daily-expenses-page .filter-row .filter-item {
+            flex-shrink: 1;
+        }
+        
+        .daily-expenses-page .filter-row .filter-item button,
+        .daily-expenses-page .filter-row .filter-item input {
+            width: auto;
+            min-width: 100px;
+        }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .daily-expenses-page .expense-form-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .daily-expenses-page .expense-form-grid .col-span-2 {
+            grid-column: span 2;
+        }
+        
+        .daily-expenses-page .expense-form-grid .col-span-3 {
+            grid-column: span 2;
+        }
+        
+        .daily-expenses-page .expense-form-grid .col-span-4 {
+            grid-column: span 2;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .daily-expenses-page .expense-form-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .daily-expenses-page .expense-form-grid .col-span-2,
+        .daily-expenses-page .expense-form-grid .col-span-3,
+        .daily-expenses-page .expense-form-grid .col-span-4 {
+            grid-column: span 1;
+        }
+        
+        .daily-expenses-page .form-actions {
+            flex-direction: column;
+        }
+        
+        .daily-expenses-page .form-actions button {
+            width: 100%;
+        }
+    }
+    @media print {
+        .sidebar, .top-navbar, .filter-row, .no-print, select, input, button {
+            display: none !important;
+        }
+        .main-viewport { flex: 1; overflow: visible; }
+        body { background: #ffffff !important; color: #000000 !important; }
+        .card { border: 1px solid #000 !important; box-shadow: none !important; }
+        .table-responsive { overflow: visible !important; }
+        table { width: 100% !important; border: 1px solid #000 !important; }
+    }
+
+    /* Empty state cell styling */
+    .empty-state-cell {
+        text-align: center;
+        padding: 30px 20px;
+        background-color: var(--card-bg);
+    }
+
+    .empty-state-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .empty-state-icon {
+        font-size: 32px;
+    }
+
+    .empty-state-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .empty-state-description {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* Compact filter row for desktop */
+    .daily-expenses-page .filter-row.no-print {
+        flex-wrap: nowrap;
+        gap: 8px;
+    }
+
+    .daily-expenses-page .filter-row.no-print .filter-item {
+        min-width: 0;
+        flex: 0 0 auto;
+    }
+
+    .daily-expenses-page .filter-row.no-print .filter-item:nth-child(2) {
+        flex: 0 0 180px;
+    }
+
+    @media (max-width: 1024px) {
+        .daily-expenses-page .filter-row.no-print {
+            flex-wrap: wrap;
+        }
+    }
+
+    /* Category popup styling */
+    #category_checkbox_popup {
+        scrollbar-width: thin;
+        scrollbar-color: #9ca3af #f1f5f9;
+    }
+
+    #category_checkbox_popup::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #category_checkbox_popup::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 6px;
+    }
+
+    #category_checkbox_popup::-webkit-scrollbar-thumb {
+        background: #9ca3af;
+        border-radius: 6px;
+    }
+
+    [data-theme="dark"] #category_checkbox_popup {
+        scrollbar-color: #4b5563 #1f2937;
+    }
+
+    [data-theme="dark"] #category_checkbox_popup::-webkit-scrollbar-track {
+        background: #1f2937;
+    }
+
+    [data-theme="dark"] #category_checkbox_popup::-webkit-scrollbar-thumb {
+        background: #4b5563;
+    }
+
+    .category-popup-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        padding: 0;
+    }
+
+    .category-popup-btn.select-all {
+        color: #0969da;
+    }
+
+    .category-popup-btn.clear-all {
+        color: #cf222e;
+    }
+
+    [data-theme="dark"] .category-popup-btn.select-all {
+        color: #58a6ff;
+    }
+
+    [data-theme="dark"] .category-popup-btn.clear-all {
+        color: #ff7b72;
+    }
+</style>
+
+<div class="daily-expenses-page">
+<div style="border-bottom: 2px solid var(--border-color); padding-bottom: 8px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h2 style="font-size: 18px; margin: 0 0 4px 0;"><%= t('worker_daily_expenses.title') %></h2>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 0;"><%= t('worker_daily_expenses.page_description', { agency: user_agency }) %></p>
+    </div>
+    <button onclick="window.print()" class="btn btn-primary no-print" style="background-color: #24292f; padding: 8px 16px; font-size: 13px;">
+        <%= t('worker_daily_expenses.export_report') %>
+    </button>
+</div>
+
+<!-- KPI Summary Cards - 4 Cards -->
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 16px;">
+    <div class="kpi-card kpi-green">
+        <span style="font-size: 12px; font-weight: 600;"><%= t('worker_daily_expenses.kpi_cash_in') %></span>
+        <h2 id="kpi-total-cash-in" style="margin-top: 8px; font-size: 1.5rem; font-weight: 700; margin: 8px 0 0 0;">0 <%= t('worker_daily_expenses.afghani') %></h2>
+    </div>
+    <div class="kpi-card kpi-red">
+        <span style="font-size: 12px; font-weight: 600;"><%= t('worker_daily_expenses.kpi_cash_out') %></span>
+        <h2 id="kpi-total-cash-out" style="margin-top: 8px; font-size: 1.5rem; font-weight: 700; margin: 8px 0 0 0;">0 <%= t('worker_daily_expenses.afghani') %></h2>
+    </div>
+    <div class="kpi-card kpi-blue">
+        <span style="font-size: 12px; font-weight: 600;"><%= t('worker_daily_expenses.kpi_balance') %></span>
+        <h2 id="kpi-available-balance" style="margin-top: 8px; font-size: 1.5rem; font-weight: 700; margin: 8px 0 0 0;">0 <%= t('worker_daily_expenses.afghani') %></h2>
+    </div>
+    <div class="kpi-card kpi-orange">
+        <span style="font-size: 12px; font-weight: 600;"><%= t('worker_daily_expenses.kpi_reimbursement') %></span>
+        <h2 id="kpi-reimbursement-due" style="margin-top: 8px; font-size: 1.5rem; font-weight: 700; margin: 8px 0 0 0;">0 <%= t('worker_daily_expenses.afghani') %></h2>
+    </div>
+</div>
+
+<!-- Add Expense Form -->
+<div class="compact-card no-print">
+    <h3><%= t('worker_daily_expenses.add_expense') %></h3>
+    <form id="expense-form" onsubmit="addExpense(event)" data-required-fields="<%= t('worker_daily_expenses.required_fields') %>" data-entry-queue="<%= t('worker_daily_expenses.entry_queue') %>" data-draft-updated="<%= t('worker_daily_expenses.draft_updated') %>" data-delete-confirm="<%= t('worker_daily_expenses.delete_confirm') %>" data-no-queue="<%= t('worker_daily_expenses.no_queue') %>" data-transmit-confirm="<%= t('worker_daily_expenses.transmit_confirm') %>" data-transmit-success="<%= t('worker_daily_expenses.transmit_success') %>" data-transmit-error="<%= t('worker_daily_expenses.transmit_error') %>" data-add-success="<%= t('worker_daily_expenses.add_success') %>" data-add-error="<%= t('worker_daily_expenses.add_error') %>" data-update-draft="<%= t('worker_daily_expenses.update_draft') %>" data-add-direct="<%= t('worker_daily_expenses.add_direct') %>" data-all-categories="<%= t('worker_daily_expenses.all_categories') %>" data-none-selected="<%= t('worker_daily_expenses.none_selected') %>" data-selected-count="<%= t('worker_daily_expenses.selected_count') %>">
+        <div class="expense-form-grid">
+            <!-- Row 1: Date + Category + Qty + Unit Price -->
+            <!-- Mandatory Date -->
+            <div class="form-field">
+                <label><%= t('worker_daily_expenses.date') %> <span style="color: #ff6b00;">★</span></label>
+                <input type="text" id="exp_transaction_date" class="form-control" data-datepicker="jalali" placeholder="e.g. 1405/03/25" required>
+            </div>
+
+            <!-- Category -->
+            <div class="form-field">
+                <label><%= t('worker_daily_expenses.category') %></label>
+                <select id="exp_category" class="form-control" required onchange="handleCategoryToggle('exp')">
+                    <option value=""><%= t('worker_daily_expenses.select_category') %></option>
+                    <option value="Food"><%= t('worker_daily_expenses.cat_food') %></option>
+                    <option value="Stationery"><%= t('worker_daily_expenses.cat_stationery') %></option>
+                    <option value="Rent"><%= t('worker_daily_expenses.cat_rent') %></option>
+                    <option value="Electricity"><%= t('worker_daily_expenses.cat_electricity') %></option>
+                    <option value="Salaries"><%= t('worker_daily_expenses.cat_salaries') %></option>
+                    <option value="Furniture"><%= t('worker_daily_expenses.cat_furniture') %></option>
+                    <option value="HQ Inflow"><%= t('worker_daily_expenses.cat_hq_inflow') %></option>
+                    <option value="Other"><%= t('worker_daily_expenses.cat_other') %></option>
+                </select>
+                <input type="text" id="exp_custom_category" class="form-control" placeholder="<%= t('worker_daily_expenses.category_name') %>" style="display: none; margin-top: 4px;">
+            </div>
+
+            <!-- Quantity (Hidden for HQ Inflow) -->
+            <div class="form-field" id="container_quantity">
+                <label><%= t('worker_daily_expenses.quantity') %></label>
+                <input type="number" step="any" id="exp_quantity" class="form-control" value="1" placeholder="1">
+            </div>
+
+            <!-- Unit Price (Hidden for HQ Inflow) -->
+            <div class="form-field" id="container_unit_price">
+                <label><%= t('worker_daily_expenses.unit_price') %></label>
+                <input type="number" step="any" id="exp_unit_price" class="form-control" value="0" placeholder="0">
+            </div>
+
+            <!-- Row 2: Description + Total/Cash Out + Person + Cash In -->
+            <!-- Description -->
+            <div class="form-field col-span-2">
+                <label><%= t('worker_daily_expenses.description') %></label>
+                <textarea id="exp_description" class="form-control auto-grow" placeholder="<%= t('worker_daily_expenses.description_placeholder') %>" rows="1"></textarea>
+            </div>
+
+            <!-- Merged Total / Cash Out (Hidden for HQ Inflow) -->
+            <div class="form-field col-span-2" id="container_total_cash_out">
+                <label><%= t('worker_daily_expenses.total_cash_out') %></label>
+                <input type="number" step="any" id="exp_total_cash_out" class="form-control" value="0" placeholder="0">
+            </div>
+
+            <!-- Person Involved (Hidden by default, shown ONLY for HQ Inflow) -->
+            <div class="form-field" id="container_person" style="display: none;">
+                <label><%= t('worker_daily_expenses.person') %></label>
+                <input type="text" id="exp_person" class="form-control" placeholder="<%= t('worker_daily_expenses.person_placeholder') %>">
+            </div>
+
+            <!-- Cash In (Hidden by default, shown ONLY for HQ Inflow) -->
+            <div class="form-field" id="container_cash_in" style="display: none;">
+                <label><%= t('worker_daily_expenses.cash_in') %></label>
+                <input type="number" step="any" id="exp_cash_in" class="form-control" value="0" placeholder="0">
+            </div>
+
+            <!-- Row 3: Remarks (full width) -->
+            <!-- Remarks -->
+            <div class="form-field col-span-4">
+                <label><%= t('worker_daily_expenses.remarks') %></label>
+                <textarea id="exp_remarks" class="form-control auto-grow" placeholder="<%= t('worker_daily_expenses.remarks_placeholder') %>" rows="1"></textarea>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" onclick="addToQueue()" class="btn btn-primary" style="background-color: #2ea44f;">
+                <%= t('worker_daily_expenses.add_to_queue') %>
+            </button>
+            <button type="submit" class="btn btn-primary" style="background-color: #0969da;">
+                <%= t('worker_daily_expenses.add_direct') %>
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Unposted Staging Queue -->
+<div class="compact-card no-print" style="border: 2px solid #d29922;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="margin: 0;"><%= t('worker_daily_expenses.queue_title') %></h3>
+        <button onclick="transmitBatch()" class="btn btn-primary" style="background-color: #d29922; padding: 6px 14px; font-size: 12px;">
+            <%= t('worker_daily_expenses.transmit_batch') %>
+        </button>
+    </div>
+    <div class="table-responsive" style="overflow-x: auto;">
+        <table style="font-size: 12px; white-space: nowrap; table-layout: fixed; width: 100%; border-collapse: collapse;">
+            <colgroup>
+                <col style="width: 50px;" />
+                <col style="width: 90px;" />
+                <col style="width: 120px;" />
+                <col style="width: 150px;" />
+                <col style="width: 120px;" />
+                <col style="width: 80px;" />
+                <col style="width: 90px;" />
+                <col style="width: 100px;" />
+                <col style="width: 100px;" />
+                <col style="width: 100px;" />
+                <col style="width: 150px;" />
+                <col style="width: 100px;" />
+            </colgroup>
+            <thead class="queue-table-header">
+                <tr>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_hash') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_date') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_category') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_description') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_person') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_qty') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_unit') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_total') %></th>
+                    <th style="padding: 6px; text-align: center; color: #1a7f37;"><%= t('worker_daily_expenses.th_in') %></th>
+                    <th style="padding: 6px; text-align: center; color: #cf222e;"><%= t('worker_daily_expenses.th_out') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_notes') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_actions') %></th>
+                </tr>
+            </thead>
+            <tbody id="queue-rows">
+                <tr>
+                    <td colspan="12" style="text-align: center; color: var(--text-muted); padding: 20px;"><%= t('worker_daily_expenses.no_items') %></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-row no-print" style="margin-bottom: 12px;">
+    <!-- Advanced Filters Button -->
+    <div class="filter-item">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:4px;">&nbsp;</label>
+        <button onclick="openAdvancedFilters()" class="btn btn-primary" style="background-color:#0969da; color: white; padding: 6px 12px; font-size: 12px;">
+            <%= t('worker_daily_expenses.advanced_filters') %>
+        </button>
+    </div>
+    <!-- Category Multi-Select Checkbox Filter Container -->
+    <div class="filter-item" style="position: relative;">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:4px;">
+            <%= t('worker_daily_expenses.category_filter') %>
+        </label>
+        
+        <!-- Filter Toggle Button -->
+        <button 
+            type="button" 
+            id="category_dropdown_btn" 
+            onclick="toggleCategoryMenu(event)" 
+            class="form-control" 
+            style="text-align: right; background: var(--bg-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: 12px;"
+        >
+            <span id="category_btn_label"><%= t('worker_daily_expenses.all_categories') %></span>
+            <span style="font-size: 10px; color: var(--text-muted);">▼</span>
+        </button>
+
+        <!-- Checkbox Popup Window -->
+        <div 
+            id="category_checkbox_popup" 
+            style="display: none; position: absolute; top: 100%; right: 0; left: 0; z-index: 1000; background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 8px 24px rgba(140,149,159,0.2); padding: 12px; margin-top: 4px; min-width: 220px;"
+        >
+            <!-- Select All / Clear All Row -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
+                <button type="button" onclick="selectAllCategories(true)" class="category-popup-btn select-all"><%= t('worker_daily_expenses.select_all') %></button>
+                <button type="button" onclick="selectAllCategories(false)" class="category-popup-btn clear-all"><%= t('worker_daily_expenses.clear_all') %></button>
+            </div>
+
+            <!-- Checkbox Options List -->
+            <div style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Food" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_food') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Stationery" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_stationery') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Rent" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_rent') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Electricity" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_electricity') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Salaries" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_salaries') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Furniture" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_furniture') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="HQ Inflow" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_hq_inflow') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Other" onchange="onCategoryFilterChange()" checked> <%= t('worker_daily_expenses.cat_other') %>
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="filter-item">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.from_date') %></label>
+        <input type="text" id="filter_start_date" class="form-control" data-datepicker="jalali" placeholder="e.g. 1405/01/01" onchange="loadExpenses()">
+    </div>
+    <div class="filter-item">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.to_date') %></label>
+        <input type="text" id="filter_end_date" class="form-control" data-datepicker="jalali" placeholder="e.g. 1405/03/30" onchange="loadExpenses()">
+    </div>
+    <div class="filter-item">
+        <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:4px;">&nbsp;</label>
+        <button onclick="resetFilters()" class="btn btn-secondary" style="background-color:#6e7781; color: white; padding: 6px 12px; font-size: 12px;">
+            <%= t('worker_daily_expenses.reset_filters') %>
+        </button>
+    </div>
+</div>
+
+<!-- Advanced Filters Modal -->
+<div id="advancedFilterModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); border-radius: 8px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+            <h3 style="margin: 0; color: var(--text-main);"><%= t('worker_daily_expenses.advanced_filters') %></h3>
+            <button onclick="closeAdvancedFilters()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+            <!-- Date Range -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.from_date') %></label>
+                <input type="text" id="adv_start_date" class="form-control" data-datepicker="jalali" placeholder="e.g. 1405/01/01">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.to_date') %></label>
+                <input type="text" id="adv_end_date" class="form-control" data-datepicker="jalali" placeholder="e.g. 1405/03/30">
+            </div>
+            
+            <!-- Category -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.category') %></label>
+                <select id="adv_category" class="form-control">
+                    <option value=""><%= t('worker_daily_expenses.all_categories') %></option>
+                    <option value="Food"><%= t('worker_daily_expenses.cat_food') %></option>
+                    <option value="Stationery"><%= t('worker_daily_expenses.cat_stationery') %></option>
+                    <option value="Rent"><%= t('worker_daily_expenses.cat_rent') %></option>
+                    <option value="Electricity"><%= t('worker_daily_expenses.cat_electricity') %></option>
+                    <option value="Salaries"><%= t('worker_daily_expenses.cat_salaries') %></option>
+                    <option value="Furniture"><%= t('worker_daily_expenses.cat_furniture') %></option>
+                    <option value="HQ Inflow"><%= t('worker_daily_expenses.cat_hq_inflow') %></option>
+                    <option value="Other"><%= t('worker_daily_expenses.cat_other') %></option>
+                </select>
+            </div>
+            
+            <!-- Person Involved -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.person') %></label>
+                <input type="text" id="adv_person" class="form-control" placeholder="<%= t('worker_daily_expenses.person_placeholder') %>">
+            </div>
+            
+            <!-- Cash In -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.cash_in') %></label>
+                <input type="number" id="adv_cash_in" class="form-control" step="any" placeholder="Amount">
+            </div>
+            
+            <!-- Cash Out -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.cash_out') %></label>
+                <input type="number" id="adv_cash_out" class="form-control" step="any" placeholder="Amount">
+            </div>
+            
+            <!-- Description -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.description') %></label>
+                <input type="text" id="adv_description" class="form-control" placeholder="<%= t('worker_daily_expenses.description_placeholder') %>">
+            </div>
+            
+            <!-- Quantity -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.quantity') %></label>
+                <input type="number" id="adv_quantity" class="form-control" step="any" placeholder="<%= t('worker_daily_expenses.quantity') %>">
+            </div>
+            
+            <!-- Unit Price -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.unit_price') %></label>
+                <input type="number" id="adv_unit_price" class="form-control" step="any" placeholder="<%= t('worker_daily_expenses.unit_price') %>">
+            </div>
+            
+            <!-- Remarks -->
+            <div style="grid-column: span 2;">
+                <label style="font-size: 12px; font-weight: 600; color: var(--text-muted); display:block; margin-bottom:5px;"><%= t('worker_daily_expenses.remarks') %></label>
+                <input type="text" id="adv_remarks" class="form-control" placeholder="<%= t('worker_daily_expenses.remarks_placeholder') %>">
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+            <button onclick="clearAdvancedFilters()" class="btn btn-secondary" style="background-color:#6e7781; color: white; padding: 8px 16px;">
+                <%= t('worker_daily_expenses.clear_filters') %>
+            </button>
+            <button onclick="applyAdvancedFilters()" class="btn btn-primary" style="background-color:#0969da; color: white; padding: 8px 16px;">
+                <%= t('worker_daily_expenses.apply_search') %>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Expenses Table -->
+<div class="compact-card">
+    <h3><%= t('worker_daily_expenses.history_title') %></h3>
+    <div class="table-responsive" style="overflow-x: auto;">
+        <table style="font-size: 12px; white-space: nowrap; table-layout: fixed; width: 100%; border-collapse: collapse;">
+            <colgroup>
+                <col style="width: 50px;" />
+                <col style="width: 90px;" />
+                <col style="width: 120px;" />
+                <col style="width: 150px;" />
+                <col style="width: 120px;" />
+                <col style="width: 80px;" />
+                <col style="width: 90px;" />
+                <col style="width: 100px;" />
+                <col style="width: 100px;" />
+                <col style="width: 100px;" />
+                <col style="width: 150px;" />
+            </colgroup>
+            <thead style="background-color: var(--table-header-bg); border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 700;">
+                <tr>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_hash') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_date') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_category') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_description') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_person') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_qty') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_unit') %></th>
+                    <th style="padding: 6px; text-align: center;"><%= t('worker_daily_expenses.th_total') %></th>
+                    <th style="padding: 6px; text-align: center; color: #1a7f37;"><%= t('worker_daily_expenses.th_in') %></th>
+                    <th style="padding: 6px; text-align: center; color: #cf222e;"><%= t('worker_daily_expenses.th_out') %></th>
+                    <th style="padding: 6px; text-align: right;"><%= t('worker_daily_expenses.th_notes') %></th>
+                </tr>
+            </thead>
+            <tbody id="expenses-rows">
+                <tr>
+                    <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 20px;">Loading expenses...</td>
+                </tr>
+            </tbody>
+            <tfoot id="expenses-footer" style="background-color: var(--bg-color); border-top: 2px solid var(--border-color); font-weight: 700;">
+                <tr>
+                    <td colspan="8" style="padding: 8px; text-align: right; font-size: 12px; color: var(--text-main);">
+                        <%= t('worker_daily_expenses.grand_total') %>
+                    </td>
+                    <td id="total-cash-in-cell" style="padding: 8px; text-align: center; color: #1a7f37; font-size: 12px;">
+                        0 Afs
+                    </td>
+                    <td id="total-cash-out-cell" style="padding: 8px; text-align: center; color: #cf222e; font-size: 12px;">
+                        0 Afs
+                    </td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <!-- Pagination Controls Container -->
+    <div id="pagination-controls" class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border-color);">
+        <div style="font-size: 12px; color: var(--text-muted);">
+            <%= t('worker_daily_expenses.showing') %> <span id="page-start-idx">0</span> <%= t('worker_daily_expenses.to') %> <span id="page-end-idx">0</span> <%= t('worker_daily_expenses.of') %> <span id="page-total-count">0</span> <%= t('worker_daily_expenses.entries') %>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="font-size: 11px; color: var(--text-muted);"><%= t('worker_daily_expenses.rows_per_page') %></label>
+            <select id="items-per-page" onchange="changePageSize()" class="form-control" style="padding: 4px 8px; font-size: 12px; width: auto;">
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <button id="btn-prev-page" onclick="prevPage()" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" disabled>
+                <%= t('worker_daily_expenses.previous') %>
+            </button>
+            <span id="page-indicator" style="font-size: 12px; font-weight: 600; padding: 0 6px;">
+                Page 1 of 1
+            </span>
+            <button id="btn-next-page" onclick="nextPage()" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px;" disabled>
+                <%= t('worker_daily_expenses.next') %>
+            </button>
+        </div>
+    </div>
+</div>
+</div>
+
+<script>
+document.getElementById('nav-worker-expenses').classList.add('active');
+
+// Auto-grow textarea functionality
+function autoGrowTextarea(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = Math.min(textarea.scrollHeight, 100) + 'px';
+}
+
+// Initialize auto-grow for textareas
+document.addEventListener('DOMContentLoaded', function() {
+    const autoGrowTextareas = document.querySelectorAll('.auto-grow');
+    autoGrowTextareas.forEach(function(textarea) {
+        textarea.addEventListener('input', function() {
+            autoGrowTextarea(this);
+        });
+        // Initial height adjustment
+        autoGrowTextarea(textarea);
+    });
+});
+
+// Local staging queue array
+let expenseBatchDraft = [];
+let editingDraftIndex = null;
+
+// Pagination state
+let allExpensesRecords = [];
+let currentPage = 1;
+let itemsPerPage = 10;
+
+// Pagination functions
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPaginatedExpenses();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(allExpensesRecords.length / itemsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderPaginatedExpenses();
+    }
+}
+
+function changePageSize() {
+    itemsPerPage = parseInt(document.getElementById('items-per-page').value);
+    currentPage = 1;
+    renderPaginatedExpenses();
+}
+
+function updatePaginationControls() {
+    const totalRecords = allExpensesRecords.length;
+    const totalPages = Math.ceil(totalRecords / itemsPerPage) || 1;
+    const startIdx = totalRecords === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+    const endIdx = Math.min(currentPage * itemsPerPage, totalRecords);
+    
+    document.getElementById('page-start-idx').textContent = startIdx;
+    document.getElementById('page-end-idx').textContent = endIdx;
+    document.getElementById('page-total-count').textContent = totalRecords;
+    document.getElementById('page-indicator').textContent = `Page ${currentPage} of ${totalPages}`;
+    
+    document.getElementById('btn-prev-page').disabled = currentPage === 1;
+    document.getElementById('btn-next-page').disabled = currentPage === totalPages || totalRecords === 0;
+}
+
+function renderPaginatedExpenses() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedRecords = allExpensesRecords.slice(startIndex, endIndex);
+    
+    renderExpensesTable(paginatedRecords, allExpensesRecords);
+    updatePaginationControls();
+}
+
+// Handle category change - show/hide custom category input and toggle HQ Inflow fields
+function handleCategoryToggle(prefix) {
+    const categorySelect = document.getElementById(prefix + '_category');
+    const customInput = document.getElementById(prefix + '_custom_category');
+    
+    // Handle custom category input for "Other"
+    if (categorySelect.value === 'Other') {
+        customInput.style.display = 'block';
+        customInput.required = true;
+    } else {
+        customInput.style.display = 'none';
+        customInput.required = false;
+        customInput.value = '';
+    }
+    
+    // Handle HQ Inflow vs other categories field visibility
+    const isHQInflow = categorySelect.value === 'HQ Inflow';
+    
+    // Containers for different field groups
+    const containerPerson = document.getElementById('container_person');
+    const containerCashIn = document.getElementById('container_cash_in');
+    const containerQuantity = document.getElementById('container_quantity');
+    const containerUnitPrice = document.getElementById('container_unit_price');
+    const containerTotalCashOut = document.getElementById('container_total_cash_out');
+    
+    if (isHQInflow) {
+        // SHOW: Person Involved, Cash In
+        containerPerson.style.display = 'block';
+        containerCashIn.style.display = 'block';
+        
+        // HIDE: Quantity, Unit Price, Total/Cash Out
+        containerQuantity.style.display = 'none';
+        containerUnitPrice.style.display = 'none';
+        containerTotalCashOut.style.display = 'none';
+        
+        // Reset hidden fields
+        document.getElementById('exp_quantity').value = 1;
+        document.getElementById('exp_unit_price').value = 0;
+        document.getElementById('exp_total_cash_out').value = 0;
+    } else {
+        // SHOW: Quantity, Unit Price, Total/Cash Out
+        containerQuantity.style.display = 'block';
+        containerUnitPrice.style.display = 'block';
+        containerTotalCashOut.style.display = 'block';
+        
+        // HIDE: Person Involved, Cash In
+        containerPerson.style.display = 'none';
+        containerCashIn.style.display = 'none';
+        
+        // Reset hidden fields
+        document.getElementById('exp_person').value = '';
+        document.getElementById('exp_cash_in').value = 0;
+    }
+}
+
+// Calculate total price from quantity * unit price - clean event listener approach
+function calculateTotalPrice() {
+    const qty = parseFloat(document.getElementById('exp_quantity').value) || 0;
+    const unitPrice = parseFloat(document.getElementById('exp_unit_price').value) || 0;
+    const totalField = document.getElementById('exp_total_cash_out');
+    if (totalField) {
+        totalField.value = (qty * unitPrice).toFixed(2);
+    }
+}
+
+// Attach event listeners after DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    const qtyInput = document.getElementById('exp_quantity');
+    const unitPriceInput = document.getElementById('exp_unit_price');
+    
+    if (qtyInput) {
+        qtyInput.addEventListener('input', calculateTotalPrice);
+    }
+    if (unitPriceInput) {
+        unitPriceInput.addEventListener('input', calculateTotalPrice);
+    }
+});
+
+// Add expense to staging queue
+function addToQueue() {
+    const categorySelect = document.getElementById('exp_category');
+    const customCategory = document.getElementById('exp_custom_category').value;
+    const finalCategory = categorySelect.value === 'Other' ? customCategory : categorySelect.value;
+    
+    const isHQInflow = categorySelect.value === 'HQ Inflow';
+    const totalCashOut = parseFloat(document.getElementById('exp_total_cash_out').value) || 0;
+    
+    const formData = {
+        transaction_date: document.getElementById('exp_transaction_date').value,
+        category: finalCategory,
+        description: document.getElementById('exp_description').value,
+        person_involved: document.getElementById('exp_person').value,
+        quantity: isHQInflow ? 1 : (parseFloat(document.getElementById('exp_quantity').value) || 1),
+        unit_price: isHQInflow ? 0 : (parseFloat(document.getElementById('exp_unit_price').value) || 0),
+        total_price: isHQInflow ? 0 : totalCashOut,
+        cash_in: parseFloat(document.getElementById('exp_cash_in').value) || 0,
+        cash_out: isHQInflow ? 0 : totalCashOut,
+        remarks: document.getElementById('exp_remarks').value
+    };
+    
+    const form = document.getElementById('expense-form');
+    const requiredFieldsMsg = form.getAttribute('data-required-fields');
+    const entryQueueMsg = form.getAttribute('data-entry-queue');
+    
+    if (!formData.transaction_date || !formData.category) {
+        alert(requiredFieldsMsg);
+        return;
+    }
+    
+    expenseBatchDraft.push(formData);
+    renderQueue();
+    
+    // Reset form
+    document.getElementById('expense-form').reset();
+    document.getElementById('exp_quantity').value = 1;
+    document.getElementById('exp_unit_price').value = 0;
+    document.getElementById('exp_total_cash_out').value = 0;
+    document.getElementById('exp_cash_in').value = 0;
+    document.getElementById('exp_custom_category').style.display = 'none';
+    
+    alert(entryQueueMsg);
+}
+
+// Render staging queue table
+function renderQueue() {
+    const rowsContainer = document.getElementById('queue-rows');
+    const form = document.getElementById('expense-form');
+    let html = '';
+    
+    if (expenseBatchDraft.length === 0) {
+        html = '<tr><td colspan="12" style="text-align: center; color: var(--text-muted); padding: 20px;">' + form.getAttribute('data-no-queue') + '</td></tr>';
+    } else {
+        expenseBatchDraft.forEach((item, index) => {
+            const categoryBadge = getCategoryBadge(item.category);
+            
+            html += `
+                <tr style="border-bottom: 1px solid var(--border-color);">
+                    <td class="table-row-number">${esc(index + 1)}</td>
+                    <td style="padding: 6px; text-align: center;">${esc(item.transaction_date || '-')}</td>
+                    <td style="padding: 6px; text-align: right;">${esc(categoryBadge)}</td>
+                    <td style="padding: 6px; text-align: right;">${esc(item.description || '-')}</td>
+                    <td style="padding: 6px; text-align: right;">${esc(item.person_involved || '-')}</td>
+                    <td style="padding: 6px; text-align: center;">${esc(item.quantity || 1)}</td>
+                    <td style="padding: 6px; text-align: center;">${esc(item.unit_price.toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: center; font-weight: 600;">${esc(item.total_price.toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: center; font-weight: 700; color: #1a7f37;">${esc(item.cash_in.toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: center; font-weight: 700; color: #cf222e;">${esc(item.cash_out.toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: right; color: var(--text-muted);">${esc(item.remarks || '-')}</td>
+                    <td style="padding: 8px; text-align: center;">
+                        <button onclick="editDraft(${esc(index)})" class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px; margin-right: 5px;">Edit</button>
+                        <button onclick="deleteDraft(${esc(index)})" class="btn btn-secondary" style="padding: 4px 8px; font-size: 11px; background-color: #cf222e;">Delete</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+    
+    rowsContainer.innerHTML = html;
+}
+
+// Edit draft item
+function editDraft(index) {
+    const item = expenseBatchDraft[index];
+    editingDraftIndex = index;
+    
+    // Populate form with draft data
+    document.getElementById('exp_transaction_date').value = item.transaction_date;
+    document.getElementById('exp_description').value = item.description;
+    document.getElementById('exp_person').value = item.person_involved;
+    document.getElementById('exp_quantity').value = item.quantity;
+    document.getElementById('exp_unit_price').value = item.unit_price;
+    document.getElementById('exp_total_cash_out').value = item.cash_out || item.total_price || 0;
+    document.getElementById('exp_cash_in').value = item.cash_in;
+    document.getElementById('exp_remarks').value = item.remarks;
+    
+    // Handle category
+    const categorySelect = document.getElementById('exp_category');
+    const customInput = document.getElementById('exp_custom_category');
+    
+    // Check if category matches standard options
+    const standardCategories = ['Food', 'Stationery', 'Rent', 'Electricity', 'Salaries', 'Furniture', 'HQ Inflow'];
+    if (standardCategories.includes(item.category)) {
+        categorySelect.value = item.category;
+        customInput.style.display = 'none';
+        customInput.value = '';
+    } else {
+        categorySelect.value = 'Other';
+        customInput.style.display = 'block';
+        customInput.value = item.category;
+        customInput.required = true;
+    }
+    
+    // Trigger category toggle to show/hide appropriate fields
+    handleCategoryToggle('exp');
+    
+    // Change button to update
+    const submitBtn = document.querySelector('#expense-form button[type="submit"]');
+    const form = document.getElementById('expense-form');
+    submitBtn.textContent = form.getAttribute('data-update-draft');
+    submitBtn.onclick = function(e) {
+        e.preventDefault();
+        updateDraft();
+    };
+    
+    // Scroll to form
+    document.getElementById('expense-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Update draft item
+function updateDraft() {
+    const categorySelect = document.getElementById('exp_category');
+    const customCategory = document.getElementById('exp_custom_category').value;
+    const finalCategory = categorySelect.value === 'Other' ? customCategory : categorySelect.value;
+    
+    const isHQInflow = categorySelect.value === 'HQ Inflow';
+    const totalCashOut = parseFloat(document.getElementById('exp_total_cash_out').value) || 0;
+    
+    const formData = {
+        transaction_date: document.getElementById('exp_transaction_date').value,
+        category: finalCategory,
+        description: document.getElementById('exp_description').value,
+        person_involved: document.getElementById('exp_person').value,
+        quantity: isHQInflow ? 1 : (parseFloat(document.getElementById('exp_quantity').value) || 1),
+        unit_price: isHQInflow ? 0 : (parseFloat(document.getElementById('exp_unit_price').value) || 0),
+        total_price: isHQInflow ? 0 : totalCashOut,
+        cash_in: parseFloat(document.getElementById('exp_cash_in').value) || 0,
+        cash_out: isHQInflow ? 0 : totalCashOut,
+        remarks: document.getElementById('exp_remarks').value
+    };
+    
+    const form = document.getElementById('expense-form');
+    const requiredFieldsMsg = form.getAttribute('data-required-fields');
+    const draftUpdatedMsg = form.getAttribute('data-draft-updated');
+    const addDirectMsg = form.getAttribute('data-add-direct');
+    
+    if (!formData.transaction_date || !formData.category) {
+        alert(requiredFieldsMsg);
+        return;
+    }
+    
+    expenseBatchDraft[editingDraftIndex] = formData;
+    renderQueue();
+    
+    // Reset form and button
+    document.getElementById('expense-form').reset();
+    document.getElementById('exp_quantity').value = 1;
+    document.getElementById('exp_unit_price').value = 0;
+    document.getElementById('exp_total_cash_out').value = 0;
+    document.getElementById('exp_cash_in').value = 0;
+    document.getElementById('exp_custom_category').style.display = 'none';
+    editingDraftIndex = null;
+    
+    const submitBtn = document.querySelector('#expense-form button[type="submit"]');
+    submitBtn.textContent = addDirectMsg;
+    submitBtn.onclick = null;
+    
+    alert(draftUpdatedMsg);
+}
+
+// Delete draft item
+function deleteDraft(index) {
+    const form = document.getElementById('expense-form');
+    const deleteConfirmMsg = form.getAttribute('data-delete-confirm');
+    
+    if (confirm(deleteConfirmMsg)) {
+        expenseBatchDraft.splice(index, 1);
+        renderQueue();
+    }
+}
+
+// Transmit batch to server
+function transmitBatch() {
+    const form = document.getElementById('expense-form');
+    const noQueueMsg = form.getAttribute('data-no-queue');
+    const transmitConfirmMsg = form.getAttribute('data-transmit-confirm');
+    const transmitSuccessMsg = form.getAttribute('data-transmit-success');
+    const transmitErrorMsg = form.getAttribute('data-transmit-error');
+    
+    if (expenseBatchDraft.length === 0) {
+        alert(noQueueMsg);
+        return;
+    }
+    
+    if (!confirm(transmitConfirmMsg.replace('{count}', expenseBatchDraft.length))) {
+        return;
+    }
+    
+    fetch('/worker/add-expenses-batch', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ expenses: expenseBatchDraft })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            expenseBatchDraft = [];
+            renderQueue();
+            loadExpenses();
+            loadSummary();
+            alert(transmitSuccessMsg.replace('{count}', data.count));
+        } else {
+            alert(transmitErrorMsg + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error('[ERROR] Error transmitting batch:', err);
+        alert(transmitErrorMsg + err.message);
+    });
+}
+
+// Add expense transaction (direct)
+function addExpense(event) {
+    event.preventDefault();
+    
+    const categorySelect = document.getElementById('exp_category');
+    const customCategory = document.getElementById('exp_custom_category').value;
+    const finalCategory = categorySelect.value === 'Other' ? customCategory : categorySelect.value;
+    
+    const isHQInflow = categorySelect.value === 'HQ Inflow';
+    const totalCashOut = parseFloat(document.getElementById('exp_total_cash_out').value) || 0;
+    
+    const formData = {
+        transaction_date: document.getElementById('exp_transaction_date').value,
+        category: finalCategory,
+        description: document.getElementById('exp_description').value,
+        person_involved: document.getElementById('exp_person').value,
+        quantity: isHQInflow ? 1 : (parseFloat(document.getElementById('exp_quantity').value) || 1),
+        unit_price: isHQInflow ? 0 : (parseFloat(document.getElementById('exp_unit_price').value) || 0),
+        total_price: isHQInflow ? 0 : totalCashOut,
+        cash_in: parseFloat(document.getElementById('exp_cash_in').value) || 0,
+        cash_out: isHQInflow ? 0 : totalCashOut,
+        remarks: document.getElementById('exp_remarks').value
+    };
+    
+    const form = document.getElementById('expense-form');
+    const addSuccessMsg = form.getAttribute('data-add-success');
+    const addErrorMsg = form.getAttribute('data-add-error');
+    
+    fetch('/worker/add-expense', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Reset form
+            document.getElementById('expense-form').reset();
+            document.getElementById('exp_quantity').value = 1;
+            document.getElementById('exp_unit_price').value = 0;
+            document.getElementById('exp_total_cash_out').value = 0;
+            document.getElementById('exp_cash_in').value = 0;
+            document.getElementById('exp_custom_category').style.display = 'none';
+            
+            // Reload expenses and summary
+            loadExpenses();
+            loadSummary();
+            
+            alert(addSuccessMsg);
+        } else {
+            alert(addErrorMsg + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(err => {
+        console.error('[ERROR] Error adding expense:', err);
+        alert(addErrorMsg + err.message);
+    });
+}
+
+// Toggle category checkbox menu
+function toggleCategoryMenu(event) {
+    event.stopPropagation();
+    const popup = document.getElementById('category_checkbox_popup');
+    const isVisible = popup.style.display === 'block';
+    popup.style.display = isVisible ? 'none' : 'block';
+}
+
+// Select or clear all category checkboxes
+function selectAllCategories(selectAll) {
+    const checkboxes = document.querySelectorAll('.category-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll);
+    const form = document.getElementById('expense-form');
+    document.getElementById('category_btn_label').textContent = form.getAttribute('data-all-categories');
+    onCategoryFilterChange();
+}
+
+// Get array of checked category values
+function getSelectedCategories() {
+    const checkedCheckboxes = document.querySelectorAll('.category-checkbox:checked');
+    return Array.from(checkedCheckboxes).map(cb => cb.value.trim());
+}
+
+// Handle category filter change - update label and reload expenses
+function onCategoryFilterChange() {
+    const allCheckboxes = document.querySelectorAll('.category-checkbox');
+    const selected = getSelectedCategories();
+    const btnLabel = document.getElementById('category_btn_label');
+    const form = document.getElementById('expense-form');
+
+    if (selected.length === allCheckboxes.length) {
+        btnLabel.textContent = form.getAttribute('data-all-categories');
+    } else if (selected.length === 0) {
+        btnLabel.textContent = form.getAttribute('data-none-selected');
+    } else {
+        btnLabel.textContent = `${selected.length} ${form.getAttribute('data-selected-count')}`;
+    }
+
+    loadExpenses();
+    loadSummary();
+}
+
+// Close category menu when clicking outside
+document.addEventListener('click', function(event) {
+    const popup = document.getElementById('category_checkbox_popup');
+    const btn = document.getElementById('category_dropdown_btn');
+    if (popup && popup.style.display === 'block' && !popup.contains(event.target) && !btn.contains(event.target)) {
+        popup.style.display = 'none';
+    }
+});
+
+// Global object to store advanced filter criteria
+window.advFilterCriteria = {};
+
+// Open advanced filters modal
+function openAdvancedFilters() {
+    document.getElementById('advancedFilterModal').style.display = 'flex';
+}
+
+// Close advanced filters modal
+function closeAdvancedFilters() {
+    document.getElementById('advancedFilterModal').style.display = 'none';
+}
+
+// Clear advanced filters
+function clearAdvancedFilters() {
+    resetFilters();
+    closeAdvancedFilters();
+}
+
+// Apply advanced filters
+function applyAdvancedFilters() {
+    window.advFilterCriteria = {
+        adv_start_date: document.getElementById('adv_start_date')?.value.trim() || '',
+        adv_end_date: document.getElementById('adv_end_date')?.value.trim() || '',
+        adv_category: document.getElementById('adv_category')?.value.trim() || '',
+        adv_person: document.getElementById('adv_person')?.value.trim() || '',
+        adv_cash_in: document.getElementById('adv_cash_in')?.value.trim() || '',
+        adv_cash_out: document.getElementById('adv_cash_out')?.value.trim() || '',
+        adv_description: document.getElementById('adv_description')?.value.trim() || '',
+        adv_quantity: document.getElementById('adv_quantity')?.value.trim() || '',
+        adv_unit_price: document.getElementById('adv_unit_price')?.value.trim() || '',
+        adv_remarks: document.getElementById('adv_remarks')?.value.trim() || ''
+    };
+    closeAdvancedFilters();
+    loadExpenses();
+}
+
+// Load expenses data
+function loadExpenses() {
+    const allCheckboxes = document.querySelectorAll('.category-checkbox');
+    const selectedCategories = getSelectedCategories();
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+
+    console.log('[DEBUG] All checkboxes count:', allCheckboxes.length);
+    console.log('[DEBUG] Selected categories:', selectedCategories);
+    console.log('[DEBUG] Selected count:', selectedCategories.length);
+    console.log('[DEBUG] Advanced filter criteria:', window.advFilterCriteria);
+
+    // If user unchecked ALL boxes, render empty array immediately
+    if (selectedCategories.length === 0) {
+        allExpensesRecords = [];
+        currentPage = 1;
+        renderPaginatedExpenses();
+        return;
+    }
+
+    let queryUrl = `/api/worker/expenses?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+
+    // ONLY append specific categories parameter if user selected a SUBSET of categories
+    if (selectedCategories.length < allCheckboxes.length) {
+        queryUrl += `&categories=${encodeURIComponent(selectedCategories.join(','))}`;
+        console.log('[DEBUG] Sending categories param:', selectedCategories.join(','));
+    } else {
+        console.log('[DEBUG] All categories selected, not sending categories param');
+    }
+
+    // Append advanced filter parameters if they have values
+    if (window.advFilterCriteria.adv_start_date) {
+        queryUrl += `&adv_start_date=${encodeURIComponent(window.advFilterCriteria.adv_start_date)}`;
+    }
+    if (window.advFilterCriteria.adv_end_date) {
+        queryUrl += `&adv_end_date=${encodeURIComponent(window.advFilterCriteria.adv_end_date)}`;
+    }
+    if (window.advFilterCriteria.adv_category) {
+        queryUrl += `&adv_category=${encodeURIComponent(window.advFilterCriteria.adv_category)}`;
+    }
+    if (window.advFilterCriteria.adv_person) {
+        queryUrl += `&adv_person=${encodeURIComponent(window.advFilterCriteria.adv_person)}`;
+    }
+    if (window.advFilterCriteria.adv_cash_in) {
+        queryUrl += `&adv_cash_in=${encodeURIComponent(window.advFilterCriteria.adv_cash_in)}`;
+    }
+    if (window.advFilterCriteria.adv_cash_out) {
+        queryUrl += `&adv_cash_out=${encodeURIComponent(window.advFilterCriteria.adv_cash_out)}`;
+    }
+    if (window.advFilterCriteria.adv_description) {
+        queryUrl += `&adv_description=${encodeURIComponent(window.advFilterCriteria.adv_description)}`;
+    }
+    if (window.advFilterCriteria.adv_quantity) {
+        queryUrl += `&adv_quantity=${encodeURIComponent(window.advFilterCriteria.adv_quantity)}`;
+    }
+    if (window.advFilterCriteria.adv_unit_price) {
+        queryUrl += `&adv_unit_price=${encodeURIComponent(window.advFilterCriteria.adv_unit_price)}`;
+    }
+    if (window.advFilterCriteria.adv_remarks) {
+        queryUrl += `&adv_remarks=${encodeURIComponent(window.advFilterCriteria.adv_remarks)}`;
+    }
+
+    console.log('[DEBUG] Final queryUrl:', queryUrl);
+
+    fetch(queryUrl)
+        .then(res => res.json())
+        .then(data => {
+            console.log('[DEBUG] API response records count:', (data.records || []).length);
+            // Store all records for pagination
+            allExpensesRecords = data.records || [];
+            // Reset to first page when loading new data
+            currentPage = 1;
+            renderPaginatedExpenses();
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading expenses:', err);
+            document.getElementById('expenses-rows').innerHTML = `<tr><td colspan="11" style="text-align: center; color:#cf222e; padding:20px;">Error loading data: ${esc(err.message)}</td></tr>`;
+        });
+}
+
+// Load summary KPIs
+function loadSummary() {
+    const startDate = document.getElementById('filter_start_date').value;
+    const endDate = document.getElementById('filter_end_date').value;
+    
+    let queryUrl = `/api/worker/expenses-summary?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+    
+    fetch(queryUrl)
+        .then(res => res.json())
+        .then(data => {
+            const rawBalance = parseFloat(data.current_balance) || 0;
+            
+            // If balance is 0 or negative (no money left), clamp cleanly to 0
+            const displayBalance = rawBalance > 0 
+                ? rawBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs' 
+                : '0 Afs';
+
+            document.getElementById('kpi-total-cash-in').textContent = (parseFloat(data.total_cash_in) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+            document.getElementById('kpi-total-cash-out').textContent = (parseFloat(data.total_cash_out) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+            document.getElementById('kpi-available-balance').textContent = displayBalance;
+            document.getElementById('kpi-reimbursement-due').textContent = (parseFloat(data.reimbursement_due) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading summary:', err);
+        });
+}
+
+// Render expenses table
+function renderExpensesTable(records, allRecords = null) {
+    const rowsContainer = document.getElementById('expenses-rows');
+    let html = '';
+    
+    // Calculate totals from all records (not just current page)
+    const recordsForTotals = allRecords || records;
+    let totalCashIn = 0;
+    let totalCashOut = 0;
+    
+    if (recordsForTotals && recordsForTotals.length > 0) {
+        recordsForTotals.forEach(row => {
+            totalCashIn += parseFloat(row.cash_in) || 0;
+            totalCashOut += parseFloat(row.cash_out) || 0;
+        });
+    }
+    
+    if (!records || records.length === 0) {
+        html = `
+            <tr>
+                <td colspan="11" class="empty-state-cell">
+                    <div class="empty-state-content">
+                        <span class="empty-state-icon">🔍</span>
+                        <p class="empty-state-title">
+                            <%= t('worker_daily_expenses.no_transactions') %>
+                        </p>
+                        <p class="empty-state-description">
+                            <%= t('worker_daily_expenses.no_transactions_sub') %>
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        records.forEach((row, index) => {
+            const categoryBadge = getCategoryBadge(row.category);
+            
+            html += `
+                <tr style="border-bottom: 1px solid #eaeef2;">
+                    <td class="table-row-number">${esc(index + 1)}</td>
+                    <td style="padding: 6px; text-align: center;">${esc(row.transaction_date || '-')}</td>
+                    <td style="padding: 6px; text-align: right;">${esc(categoryBadge)}</td>
+                    <td style="padding: 6px; text-align: right;">${esc(row.description || '-')}</td>
+                    <td style="padding: 6px; text-align: right;">${esc(row.person_involved || '-')}</td>
+                    <td style="padding: 6px; text-align: center;">${esc(row.quantity || 1)}</td>
+                    <td style="padding: 6px; text-align: center;">${esc((row.unit_price || 0).toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: center; font-weight: 600;">${esc((row.total_price || 0).toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: center; font-weight: 700; color: #1a7f37;">${esc((row.cash_in || 0).toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: center; font-weight: 700; color: #cf222e;">${esc((row.cash_out || 0).toLocaleString())}</td>
+                    <td style="padding: 6px; text-align: right; color: var(--text-muted);">${esc(row.remarks || '-')}</td>
+                </tr>
+            `;
+        });
+    }
+    
+    rowsContainer.innerHTML = html;
+    
+    // Update footer totals from all records
+    document.getElementById('total-cash-in-cell').textContent = totalCashIn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+    document.getElementById('total-cash-out-cell').textContent = totalCashOut.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+}
+
+// Get category badge styling
+function getCategoryBadge(category) {
+    const badges = {
+        'Food': '<span class="role-tag" style="background-color:#fff8c5; color:#9a6700; font-weight:700;">Food</span>',
+        'Stationery': '<span class="role-tag" style="background-color:#e1ecf4; color:#0969da; font-weight:700;">Stationery</span>',
+        'Rent': '<span class="role-tag" style="background-color:#ffebe9; color:#cf222e; font-weight:700;">Rent</span>',
+        'Electricity': '<span class="role-tag" style="background-color:#ffebe9; color:#cf222e; font-weight:700;">Electricity</span>',
+        'Salaries': '<span class="role-tag" style="background-color:#e1ecf4; color:#0969da; font-weight:700;">Salaries</span>',
+        'Furniture': '<span class="role-tag" style="background-color:#dafbe3; color:#1a7f37; font-weight:700;">Furniture</span>',
+        'HQ Inflow': '<span class="role-tag" style="background-color:#dafbe3; color:#1a7f37; font-weight:700;">HQ Inflow</span>',
+        'Other': '<span class="role-tag" style="background-color:#f6f8fa; color: var(--text-muted); font-weight:700;">Other</span>'
+    };
+    return badges[category] || `<span class="role-tag" style="background-color:#f6f8fa; color: var(--text-muted); font-weight:700;">${esc(category)}</span>`;
+}
+
+// Reset filters
+function resetFilters() {
+    // 1. Reset main category checkboxes to checked
+    const checkboxes = document.querySelectorAll('.category-checkbox');
+    checkboxes.forEach(cb => cb.checked = true);
+    document.getElementById('category_btn_label').textContent = 'همه دسته‌بندی‌ها (All Categories)';
+    
+    // 2. Clear main datepickers
+    document.getElementById('filter_start_date').value = '';
+    document.getElementById('filter_end_date').value = '';
+    
+    // 3. Clear advanced modal inputs
+    if (document.getElementById('adv_start_date')) document.getElementById('adv_start_date').value = '';
+    if (document.getElementById('adv_end_date')) document.getElementById('adv_end_date').value = '';
+    if (document.getElementById('adv_category')) document.getElementById('adv_category').value = '';
+    if (document.getElementById('adv_person')) document.getElementById('adv_person').value = '';
+    if (document.getElementById('adv_cash_in')) document.getElementById('adv_cash_in').value = '';
+    if (document.getElementById('adv_cash_out')) document.getElementById('adv_cash_out').value = '';
+    if (document.getElementById('adv_description')) document.getElementById('adv_description').value = '';
+    if (document.getElementById('adv_quantity')) document.getElementById('adv_quantity').value = '';
+    if (document.getElementById('adv_unit_price')) document.getElementById('adv_unit_price').value = '';
+    if (document.getElementById('adv_remarks')) document.getElementById('adv_remarks').value = '';
+    
+    // 4. Wipe active advanced filter criteria object
+    window.advFilterCriteria = {};
+    
+    // 5. Reload clean data
+    loadExpenses();
+    loadSummary();
+}
+
+// Load initial data
+loadExpenses();
+loadSummary();
+</script>
+
+<%- include('partials/footer') %>

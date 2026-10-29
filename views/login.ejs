@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= t('auth.login_title') %></title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================================
+           Login — split-screen redesign (2026-10-19)
+           Left: branded industrial panel · Right: focused form
+           ========================================================== */
+        :root {
+            --bg-page: #F5F7FA;
+            --bg-surface: #FFFFFF;
+            --bg-input: #FFFFFF;
+            --text-primary: #172033;
+            --text-secondary: #667085;
+            --text-muted: #9CA3AF;
+            --text-inverse: #FFFFFF;
+            --border: #E4E7EC;
+            --border-focus: #FF6F00;
+            --brand-primary: #FF6F00;
+            --brand-primary-hover: #E65100;
+            --brand-primary-light: rgba(255, 111, 0, 0.14);
+            --danger: #DC2626;
+            --danger-light: #FEE2E2;
+            --success: #059669;
+            --success-light: #D1FAE5;
+            --shadow-card: 0 24px 60px rgba(15, 23, 42, 0.16);
+            --radius-md: 10px;
+            --radius-lg: 18px;
+            --transition-fast: 150ms ease;
+        }
+
+        [data-theme="dark"] {
+            --bg-page: #0B1120;
+            --bg-surface: #111827;
+            --bg-input: #172033;
+            --text-primary: #F3F4F6;
+            --text-secondary: #A7B0C0;
+            --text-muted: #6B7280;
+            --border: #263244;
+            --brand-primary-light: rgba(255, 111, 0, 0.18);
+            --danger: #EF4444;
+            --danger-light: rgba(127, 29, 29, 0.45);
+            --success: #10B981;
+            --success-light: rgba(6, 78, 59, 0.45);
+            --shadow-card: 0 24px 60px rgba(0, 0, 0, 0.55);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        /* ---------------- Layout ---------------- */
+        .login-layout {
+            display: flex;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        /* ---------------- Brand panel ---------------- */
+        .brand-panel {
+            position: relative;
+            flex: 0 0 44%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 26px;
+            padding: 48px 40px;
+            overflow: hidden;
+            text-align: center;
+            color: #fff;
+            background:
+                linear-gradient(165deg, rgba(9, 14, 26, 0.93) 0%, rgba(16, 28, 52, 0.90) 52%, rgba(96, 42, 8, 0.88) 100%),
+                url('/construction-site.svg') center / cover no-repeat;
+        }
+
+        /* Soft glows */
+        .brand-panel::before {
+            content: '';
+            position: absolute;
+            width: 460px;
+            height: 460px;
+            top: -160px;
+            inset-inline-start: -140px;
+            background: radial-gradient(circle, rgba(255, 111, 0, 0.35), transparent 65%);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            width: 380px;
+            height: 380px;
+            bottom: -150px;
+            inset-inline-end: -120px;
+            background: radial-gradient(circle, rgba(207, 34, 46, 0.30), transparent 65%);
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        /* Floating decorative orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.55;
+            animation: orbFloat 9s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 90px;
+            height: 90px;
+            top: 14%;
+            inset-inline-end: 14%;
+            background: linear-gradient(135deg, rgba(255, 111, 0, 0.55), rgba(255, 111, 0, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .orb-2 {
+            width: 54px;
+            height: 54px;
+            bottom: 18%;
+            inset-inline-start: 16%;
+            background: linear-gradient(135deg, rgba(207, 34, 46, 0.5), rgba(207, 34, 46, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            animation-delay: -3s;
+        }
+
+        .orb-3 {
+            width: 26px;
+            height: 26px;
+            top: 30%;
+            inset-inline-start: 24%;
+            background: rgba(255, 255, 255, 0.20);
+            border: 1px solid rgba(255, 255, 255, 0.30);
+            animation-delay: -5.5s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-22px); }
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            animation: rise 0.55s ease both;
+        }
+
+        .brand-logo {
+            width: 128px;
+            height: 128px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.96);
+            padding: 10px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35), 0 0 0 6px rgba(255, 255, 255, 0.10);
+        }
+
+        .brand-name {
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            line-height: 1.35;
+            text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
+            max-width: 420px;
+        }
+
+        .brand-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 20px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            backdrop-filter: blur(6px);
+        }
+
+        .brand-pill svg { width: 15px; height: 15px; }
+
+        /* ---------------- Form side ---------------- */
+        .form-side {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 32px;
+            background:
+                radial-gradient(rgba(23, 32, 51, 0.055) 1px, transparent 1px) 0 0 / 22px 22px,
+                var(--bg-page);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            padding: 44px 40px 38px;
+            animation: rise 0.5s 0.06s ease both;
+        }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .welcome-text { margin-bottom: 26px; }
+
+        .welcome-text h1 {
+            font-size: 27px;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 7px;
+            letter-spacing: -0.4px;
+        }
+
+        .welcome-text h1::after {
+            content: '';
+            display: block;
+            width: 46px;
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 12px;
+            background: linear-gradient(90deg, var(--brand-primary), #FFB74D);
+        }
+
+        .welcome-text p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* ---------------- Message banner ---------------- */
+        .message {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 13px 15px;
+            border-radius: var(--radius-md);
+            margin-bottom: 22px;
+            font-size: 13px;
+            font-weight: 500;
+            line-height: 1.55;
+            animation: rise 0.35s ease both;
+        }
+
+        .message svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .message.error {
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+        }
+
+        .message.success {
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid color-mix(in srgb, var(--success) 45%, transparent);
+        }
+
+        .message .icon-success { display: none; }
+        .message.success .icon-error { display: none; }
+        .message.success .icon-success { display: block; }
+
+        /* ---------------- Form ---------------- */
+        .form-group { margin-bottom: 20px; }
+
+        .form-label {
+            display: block;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            width: 17px;
+            height: 17px;
+            color: var(--text-muted);
+            pointer-events: none;
+            transition: color var(--transition-fast) ease;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 13px 44px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 14.5px;
+            font-family: 'Vazirmatn', sans-serif;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            transition: border-color var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+        }
+
+        .form-control::placeholder { color: var(--text-muted); }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 4px var(--brand-primary-light);
+        }
+
+        .input-wrapper:focus-within .input-icon { color: var(--brand-primary); }
+
+        .password-toggle {
+            position: absolute;
+            right: 12px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            transition: color var(--transition-fast) ease;
+        }
+
+        .password-toggle:hover { color: var(--brand-primary); }
+        .password-toggle svg { width: 18px; height: 18px; }
+
+        /* ---------------- Submit button ---------------- */
+        .btn {
+            position: relative;
+            width: 100%;
+            height: 50px;
+            margin-top: 4px;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Vazirmatn', sans-serif;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            color: #fff;
+            background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-hover) 100%);
+            box-shadow: 0 10px 24px rgba(255, 111, 0, 0.32);
+            transition: transform var(--transition-fast) ease, box-shadow var(--transition-fast) ease, filter var(--transition-fast) ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 30px rgba(255, 111, 0, 0.42);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        .btn svg { width: 17px; height: 17px; }
+
+        .btn-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(255, 255, 255, 0.35);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        .btn.loading .btn-content { display: none; }
+        .btn.loading .btn-spinner { display: block; }
+        .btn.loading { pointer-events: none; filter: saturate(0.85); }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ---------------- Forgot link ---------------- */
+        .forgot-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            margin-top: 22px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            transition: color var(--transition-fast) ease;
+        }
+
+        .forgot-link:hover { color: var(--brand-primary); }
+        .forgot-link svg { width: 14px; height: 14px; }
+
+        /* ---------------- Theme toggle ---------------- */
+        #themeToggle {
+            position: fixed;
+            top: 18px;
+            inset-inline-end: 18px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+            cursor: pointer;
+            transition: transform var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
+        }
+
+        #themeToggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+        }
+
+        #themeToggle svg { width: 19px; height: 19px; stroke: currentColor; stroke-width: 2; fill: none; }
+
+        /* ---------------- Responsive ---------------- */
+        @media (max-width: 900px) {
+            .login-layout { flex-direction: column; }
+
+            .brand-panel {
+                flex: none;
+                padding: 30px 24px 26px;
+                gap: 14px;
+            }
+
+            .brand-panel::before { width: 300px; height: 300px; top: -140px; }
+            .brand-panel::after { width: 260px; height: 260px; bottom: -130px; }
+
+            .brand-logo { width: 76px; height: 76px; padding: 6px; }
+            .brand-name { font-size: 21px; max-width: 100%; }
+            .orb-3 { display: none; }
+
+            .form-side { align-items: flex-start; padding: 30px 18px 44px; }
+        }
+
+        @media (max-width: 480px) {
+            .login-card { padding: 32px 24px 30px; }
+            .welcome-text h1 { font-size: 23px; }
+            .brand-panel { padding: 24px 18px 22px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Theme toggle -->
+    <button id="themeToggle" onclick="toggleTheme()" title="Switch to dark mode">
+        <svg id="moonIcon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <svg id="sunIcon" viewBox="0 0 24 24" style="display: none;"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+
+    <script>
+        // Theme toggle functionality for login page (unchanged behavior)
+        (function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+
+            function updateThemeIcon() {
+                const sunIcon = document.getElementById('sunIcon');
+                const moonIcon = document.getElementById('moonIcon');
+                const themeToggle = document.getElementById('themeToggle');
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                if (sunIcon && moonIcon) {
+                    sunIcon.style.display = currentTheme === 'dark' ? 'block' : 'none';
+                    moonIcon.style.display = currentTheme === 'dark' ? 'none' : 'block';
+                }
+                if (themeToggle) {
+                    const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                    themeToggle.setAttribute('aria-label', `Switch to ${newTheme} mode`);
+                    themeToggle.setAttribute('title', `Switch to ${newTheme} mode`);
+                }
+            }
+
+            window.toggleTheme = function() {
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon();
+            };
+
+            updateThemeIcon();
+        })();
+    </script>
+
+    <div class="login-layout">
+        <!-- Branded panel -->
+        <aside class="brand-panel" aria-hidden="true">
+            <span class="orb orb-1"></span>
+            <span class="orb orb-2"></span>
+            <span class="orb orb-3"></span>
+
+            <div class="brand-content">
+                <img class="brand-logo" src="/Logo.png" alt="<%= t('auth.logo_alt') %>">
+                <h1 class="brand-name"><%= t('waybill.print_company_name') %></h1>
+                <span class="brand-pill">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <%= t('auth.login') %>
+                </span>
+            </div>
+        </aside>
+
+        <!-- Form side -->
+        <main class="form-side">
+            <div class="login-card">
+                <div class="welcome-text">
+                    <h1><%= t('auth.welcome') %></h1>
+                    <p><%= t('auth.welcome_subtitle') %></p>
+                </div>
+
+                <% if (message) { %>
+                    <div class="message <%= message.type %>">
+                        <svg class="icon-error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                        <svg class="icon-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                        <span><%= message.text %></span>
+                    </div>
+                <% } %>
+
+                <form action="/login" method="POST" id="loginForm">
+                    <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+
+                    <div class="form-group">
+                        <label class="form-label" for="username"><%= t('auth.username_label') %></label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                            <input type="text" id="username" name="username" class="form-control" required placeholder="<%= t('auth.username_placeholder') %>" dir="ltr" autocomplete="username">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="password"><%= t('auth.password_label') %></label>
+                        <div class="input-wrapper">
+                            <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                            <input type="password" id="password" name="password" class="form-control" required placeholder="<%= t('auth.password_placeholder') %>" dir="ltr" autocomplete="current-password">
+                            <button type="button" class="password-toggle" onclick="togglePassword()" aria-label="<%= t('auth.show_password') %>">
+                                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" id="loginBtn">
+                        <span class="btn-content" style="display: inline-flex; align-items: center; gap: 9px;">
+                            <%= t('auth.login_button') %>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                        </span>
+                        <span class="btn-spinner" aria-hidden="true"></span>
+                    </button>
+                </form>
+
+                <a href="/recovery" class="forgot-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></path></svg>
+                    <%= t('auth.forgot_password') %>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        }
+
+        // Show a loading spinner while the login request is in flight
+        document.getElementById('loginForm').addEventListener('submit', function () {
+            document.getElementById('loginBtn').classList.add('loading');
+        });
+    </script>
+</body>
+</html>

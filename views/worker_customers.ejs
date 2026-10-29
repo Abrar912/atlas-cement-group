@@ -1,0 +1,1011 @@
+<%- include('partials/header') %>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+
+<style>
+    /* Page container */
+    .customers-container {
+        padding: 20px;
+        direction: ltr;
+    }
+
+    .rtl-content {
+        direction: rtl !important;
+        text-align: right !important;
+    }
+
+    /* Header */
+    .page-header {
+        border-bottom: 2px solid var(--border-color);
+        padding-bottom: 12px;
+        margin-bottom: 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .page-header h2 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 4px 0;
+    }
+
+    .page-header p {
+        font-size: 13px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* Form Card */
+    .form-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 24px;
+        margin-bottom: 24px;
+    }
+
+    .form-card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 20px 0;
+    }
+
+    /* Form Grid */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .form-grid .form-group.full-width {
+        grid-column: span 2;
+    }
+
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+        .form-grid .form-group.full-width {
+            grid-column: span 1;
+        }
+    }
+
+    /* Form Labels */
+    .form-group label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+    }
+
+    /* Form Controls */
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-blue);
+        box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+        opacity: 0.7;
+    }
+
+    /* Required indicator */
+    .required {
+        color: #ff6b00;
+    }
+
+    /* Error message */
+    .error-message {
+        display: none;
+        color: #cf222e;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+    }
+
+    /* Buttons */
+    .btn {
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        border: none;
+    }
+
+    /* Light Mode explicit button colors for btn-primary */
+    :root:not([data-theme="dark"]) .btn-primary {
+        background-color: #2563EB !important;
+        color: #FFFFFF !important;
+        border: 1px solid #2563EB !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+    
+    :root:not([data-theme="dark"]) .btn-primary:hover {
+        background-color: #1D4ED8 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #1D4ED8 !important;
+    }
+    
+    :root:not([data-theme="dark"]) .btn-primary:focus {
+        background-color: #1D4ED8 !important;
+        color: #FFFFFF !important;
+        border: 1px solid #1D4ED8 !important;
+        outline: 2px solid #1D4ED8;
+        outline-offset: 2px;
+    }
+    
+    :root:not([data-theme="dark"]) .btn-primary:active {
+        background-color: #1E40AF !important;
+        color: #FFFFFF !important;
+        border: 1px solid #1E40AF !important;
+    }
+    
+    .btn-primary {
+        background-color: var(--accent-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0860ca;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+    }
+
+    .btn-danger {
+        background-color: #cf222e;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #b61c27;
+    }
+
+    [data-theme="dark"] .btn-primary {
+        background-color: #1f6feb;
+    }
+
+    [data-theme="dark"] .btn-primary:hover {
+        background-color: #388bfd;
+    }
+
+    [data-theme="dark"] .btn-secondary {
+        background-color: #4b5563;
+    }
+
+    [data-theme="dark"] .btn-secondary:hover {
+        background-color: #6b7280;
+    }
+
+    [data-theme="dark"] .btn-danger {
+        background-color: #f85149;
+    }
+
+    [data-theme="dark"] .btn-danger:hover {
+        background-color: #ff7b72;
+    }
+
+    /* Table Card */
+    .table-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 24px;
+    }
+
+    .table-card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 20px 0;
+    }
+
+    /* Table Container */
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--card-bg);
+        scrollbar-width: thin;
+        scrollbar-color: #9ca3af #f1f5f9;
+    }
+
+    .table-container::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb {
+        background: #9ca3af;
+        border-radius: 8px;
+    }
+
+    .table-container::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+    }
+
+    [data-theme="dark"] .table-container {
+        scrollbar-color: #4b5563 #1f2937;
+    }
+
+    [data-theme="dark"] .table-container::-webkit-scrollbar-track {
+        background: #1f2937;
+    }
+
+    [data-theme="dark"] .table-container::-webkit-scrollbar-thumb {
+        background: #4b5563;
+    }
+
+    [data-theme="dark"] .table-container::-webkit-scrollbar-thumb:hover {
+        background: #6b7280;
+    }
+
+    /* Table */
+    .customers-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    .customers-table th {
+        background-color: var(--table-header-bg);
+        color: var(--text-main);
+        font-weight: 600;
+        padding: 12px 10px;
+        border-bottom: 2px solid var(--border-color);
+        text-align: center;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+
+    .customers-table td {
+        padding: 10px;
+        text-align: center;
+        border-bottom: 1px solid var(--border-color);
+        white-space: nowrap;
+        color: var(--text-muted);
+    }
+
+    .customers-table tr:hover {
+        background-color: var(--table-header-bg);
+    }
+
+    /* Customer ID */
+    .customer-id {
+        font-family: monospace;
+        font-weight: 600;
+        color: var(--accent-blue);
+        cursor: pointer;
+    }
+
+    .customer-id:hover {
+        text-decoration: underline;
+    }
+
+    /* Role Tags */
+    .role-tag {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+
+    .role-tag.type {
+        background-color: #fff8c5;
+        color: #9a6700;
+    }
+
+    .role-tag.province {
+        background-color: #ddf4ff;
+        color: #0969da;
+    }
+
+    [data-theme="dark"] .role-tag.type {
+        background-color: #4d3800;
+        color: #e3b341;
+    }
+
+    [data-theme="dark"] .role-tag.province {
+        background-color: #0c2d6b;
+        color: #58a6ff;
+    }
+
+    /* Empty State */
+    .empty-state-cell {
+        text-align: center;
+        padding: 40px 20px;
+        background-color: var(--card-bg);
+    }
+
+    .empty-state-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .empty-state-icon {
+        font-size: 48px;
+    }
+
+    .empty-state-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0;
+    }
+
+    .empty-state-description {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin: 0;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: var(--modal-bg);
+        border-radius: 10px;
+        width: 500px;
+        max-width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 24px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-main);
+        margin: 0 0 20px 0;
+    }
+
+    /* Phone input styling override */
+    .iti {
+        width: 100%;
+    }
+
+    .iti__flag-container {
+        background: var(--input-bg);
+    }
+
+    [data-theme="dark"] .iti__flag-container {
+        background: #1f2937;
+    }
+
+    .iti__selected-flag {
+        background: var(--input-bg);
+    }
+
+    [data-theme="dark"] .iti__selected-flag {
+        background: #1f2937;
+    }
+
+    .iti__country-list {
+        background: var(--modal-bg);
+        color: var(--text-main);
+    }
+
+    [data-theme="dark"] .iti__country-list {
+        background: #1f2937;
+        color: #f3f4f6;
+    }
+
+    .iti__country {
+        color: var(--text-main);
+    }
+
+    [data-theme="dark"] .iti__country {
+        color: #f3f4f6;
+    }
+
+    .iti__country:hover {
+        background-color: var(--table-header-bg);
+    }
+
+    [data-theme="dark"] .iti__country:hover {
+        background-color: #374151;
+    }
+
+    @media print {
+        .form-card, .page-header {
+            display: none !important;
+        }
+        .table-card {
+            border: none;
+            box-shadow: none;
+        }
+    }
+</style>
+
+<%
+// Server-side helper function for EJS rendering
+function cleanCustomerId(rawId) {
+    if (!rawId) return '';
+    const match = String(rawId).match(/^([A-Z]{3}-\d+)/i);
+    return match ? match[1].toUpperCase() : rawId;
+}
+%>
+
+<div class="customers-container">
+    <div class="page-header rtl-content">
+        <div>
+            <h2><%= t('worker_customers.title') %></h2>
+            <p><%= t('worker_customers.description') %></p>
+        </div>
+    </div>
+    <!-- Customer Form Card -->
+    <div class="form-card rtl-content">
+        <h3><%= t('worker_customers.register_new') %></h3>
+        <form action="/worker/manage-customers" method="POST">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><%= t('worker_customers.customer_name') %> <span class="required">★</span></label>
+                    <input type="text" name="name" class="form-control" placeholder="<%= t('worker_customers.customer_name_placeholder') %>" required>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.customer_type') %></label>
+                    <select name="customer_type" class="form-control" id="customerType" onchange="handleCustomerTypeChange()">
+                        <option value=""><%= t('worker_customers.select_type') %></option>
+                        <option value="Dealer"><%= t('worker_customers.type_dealer') %></option>
+                        <option value="Retail Shop"><%= t('worker_customers.type_retail') %></option>
+                        <option value="Contractor"><%= t('worker_customers.type_contractor') %></option>
+                        <option value="Construction Company"><%= t('worker_customers.type_construction') %></option>
+                        <option value="Government"><%= t('worker_customers.type_government') %></option>
+                        <option value="Individual"><%= t('worker_customers.type_individual') %></option>
+                    </select>
+                </div>
+                <div class="form-group" id="organizationNameField" style="display: none;">
+                    <label><%= t('worker_customers.organization_name') %> <span class="required">★</span></label>
+                    <input type="text" name="organization_name" id="organizationName" class="form-control" placeholder="<%= t('worker_customers.organization_name_placeholder') %>">
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.contact_position') %></label>
+                    <select name="contact_person_position" id="contactPersonPosition" class="form-control">
+                        <option value=""><%= t('worker_customers.select_position') %></option>
+                        <option value="رئیس / Director"><%= t('worker_customers.position_director') %></option>
+                        <option value="معاون / Deputy"><%= t('worker_customers.position_deputy') %></option>
+                        <option value="مدیر مالی / Finance Manager"><%= t('worker_customers.position_finance') %></option>
+                        <option value="مسئول خرید / Procurement Officer"><%= t('worker_customers.position_procurement') %></option>
+                        <option value="نماینده / Representative"><%= t('worker_customers.position_representative') %></option>
+                        <option value="انجنیر پروژه / Project Engineer"><%= t('worker_customers.position_engineer') %></option>
+                        <option value="سایر / Other"><%= t('worker_customers.position_other') %></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.province') %> <span class="required">★</span></label>
+                    <select name="province" class="form-control">
+                        <option value="Badakhshan">Badakhshan</option>
+                        <option value="Badghis">Badghis</option>
+                        <option value="Baghlan">Baghlan</option>
+                        <option value="Balkh">Balkh</option>
+                        <option value="Bamyan">Bamyan</option>
+                        <option value="Daykundi">Daykundi</option>
+                        <option value="Farah">Farah</option>
+                        <option value="Faryab">Faryab</option>
+                        <option value="Ghazni">Ghazni</option>
+                        <option value="Ghor">Ghor</option>
+                        <option value="Helmand">Helmand</option>
+                        <option value="Herat">Herat</option>
+                        <option value="Jowzjan">Jowzjan</option>
+                        <option value="Kabul" selected>Kabul</option>
+                        <option value="Kandahar">Kandahar</option>
+                        <option value="Kapisa">Kapisa</option>
+                        <option value="Khost">Khost</option>
+                        <option value="Kunar">Kunar</option>
+                        <option value="Kunduz">Kunduz</option>
+                        <option value="Laghman">Laghman</option>
+                        <option value="Logar">Logar</option>
+                        <option value="Nangarhar">Nangarhar</option>
+                        <option value="Nimruz">Nimruz</option>
+                        <option value="Nuristan">Nuristan</option>
+                        <option value="Paktia">Paktia</option>
+                        <option value="Paktika">Paktika</option>
+                        <option value="Panjshir">Panjshir</option>
+                        <option value="Parwan">Parwan</option>
+                        <option value="Samangan">Samangan</option>
+                        <option value="Sar-e Pol">Sar-e Pol</option>
+                        <option value="Takhar">Takhar</option>
+                        <option value="Urozgan">Urozgan</option>
+                        <option value="Wardak">Wardak</option>
+                        <option value="Zabul">Zabul</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.phone_number') %> <span class="required">★</span></label>
+                    <input type="tel" id="phone" name="phone" class="form-control" style="direction: ltr;" placeholder="" required>
+                    <small id="phone-error" class="error-message" data-error="<%= t('worker_customers.phone_error') %>"><%= t('worker_customers.phone_error') %></small>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.alt_phone') %></label>
+                    <input type="text" name="alternative_phone" class="form-control" style="direction: ltr;" placeholder="<%= t('worker_customers.optional') %>">
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.address') %> <span class="required">★</span></label>
+                    <input type="text" name="address" class="form-control" placeholder="<%= t('worker_customers.address_placeholder') %>" required>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.email') %></label>
+                    <input type="email" name="email" class="form-control" placeholder="<%= t('worker_customers.optional') %>">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><%= t('worker_customers.save_account') %></button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Customer Table Card -->
+    <div class="table-card rtl-content">
+        <h3><%= t('worker_customers.existing_accounts') %></h3>
+        <div class="table-container">
+            <table class="customers-table">
+                <thead>
+                    <tr>
+                        <th><%= t('worker_customers.th_customer_id') %></th>
+                        <th><%= t('worker_customers.th_account_name') %></th>
+                        <th><%= t('worker_customers.th_type') %></th>
+                        <th><%= t('worker_customers.th_province') %></th>
+                        <th><%= t('worker_customers.th_position') %></th>
+                        <th><%= t('worker_customers.th_phone') %></th>
+                        <th><%= t('worker_customers.th_alt_phone') %></th>
+                        <th><%= t('worker_customers.th_email') %></th>
+                        <th><%= t('worker_customers.th_address') %></th>
+                        <th style="text-align: center;"><%= t('worker_customers.th_actions') %></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (customers.length > 0) { %>
+                        <% customers.forEach(function(customer) { %>
+                        <tr>
+                            <td><code class="customer-id" onclick="openCustomerModal('<%= customer.id %>')"><%= cleanCustomerId(customer.customer_id) || 'KAB-' + customer.id %></code></td>
+                            <td style="font-weight: 600;"><%= customer.name %></td>
+                            <td><span class="role-tag type"><%= customer.customer_type || '-' %></span></td>
+                            <td><span class="role-tag province"><%= customer.province %></span></td>
+                            <td><%= customer.contact_person_position || '-' %></td>
+                            <td style="direction: ltr; unicode-bidi: isolate;"><%= customer.phone || '-' %></td>
+                            <td style="direction: ltr; unicode-bidi: isolate;"><%= customer.alternative_phone || '-' %></td>
+                            <td><%= customer.email || '-' %></td>
+                            <td><%= customer.address || '-' %></td>
+                            <td style="text-align: center;">
+                                <button onclick="openEditModal(this)" class="btn btn-primary" style="padding: 4px 8px; font-size: 11px; margin-right: 5px;" 
+                                    data-id="<%= customer.id %>" 
+                                    data-name="<%= customer.name %>" 
+                                    data-customer_type="<%= customer.customer_type || '' %>" 
+                                    data-organization_name="<%= customer.organization_name || '' %>" 
+                                    data-contact_person_position="<%= customer.contact_person_position || '' %>" 
+                                    data-province="<%= customer.province %>" 
+                                    data-phone="<%= customer.phone || '' %>" 
+                                    data-alternative_phone="<%= customer.alternative_phone || '' %>" 
+                                    data-email="<%= customer.email || '' %>" 
+                                    data-address="<%= customer.address || '' %>"><%= t('worker_customers.edit') %></button>
+                                <form action="/worker/delete-customer/<%= customer.id %>" method="POST" style="display:inline;" data-confirm="<%= t('worker_customers.confirm_delete') %>" onsubmit="return confirm(this.getAttribute('data-confirm'));"><input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>"><button type="submit" class="btn btn-danger" style="padding: 4px 8px; font-size: 11px; border: none; cursor: pointer;"><%= t('worker_customers.delete') %></button></form>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="10" class="empty-state-cell">
+                                <div class="empty-state-content">
+                                    <span class="empty-state-icon">👥</span>
+                                    <p class="empty-state-title"><%= t('worker_customers.no_accounts') %></p>
+                                    <p class="empty-state-description"><%= t('worker_customers.no_accounts_desc') %></p>
+                                </div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Customer Modal -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-content rtl-content">
+        <h3><%= t('worker_customers.edit_account') %></h3>
+        <form id="editForm" method="POST" data-phone-error="<%= t('worker_customers.phone_error') %>" data-phone-invalid="<%= t('worker_customers.phone_invalid') %>">
+            <input type="hidden" name="id" id="editId">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label><%= t('worker_customers.customer_name') %> <span class="required">★</span></label>
+                    <input type="text" name="name" id="editName" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.customer_type') %></label>
+                    <select name="customer_type" id="editCustomerType" class="form-control" onchange="handleEditCustomerTypeChange()">
+                        <option value=""><%= t('worker_customers.select_type') %></option>
+                        <option value="Dealer"><%= t('worker_customers.type_dealer') %></option>
+                        <option value="Retail Shop"><%= t('worker_customers.type_retail') %></option>
+                        <option value="Contractor"><%= t('worker_customers.type_contractor') %></option>
+                        <option value="Construction Company"><%= t('worker_customers.type_construction') %></option>
+                        <option value="Government"><%= t('worker_customers.type_government') %></option>
+                        <option value="Individual"><%= t('worker_customers.type_individual') %></option>
+                    </select>
+                </div>
+                <div class="form-group" id="editOrganizationNameField" style="display: none;">
+                    <label><%= t('worker_customers.organization_name') %> <span class="required">★</span></label>
+                    <input type="text" name="organization_name" id="editOrganizationName" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.contact_position') %></label>
+                    <select name="contact_person_position" id="editContactPersonPosition" class="form-control">
+                        <option value=""><%= t('worker_customers.select_position') %></option>
+                        <option value="رئیس / Director"><%= t('worker_customers.position_director') %></option>
+                        <option value="معاون / Deputy"><%= t('worker_customers.position_deputy') %></option>
+                        <option value="مدیر مالی / Finance Manager"><%= t('worker_customers.position_finance') %></option>
+                        <option value="مسئول خرید / Procurement Officer"><%= t('worker_customers.position_procurement') %></option>
+                        <option value="نماینده / Representative"><%= t('worker_customers.position_representative') %></option>
+                        <option value="انجنیر پروژه / Project Engineer"><%= t('worker_customers.position_engineer') %></option>
+                        <option value="سایر / Other"><%= t('worker_customers.position_other') %></option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.province') %> <span class="required">★</span></label>
+                    <select name="province" id="editProvince" class="form-control">
+                        <option value="Badakhshan">Badakhshan</option>
+                        <option value="Badghis">Badghis</option>
+                        <option value="Baghlan">Baghlan</option>
+                        <option value="Balkh">Balkh</option>
+                        <option value="Bamyan">Bamyan</option>
+                        <option value="Daykundi">Daykundi</option>
+                        <option value="Farah">Farah</option>
+                        <option value="Faryab">Faryab</option>
+                        <option value="Ghazni">Ghazni</option>
+                        <option value="Ghor">Ghor</option>
+                        <option value="Helmand">Helmand</option>
+                        <option value="Herat">Herat</option>
+                        <option value="Jowzjan">Jowzjan</option>
+                        <option value="Kabul">Kabul</option>
+                        <option value="Kandahar">Kandahar</option>
+                        <option value="Kapisa">Kapisa</option>
+                        <option value="Khost">Khost</option>
+                        <option value="Kunar">Kunar</option>
+                        <option value="Kunduz">Kunduz</option>
+                        <option value="Laghman">Laghman</option>
+                        <option value="Logar">Logar</option>
+                        <option value="Nangarhar">Nangarhar</option>
+                        <option value="Nimruz">Nimruz</option>
+                        <option value="Nuristan">Nuristan</option>
+                        <option value="Paktia">Paktia</option>
+                        <option value="Paktika">Paktika</option>
+                        <option value="Panjshir">Panjshir</option>
+                        <option value="Parwan">Parwan</option>
+                        <option value="Samangan">Samangan</option>
+                        <option value="Sar-e Pol">Sar-e Pol</option>
+                        <option value="Takhar">Takhar</option>
+                        <option value="Urozgan">Urozgan</option>
+                        <option value="Wardak">Wardak</option>
+                        <option value="Zabul">Zabul</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.phone_number') %> <span class="required">★</span></label>
+                    <input type="tel" id="editPhone" name="phone" class="form-control" style="direction: ltr;" required>
+                    <small id="edit-phone-error" class="error-message" data-error="<%= t('worker_customers.phone_error') %>"><%= t('worker_customers.phone_error') %></small>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.alt_phone') %></label>
+                    <input type="text" name="alternative_phone" id="editAlternativePhone" class="form-control" style="direction: ltr;" placeholder="<%= t('worker_customers.optional') %>">
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.address') %> <span class="required">★</span></label>
+                    <input type="text" name="address" id="editAddress" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label><%= t('worker_customers.email') %></label>
+                    <input type="email" name="email" id="editEmail" class="form-control" placeholder="<%= t('worker_customers.optional') %>">
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary"><%= t('worker_customers.save_changes') %></button>
+                <button type="button" onclick="closeEditModal()" class="btn btn-secondary"><%= t('worker_customers.cancel') %></button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.getElementById('nav-worker-cust').classList.add('active');
+
+// Helper function to clean customer_id - extract only the code part (e.g., KAB-001)
+function cleanCustomerId(rawId) {
+    if (!rawId) return '';
+    // Extract prefix and number matching pattern like KAB-001 or KAB-002
+    const match = rawId.match(/^([A-Z]{3}-\d+)/i);
+    return match ? match[1].toUpperCase() : rawId;
+}
+
+function handleCustomerTypeChange() {
+    const customerType = document.getElementById('customerType').value;
+    const orgNameField = document.getElementById('organizationNameField');
+    
+    if (customerType === 'Construction Company' || customerType === 'Government') {
+        orgNameField.style.display = 'block';
+        document.getElementById('organizationName').setAttribute('required', 'required');
+    } else {
+        orgNameField.style.display = 'none';
+        document.getElementById('organizationName').removeAttribute('required');
+        document.getElementById('organizationName').value = '';
+    }
+}
+
+function handleEditCustomerTypeChange() {
+    const customerType = document.getElementById('editCustomerType').value;
+    const orgNameField = document.getElementById('editOrganizationNameField');
+    
+    if (customerType === 'Construction Company' || customerType === 'Government') {
+        orgNameField.style.display = 'block';
+    } else {
+        orgNameField.style.display = 'none';
+        document.getElementById('editOrganizationName').value = '';
+    }
+}
+
+function openEditModal(button) {
+    const id = button.getAttribute('data-id');
+    const name = button.getAttribute('data-name');
+    const customerType = button.getAttribute('data-customer_type');
+    const organizationName = button.getAttribute('data-organization_name');
+    const contactPersonPosition = button.getAttribute('data-contact_person_position');
+    const province = button.getAttribute('data-province');
+    const phone = button.getAttribute('data-phone');
+    const alternativePhone = button.getAttribute('data-alternative_phone');
+    const email = button.getAttribute('data-email');
+    const address = button.getAttribute('data-address');
+    
+    document.getElementById('editId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editCustomerType').value = customerType || 'Individual';
+    document.getElementById('editOrganizationName').value = organizationName;
+    document.getElementById('editContactPersonPosition').value = contactPersonPosition;
+    document.getElementById('editProvince').value = province;
+    document.getElementById('editAlternativePhone').value = alternativePhone;
+    document.getElementById('editEmail').value = email;
+    document.getElementById('editAddress').value = address;
+    
+    // Strip country code from phone number for display in edit modal
+    let phoneDisplay = phone || '';
+    if (phoneDisplay.startsWith('+93')) {
+        phoneDisplay = phoneDisplay.substring(3);
+    }
+    document.getElementById('editPhone').value = phoneDisplay;
+    
+    // Trigger conditional field display
+    handleEditCustomerTypeChange();
+    
+    document.getElementById('editForm').action = '/worker/edit-customer/' + id;
+    
+    document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').style.display = 'none';
+}
+
+// Initialize intl-tel-input for phone number fields
+let phoneInput;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize main phone input
+    const phoneElement = document.getElementById('phone');
+    if (phoneElement) {
+        phoneInput = intlTelInput(phoneElement, {
+            initialCountry: 'af',
+            separateDialCode: true,
+            utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js',
+            rtl: true,
+            nationalMode: true,
+            formatOnDisplay: false
+        });
+
+        // Handle input to limit digits based on country
+        phoneElement.addEventListener('input', function(e) {
+            const countryData = phoneInput.getSelectedCountryData();
+            const dialCode = countryData.dialCode;
+            const maxLength = countryData.name === 'Afghanistan' ? 9 : 15;
+            
+            // Get current value and remove non-digits
+            let value = e.target.value.replace(/\D/g, '');
+            
+            // Limit to max digits for the country
+            if (value.length > maxLength) {
+                value = value.substring(0, maxLength);
+                e.target.value = value;
+            }
+            
+            // Clear error while typing
+            const errorElement = document.getElementById('phone-error');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        });
+
+        // Handle paste to prevent duplicate country codes
+        phoneElement.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+            
+            // Remove any existing country code from pasted text
+            let cleanNumber = pastedText.replace(/\D/g, '');
+            
+            // If pasted number starts with country code, remove it
+            const countryData = phoneInput.getSelectedCountryData();
+            const dialCode = countryData.dialCode;
+            if (cleanNumber.startsWith(dialCode)) {
+                cleanNumber = cleanNumber.substring(dialCode.length);
+            }
+            
+            // Limit to max digits for the country
+            const maxLength = countryData.name === 'Afghanistan' ? 9 : 15;
+            if (cleanNumber.length > maxLength) {
+                cleanNumber = cleanNumber.substring(0, maxLength);
+            }
+            
+            // Insert the cleaned number
+            const start = e.target.selectionStart;
+            const end = e.target.selectionEnd;
+            const currentValue = e.target.value.replace(/\D/g, '');
+            const newValue = currentValue.substring(0, start) + cleanNumber + currentValue.substring(end);
+            
+            e.target.value = newValue.substring(0, maxLength);
+        });
+
+        // Add validation on blur (when user leaves the field)
+        phoneElement.addEventListener('blur', function() {
+            validatePhone(phoneInput, 'phone-error', true);
+        });
+    }
+
+    // Add form validation for main form
+    const mainForm = document.querySelector('form[action="/worker/manage-customers"]');
+    if (mainForm) {
+        mainForm.addEventListener('submit', function(e) {
+            if (!validatePhone(phoneInput, 'phone-error', false)) {
+                e.preventDefault();
+                return false;
+            }
+            // Set the international format value before submission
+            if (phoneInput) {
+                phoneElement.value = phoneInput.getNumber(intlTelInputUtils.numberFormat.E164);
+            }
+        });
+    }
+
+    // Add form validation for edit form (no intl-tel-input on edit modal)
+    const editForm = document.getElementById('editForm');
+    if (editForm) {
+        editForm.addEventListener('submit', function(e) {
+            const editPhoneElement = document.getElementById('editPhone');
+            const phoneError = editForm.getAttribute('data-phone-error');
+            // For edit modal, we don't have intl-tel-input initialized, so just do basic validation
+            if (editPhoneElement && editPhoneElement.value) {
+                const cleanPhone = editPhoneElement.value.trim();
+                // Remove any non-digit characters
+                const digitsOnly = cleanPhone.replace(/\D/g, '');
+                
+                // Validate Afghan phone number (9 digits)
+                if (digitsOnly.length !== 9) {
+                    alert(phoneError);
+                    editPhoneElement.focus();
+                    e.preventDefault();
+                    return;
+                }
+                
+                // Add country code for storage
+                editPhoneElement.value = '+93' + digitsOnly;
+            }
+        });
+    }
+});
+
+function validatePhone(iti, errorElementId, isBlur) {
+    const errorElement = document.getElementById(errorElementId);
+    if (!iti || !errorElement) return true;
+
+    const phoneNumber = iti.getNumber(intlTelInputUtils.numberFormat.NATIONAL);
+    
+    // If field is empty
+    if (!phoneNumber || phoneNumber.trim() === '') {
+        errorElement.style.display = 'none';
+        return false;
+    }
+
+    // Get country data for specific validation
+    const countryData = iti.getSelectedCountryData();
+    const currentLength = phoneNumber.replace(/\D/g, '').length;
+    
+    // Afghanistan-specific validation: exactly 9 digits
+    if (countryData.name === 'Afghanistan') {
+        if (currentLength === 9) {
+            errorElement.style.display = 'none';
+            return true;
+        }
+        
+        // Only show error on blur or when called from save (isBlur = false means save)
+        if (isBlur || !isBlur) {
+            errorElement.style.display = 'block';
+            errorElement.textContent = errorElement.getAttribute('data-error') || 'Phone number must be 9 digits';
+            return false;
+        }
+    } else {
+        // For other countries, use standard validation
+        if (iti.isValidNumber()) {
+            errorElement.style.display = 'none';
+            return true;
+        }
+        
+        // Only show error on blur or when called from save
+        if (isBlur || !isBlur) {
+            errorElement.style.display = 'block';
+            errorElement.textContent = errorElement.getAttribute('data-invalid') || 'Invalid phone number';
+            return false;
+        }
+    }
+
+    // If typing and not at error condition, don't show error
+    errorElement.style.display = 'none';
+    return false;
+}
+</script>
+
+<%- include('partials/customer_modal') %>
+
+<%- include('partials/footer') %>

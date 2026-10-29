@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="<%= lang %>" dir="<%= dir %>">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+    <title><%= t('home.about_title') %> | <%= t('home.header_company_name') %></title>
+    <link rel="icon" type="image/png" href="/Logo.png">
+    <%- include('partials/customer_styles') %>
+</head>
+<body>
+    <%- include('partials/customer_nav') %>
+
+    <section class="page-hero">
+        <div class="container">
+            <h1><%= t('home.about_title') %></h1>
+            <p><%= t('home.about_subtitle') %></p>
+        </div>
+    </section>
+
+    <section class="section" style="padding-top: 10px;">
+        <div class="container">
+            <div class="about-grid reveal">
+                <div>
+                    <p style="font-size: 1.05rem; margin-bottom: 18px;"><%= content.about_story %></p>
+                    <div class="mission-cards">
+                        <div class="mission-card">
+                            <strong><%= t('home.mission_label') %></strong>
+                            <p><%= content.company_mission %></p>
+                        </div>
+                        <div class="mission-card">
+                            <strong><%= t('home.vision_label') %></strong>
+                            <p><%= content.company_vision %></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-media" style="background-image: url('<%= media.about_image || "https://images.unsplash.com/photo-1590069261209-f8e9b8642343?q=80&w=800" %>');"></div>
+            </div>
+        </div>
+    </section>
+
+    <%- include('partials/customer_footer') %>
+</body>
+</html>

@@ -1,0 +1,872 @@
+<%- include('partials/header') %>
+
+<style>
+    :root {
+        --primary-color: var(--text-main);
+        --accent-blue: #0969da;
+        --success-green: var(--status-success);
+        --danger-red: var(--status-error);
+        --bg-light: var(--bg-light);
+        --border-color: var(--border-color);
+    }
+
+    .dashboard-container {
+        direction: ltr;
+        padding: 20px;
+    }
+
+    .dashboard-header {
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .header-title-group {
+        text-align: right;
+    }
+
+    [data-theme="dark"] .dashboard-header button {
+        background-color: var(--accent-blue) !important;
+    }
+
+    .kpi-card {
+        border-radius: 12px;
+        padding: 20px;
+        color: #ffffff;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        text-align: center;
+    }
+    .kpi-green { background: linear-gradient(135deg, #2ea44f 0%, #1a7f37 100%); }
+    .kpi-red { background: linear-gradient(135deg, #da3633 0%, #cf222e 100%); }
+    .kpi-blue { background: linear-gradient(135deg, #0969da 0%, #0550ae 100%); }
+    .kpi-orange { background: linear-gradient(135deg, #d29922 0%, #9a6700 100%); }
+
+    .filter-row {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        align-items: flex-end;
+    }
+
+    .filter-item {
+        flex: 1;
+        min-width: 180px;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--input-border);
+        border-radius: 6px;
+        font-size: 13px;
+        background-color: var(--input-bg);
+        color: var(--text-main);
+    }
+
+    @media print {
+        .sidebar, .top-navbar, .filter-row, .no-print, select, input, button {
+            display: none !important;
+        }
+        .main-viewport { flex: 1; overflow: visible; }
+        body { background: #ffffff !important; color: #000000 !important; }
+        .card { border: 1px solid #000 !important; box-shadow: none !important; }
+        .table-responsive { overflow: visible !important; }
+        table { width: 100% !important; border: 1px solid #000 !important; }
+    }
+</style>
+
+<div class="dashboard-container">
+    <!-- Header Section matching Central Dashboard -->
+    <div class="dashboard-header">
+        <div class="header-title-group">
+            <h2 style="margin: 0; color: var(--text-main); font-size: 22px; font-weight: 800;"><%= t('agency_expenses.title') %></h2>
+            <p style="margin: 5px 0 0 0; font-size: 13px; color: var(--text-muted);"><%= t('agency_expenses.description') %></p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="window.print()" class="btn no-print" style="background-color: var(--text-main); color: #fff; border-radius: 8px; padding: 9px 18px; font-weight: 600;">
+                🖨️ <%= t('agency_expenses.print_button') %>
+            </button>
+        </div>
+    </div>
+
+<!-- 4 KPI Summary Cards Grid -->
+<div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px;">
+    <div class="card" style="background: linear-gradient(135deg, var(--status-error) 0%, #a82828 100%); color: white; padding: 20px; border-radius: 10px;">
+        <span style="font-size: 13px; font-weight: 600;"><%= t('agency_expenses.kpi_total_expenses') %></span>
+        <h2 id="kpi-total-expenses" style="margin-top: 10px; font-size: 1.8rem; font-weight: 800;">0 Afs</h2>
+    </div>
+    <div class="card" style="background: linear-gradient(135deg, #d29922 0%, #9a6700 100%); color: white; padding: 20px; border-radius: 10px;">
+        <span style="font-size: 13px; font-weight: 600;"><%= t('agency_expenses.kpi_total_cash_out') %></span>
+        <h2 id="kpi-total-cash-out" style="margin-top: 10px; font-size: 1.8rem; font-weight: 800;">0 Afs</h2>
+    </div>
+    <div class="card" style="background: linear-gradient(135deg, var(--accent-blue) 0%, #054da7 100%); color: white; padding: 20px; border-radius: 10px;">
+        <span style="font-size: 13px; font-weight: 600;"><%= t('agency_expenses.kpi_available_balance') %></span>
+        <h2 id="kpi-available-balance" style="margin-top: 10px; font-size: 1.8rem; font-weight: 800;">0 Afs</h2>
+    </div>
+    <div class="card" style="background: linear-gradient(135deg, #b45309 0%, #78350f 100%); color: white; padding: 20px; border-radius: 10px;">
+        <span style="font-size: 13px; font-weight: 600;"><%= t('agency_expenses.kpi_reimbursement_owed') %></span>
+        <h2 id="kpi-reimbursement-owed" style="margin-top: 10px; font-size: 1.8rem; font-weight: 800;">0 Afs</h2>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-row no-print">
+    <!-- Advanced Filters Button -->
+    <div class="filter-item">
+        <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;">&nbsp;</label>
+        <button onclick="openAdvancedFilters()" class="btn btn-primary" style="background-color:var(--accent-blue); color: white; padding: 8px 16px;">
+            🔍 <%= t('agency_expenses.advanced_filters') %>
+        </button>
+    </div>
+    <!-- Agency Multi-Select Checkbox Filter Container -->
+    <div class="filter-item" style="position: relative;">
+        <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;">
+            <%= t('agency_expenses.agency_label') %>
+        </label>
+        
+        <!-- Filter Toggle Button -->
+        <button 
+            type="button" 
+            id="agency_dropdown_btn" 
+            onclick="toggleAgencyMenu(event)" 
+            class="form-control-custom" 
+            style="text-align: right; background: var(--input-bg); cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; color: var(--text-main);"
+        >
+            <span id="agency_btn_label"><%= t('agency_expenses.all_agencies') %></span>
+            <span style="font-size: 10px; color: var(--text-muted);">▼</span>
+        </button>
+
+        <!-- Checkbox Popup Window -->
+        <div 
+            id="agency_checkbox_popup" 
+            style="display: none; position: absolute; top: 100%; right: 0; left: 0; z-index: 1000; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 8px 24px rgba(140,149,159,0.2); padding: 12px; margin-top: 4px; min-width: 220px;"
+        >
+            <!-- Select All / Clear All Row -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
+                <button type="button" onclick="selectAllAgencies(true)" style="background: none; border: none; color: var(--accent-blue); cursor: pointer; font-weight: 600; padding: 0;"><%= t('agency_expenses.select_all') %></button>
+                <button type="button" onclick="selectAllAgencies(false)" style="background: none; border: none; color: var(--status-error); cursor: pointer; font-weight: 600; padding: 0;"><%= t('agency_expenses.clear_all') %></button>
+            </div>
+
+            <!-- Checkbox Options List -->
+            <div id="agency-checkbox-list" style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <!-- Agencies will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+    <!-- Category Multi-Select Checkbox Filter Container -->
+    <div class="filter-item" style="position: relative;">
+        <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;">
+            <%= t('agency_expenses.category_label') %>
+        </label>
+        
+        <!-- Filter Toggle Button -->
+        <button 
+            type="button" 
+            id="category_dropdown_btn" 
+            onclick="toggleCategoryMenu(event)" 
+            class="form-control-custom" 
+            style="text-align: right; background: var(--input-bg); cursor: pointer; display: flex; justify-content: space-between; align-items: center; padding: 6px 12px; color: var(--text-main);"
+        >
+            <span id="category_btn_label"><%= t('agency_expenses.all_categories') %></span>
+            <span style="font-size: 10px; color: var(--text-muted);">▼</span>
+        </button>
+
+        <!-- Checkbox Popup Window -->
+        <div 
+            id="category_checkbox_popup" 
+            style="display: none; position: absolute; top: 100%; right: 0; left: 0; z-index: 1000; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; box-shadow: 0 8px 24px rgba(140,149,159,0.2); padding: 12px; margin-top: 4px; min-width: 220px;"
+        >
+            <!-- Select All / Clear All Row -->
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px; font-size: 12px;">
+                <button type="button" onclick="selectAllCategories(true)" style="background: none; border: none; color: var(--accent-blue); cursor: pointer; font-weight: 600; padding: 0;"><%= t('agency_expenses.select_all') %></button>
+                <button type="button" onclick="selectAllCategories(false)" style="background: none; border: none; color: var(--status-error); cursor: pointer; font-weight: 600; padding: 0;"><%= t('agency_expenses.clear_all') %></button>
+            </div>
+
+            <!-- Checkbox Options List -->
+            <div style="max-height: 200px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Food" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_food') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Stationery" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_stationery') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Rent" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_rent') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Electricity" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_electricity') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Salaries" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_salaries') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Furniture" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_furniture') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="HQ Inflow" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_hq_inflow') %>
+                </label>
+                <label style="font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                    <input type="checkbox" class="category-checkbox" value="Other" onchange="onCategoryFilterChange()" checked> <%= t('agency_expenses.category_other') %>
+                </label>
+            </div>
+        </div>
+    </div>
+    <!-- Date Range Filter matching Central Dashboard UI -->
+    <div class="filter-item" style="flex: 2; min-width: 320px;">
+        <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.date_range_label') %></label>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" id="filter_start_date" class="form-control-custom" data-datepicker="jalali" placeholder="<%= t('agency_expenses.from_date') %>" onchange="loadExpenses()" readonly>
+            <span style="font-size: 12px; color: var(--text-muted);"><%= t('agency_expenses.to') %></span>
+            <input type="text" id="filter_end_date" class="form-control-custom" data-datepicker="jalali" placeholder="<%= t('agency_expenses.to_date') %>" onchange="loadExpenses()" readonly>
+        </div>
+    </div>
+    <div class="filter-item">
+        <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;">&nbsp;</label>
+        <button onclick="resetFilters()" class="btn btn-secondary" style="background-color:#6e7781; color: white; padding: 8px 16px;">
+            🔄 <%= t('agency_expenses.reset_filters') %>
+        </button>
+    </div>
+</div>
+
+<!-- Advanced Filters Modal -->
+<div id="advancedFilterModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 2000; align-items: center; justify-content: center;">
+    <div style="background: var(--modal-bg); border-radius: 8px; width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto; padding: 24px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+            <h3 style="margin: 0; color: var(--text-main);"><%= t('agency_expenses.advanced_filters') %></h3>
+            <button onclick="closeAdvancedFilters()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-muted);">&times;</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+            <!-- Agency Dropdown -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.agency_label') %></label>
+                <select id="adv_agency" class="form-control">
+                    <option value=""><%= t('agency_expenses.all_agencies') %></option>
+                </select>
+            </div>
+            
+            <!-- Date Range -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.from_date') %></label>
+                <input type="text" id="adv_start_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('agency_expenses.date_example') %>">
+            </div>
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.to_date') %></label>
+                <input type="text" id="adv_end_date" class="form-control" data-datepicker="jalali" placeholder="<%= t('agency_expenses.date_example_end') %>">
+            </div>
+            
+            <!-- Category -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.category_label') %></label>
+                <select id="adv_category" class="form-control">
+                    <option value=""><%= t('agency_expenses.all_categories') %></option>
+                    <option value="Food"><%= t('agency_expenses.category_food') %></option>
+                    <option value="Stationery"><%= t('agency_expenses.category_stationery') %></option>
+                    <option value="Rent"><%= t('agency_expenses.category_rent') %></option>
+                    <option value="Electricity"><%= t('agency_expenses.category_electricity') %></option>
+                    <option value="Salaries"><%= t('agency_expenses.category_salaries') %></option>
+                    <option value="Furniture"><%= t('agency_expenses.category_furniture') %></option>
+                    <option value="HQ Inflow"><%= t('agency_expenses.category_hq_inflow') %></option>
+                    <option value="Other"><%= t('agency_expenses.category_other') %></option>
+                </select>
+            </div>
+            
+            <!-- Person Involved -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.person_involved') %></label>
+                <input type="text" id="adv_person" class="form-control" placeholder="<%= t('agency_expenses.search_person') %>">
+            </div>
+            
+            <!-- Cash In -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.cash_in') %></label>
+                <input type="number" id="adv_cash_in" class="form-control" step="any" placeholder="<%= t('agency_expenses.amount') %>">
+            </div>
+            
+            <!-- Cash Out -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px; padding-right: 60xp"><%= t('agency_expenses.cash_out') %></label>
+                <input type="number" id="adv_cash_out" class="form-control" step="any" placeholder="<%= t('agency_expenses.amount') %>">
+            </div>
+            
+            <!-- Description -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.description') %></label>
+                <input type="text" id="adv_description" class="form-control" placeholder="<%= t('agency_expenses.search_description') %>">
+            </div>
+            
+            <!-- Quantity -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.quantity') %></label>
+                <input type="number" id="adv_quantity" class="form-control" step="any" placeholder="<%= t('agency_expenses.quantity') %>">
+            </div>
+            
+            <!-- Unit Price -->
+            <div>
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.unit_price') %></label>
+                <input type="number" id="adv_unit_price" class="form-control" step="any" placeholder="<%= t('agency_expenses.unit_price') %>">
+            </div>
+            
+            <!-- Remarks -->
+            <div style="grid-column: span 2;">
+                <label style="font-size: 12px; font-weight: 600; color:var(--text-main); display:block; margin-bottom:5px;"><%= t('agency_expenses.remarks') %></label>
+                <input type="text" id="adv_remarks" class="form-control" placeholder="<%= t('agency_expenses.search_remarks') %>">
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-color);">
+            <button onclick="clearAdvancedFilters()" class="btn btn-secondary" style="background-color:#6e7781; color: white; padding: 8px 16px;">
+                🔄 <%= t('agency_expenses.clear_filters') %>
+            </button>
+            <button onclick="applyAdvancedFilters()" class="btn btn-primary" style="background-color:var(--accent-blue); color: white; padding: 8px 16px;">
+                🔍 <%= t('agency_expenses.apply_search') %>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Expenses Table -->
+<div class="card">
+    <h3 style="margin-bottom: 15px; color:var(--text-main);"><%= t('agency_expenses.transaction_history') %></h3>
+    <div class="table-responsive" style="overflow-x: auto;">
+        <table style="font-size: 12px; white-space: nowrap; table-layout: fixed; width: 100%; border-collapse: collapse;">
+            <colgroup>
+                <col style="width: 50px;" />
+                <col style="width: 120px;" />
+                <col style="width: 90px;" />
+                <col style="width: 120px;" />
+                <col style="width: 150px;" />
+                <col style="width: 120px;" />
+                <col style="width: 80px;" />
+                <col style="width: 90px;" />
+                <col style="width: 100px;" />
+                <col style="width: 100px;" />
+                <col style="width: 100px;" />
+                <col style="width: 150px;" />
+            </colgroup>
+            <thead style="background-color: var(--table-header-bg); border-bottom: 2px solid var(--border-color); color: var(--text-main); font-weight: 700;">
+                <tr>
+                    <th style="padding: 8px; text-align: center;">#</th>
+                    <th style="padding: 8px; text-align: center;"><%= t('agency_expenses.th_agency') %></th>
+                    <th style="padding: 8px; text-align: center;"><%= t('agency_expenses.th_date') %></th>
+                    <th style="padding: 8px; text-align: right;"><%= t('agency_expenses.th_category') %></th>
+                    <th style="padding: 8px; text-align: right;"><%= t('agency_expenses.th_description') %></th>
+                    <th style="padding: 8px; text-align: right;"><%= t('agency_expenses.th_person') %></th>
+                    <th style="padding: 8px; text-align: center;"><%= t('agency_expenses.th_quantity') %></th>
+                    <th style="padding: 8px; text-align: center;"><%= t('agency_expenses.th_unit_price') %></th>
+                    <th style="padding: 8px; text-align: center;"><%= t('agency_expenses.th_total') %></th>
+                    <th style="padding: 8px; text-align: center; color: var(--status-success);"><%= t('agency_expenses.th_cash_in') %></th>
+                    <th style="padding: 8px; text-align: center; color: var(--status-error);"><%= t('agency_expenses.th_cash_out') %></th>
+                    <th style="padding: 8px; text-align: right;"><%= t('agency_expenses.th_remarks') %></th>
+                </tr>
+            </thead>
+            <tbody id="expenses-rows">
+                <tr>
+                    <td colspan="12" style="text-align: center; color:var(--text-muted); padding: 20px;"><%= t('agency_expenses.loading') %></td>
+                </tr>
+            </tbody>
+            <tfoot id="expenses-footer" style="background-color: var(--table-header-bg); border-top: 2px solid var(--border-color); font-weight: 700;">
+                <tr>
+                    <td colspan="9" style="padding: 10px; text-align: right; font-size: 13px; color: var(--text-main);">
+                        <%= t('agency_expenses.grand_total') %>
+                    </td>
+                    <td id="total-cash-in-cell" style="padding: 10px; text-align: center; color: var(--status-success); font-size: 13px;">
+                        0 Afs
+                    </td>
+                    <td id="total-cash-out-cell" style="padding: 10px; text-align: center; color: var(--status-error); font-size: 13px;">
+                        0 Afs
+                    </td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    
+    <!-- Pagination Controls Container -->
+    <div id="pagination-controls" class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+        <div style="font-size: 13px; color: var(--text-muted);">
+            نمایش <span id="page-start-idx">0</span> <%= t('agency_expenses.to') %> <span id="page-end-idx">0</span> <%= t('agency_expenses.of') %> <span id="page-total-count">0</span> <%= t('agency_expenses.records') %>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="font-size: 12px; color: var(--text-muted);"><%= t('agency_expenses.records_per_page') %>:</label>
+            <select id="items-per-page" onchange="changePageSize()" class="form-control" style="padding: 4px 8px; font-size: 12px; width: auto;">
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+            <button id="btn-prev-page" onclick="prevPage()" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;" disabled>
+                ◀ <%= t('agency_expenses.previous') %>
+            </button>
+            <span id="page-indicator" style="font-size: 13px; font-weight: 600; padding: 0 8px;">
+                <%= t('agency_expenses.page_of') %>
+            </span>
+            <button id="btn-next-page" onclick="nextPage()" class="btn btn-secondary" style="padding: 4px 12px; font-size: 12px;" disabled>
+                <%= t('agency_expenses.next') %> ▶
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('nav-admin-all-expenses').classList.add('active');
+
+// Pagination state
+let allExpensesRecords = [];
+let currentPage = 1;
+let itemsPerPage = 10;
+
+// Pagination functions
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPaginatedExpenses();
+    }
+}
+
+function nextPage() {
+    const totalPages = Math.ceil(allExpensesRecords.length / itemsPerPage);
+    if (currentPage < totalPages) {
+        currentPage++;
+        renderPaginatedExpenses();
+    }
+}
+
+function changePageSize() {
+    itemsPerPage = parseInt(document.getElementById('items-per-page').value);
+    currentPage = 1;
+    renderPaginatedExpenses();
+}
+
+function updatePaginationControls() {
+    const totalRecords = allExpensesRecords.length;
+    const totalPages = Math.ceil(totalRecords / itemsPerPage) || 1;
+    const startIdx = totalRecords === 0 ? 0 : (currentPage - 1) * itemsPerPage + 1;
+    const endIdx = Math.min(currentPage * itemsPerPage, totalRecords);
+    
+    document.getElementById('page-start-idx').textContent = startIdx;
+    document.getElementById('page-end-idx').textContent = endIdx;
+    document.getElementById('page-total-count').textContent = totalRecords;
+    document.getElementById('page-indicator').textContent = `Page ${currentPage} of ${totalPages}`;
+    
+    document.getElementById('btn-prev-page').disabled = currentPage === 1;
+    document.getElementById('btn-next-page').disabled = currentPage === totalPages || totalRecords === 0;
+}
+
+function renderPaginatedExpenses() {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedRecords = allExpensesRecords.slice(startIndex, endIndex);
+    
+    renderExpensesTable(paginatedRecords, allExpensesRecords);
+    updatePaginationControls();
+}
+
+// Global object to store advanced filter criteria
+window.advFilterCriteria = {};
+
+// Load agencies list
+function loadAgenciesList() {
+    fetch('/api/admin/agencies-list')
+        .then(res => res.json())
+        .then(data => {
+            const agencyCheckboxList = document.getElementById('agency-checkbox-list');
+            const advSelect = document.getElementById('adv_agency');
+            
+            data.agencies.forEach(agency => {
+                const agencyName = agency.agency_name;
+                // Add checkbox to main filter
+                const label = document.createElement('label');
+                label.style.cssText = 'font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer;';
+                label.innerHTML = `<input type="checkbox" class="agency-checkbox" value="${esc(agencyName)}" onchange="onAgencyFilterChange()" checked> ${esc(agencyName)}`;
+                agencyCheckboxList.appendChild(label);
+                
+                // Add option to advanced modal dropdown
+                const option = document.createElement('option');
+                option.value = agencyName;
+                option.textContent = agencyName;
+                advSelect.appendChild(option);
+            });
+            
+            // Load expenses and summary after agencies are populated
+            loadExpenses();
+            loadSummary();
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading agencies list:', err);
+        });
+}
+
+// Toggle agency menu
+function toggleAgencyMenu(event) {
+    event.stopPropagation();
+    const popup = document.getElementById('agency_checkbox_popup');
+    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+}
+
+// Select/Clear all agencies
+function selectAllAgencies(selectAll) {
+    const checkboxes = document.querySelectorAll('.agency-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll);
+    onAgencyFilterChange();
+}
+
+// Get selected agencies
+function getSelectedAgencies() {
+    const checkboxes = document.querySelectorAll('.agency-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Agency filter change handler
+function onAgencyFilterChange() {
+    const allCheckboxes = document.querySelectorAll('.agency-checkbox');
+    const selected = getSelectedAgencies();
+    const btnLabel = document.getElementById('agency_btn_label');
+
+    if (selected.length === allCheckboxes.length) {
+        btnLabel.textContent = 'همه نمایندگی‌ها';
+    } else if (selected.length === 0) {
+        btnLabel.textContent = 'هیچ انتخابی نشده';
+    } else {
+        btnLabel.textContent = `${selected.length} نمایندگی انتخاب شده`;
+    }
+
+    loadExpenses();
+    loadSummary();
+}
+
+// Close agency menu when clicking outside
+document.addEventListener('click', (event) => {
+    const popup = document.getElementById('agency_checkbox_popup');
+    const btn = document.getElementById('agency_dropdown_btn');
+    if (popup && btn && !popup.contains(event.target) && !btn.contains(event.target)) {
+        popup.style.display = 'none';
+    }
+});
+
+// Toggle category menu
+function toggleCategoryMenu(event) {
+    event.stopPropagation();
+    const popup = document.getElementById('category_checkbox_popup');
+    popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+}
+
+// Select/Clear all categories
+function selectAllCategories(selectAll) {
+    const checkboxes = document.querySelectorAll('.category-checkbox');
+    checkboxes.forEach(cb => cb.checked = selectAll);
+    onCategoryFilterChange();
+}
+
+// Get selected categories
+function getSelectedCategories() {
+    const checkboxes = document.querySelectorAll('.category-checkbox:checked');
+    return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// Category filter change handler
+function onCategoryFilterChange() {
+    const allCheckboxes = document.querySelectorAll('.category-checkbox');
+    const selected = getSelectedCategories();
+    const btnLabel = document.getElementById('category_btn_label');
+
+    if (selected.length === allCheckboxes.length) {
+        btnLabel.textContent = 'همه دسته‌بندی‌ها';
+    } else if (selected.length === 0) {
+        btnLabel.textContent = 'هیچ انتخابی نشده';
+    } else {
+        btnLabel.textContent = `${selected.length} دسته‌بندی انتخاب شده`;
+    }
+
+    loadExpenses();
+    loadSummary();
+}
+
+// Close category menu when clicking outside
+document.addEventListener('click', (event) => {
+    const popup = document.getElementById('category_checkbox_popup');
+    const btn = document.getElementById('category_dropdown_btn');
+    if (!popup.contains(event.target) && !btn.contains(event.target)) {
+        popup.style.display = 'none';
+    }
+});
+
+// Open advanced filters modal
+function openAdvancedFilters() {
+    document.getElementById('advancedFilterModal').style.display = 'flex';
+}
+
+// Close advanced filters modal
+function closeAdvancedFilters() {
+    document.getElementById('advancedFilterModal').style.display = 'none';
+}
+
+// Clear advanced filters
+function clearAdvancedFilters() {
+    resetFilters();
+    closeAdvancedFilters();
+}
+
+// Apply advanced filters
+function applyAdvancedFilters() {
+    window.advFilterCriteria = {
+        adv_agency: document.getElementById('adv_agency')?.value.trim() || '',
+        adv_start_date: document.getElementById('adv_start_date')?.value.trim() || '',
+        adv_end_date: document.getElementById('adv_end_date')?.value.trim() || '',
+        adv_category: document.getElementById('adv_category')?.value.trim() || '',
+        adv_person: document.getElementById('adv_person')?.value.trim() || '',
+        adv_cash_in: document.getElementById('adv_cash_in')?.value.trim() || '',
+        adv_cash_out: document.getElementById('adv_cash_out')?.value.trim() || '',
+        adv_description: document.getElementById('adv_description')?.value.trim() || '',
+        adv_quantity: document.getElementById('adv_quantity')?.value.trim() || '',
+        adv_unit_price: document.getElementById('adv_unit_price')?.value.trim() || '',
+        adv_remarks: document.getElementById('adv_remarks')?.value.trim() || ''
+    };
+    closeAdvancedFilters();
+    loadExpenses();
+}
+
+// Load expenses data
+function loadExpenses() {
+    const allAgencyCheckboxes = document.querySelectorAll('.agency-checkbox');
+    const selectedAgencies = getSelectedAgencies();
+    const allCategoryCheckboxes = document.querySelectorAll('.category-checkbox');
+    const selectedCategories = getSelectedCategories();
+    const startDate = document.getElementById('filter_start_date')?.value || '';
+    const endDate = document.getElementById('filter_end_date')?.value || '';
+
+    console.log('[DEBUG] Selected agencies:', selectedAgencies);
+    console.log('[DEBUG] Selected categories:', selectedCategories);
+    console.log('[DEBUG] Advanced filter criteria:', window.advFilterCriteria);
+
+    // If user unchecked ALL agency or category boxes, render empty array immediately
+    if (selectedAgencies.length === 0 || selectedCategories.length === 0) {
+        allExpensesRecords = [];
+        currentPage = 1;
+        renderPaginatedExpenses();
+        return;
+    }
+
+    let queryUrl = `/api/admin/agency-expenses?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+
+    // Append agencies parameter if user selected a SUBSET of agencies
+    if (selectedAgencies.length < allAgencyCheckboxes.length) {
+        queryUrl += `&agencies=${encodeURIComponent(selectedAgencies.join(','))}`;
+        console.log('[DEBUG] Sending agencies param:', selectedAgencies.join(','));
+    } else {
+        console.log('[DEBUG] All agencies selected, not sending agencies param');
+    }
+
+    // ONLY append specific categories parameter if user selected a SUBSET of categories
+    if (selectedCategories.length < allCategoryCheckboxes.length) {
+        queryUrl += `&categories=${encodeURIComponent(selectedCategories.join(','))}`;
+        console.log('[DEBUG] Sending categories param:', selectedCategories.join(','));
+    } else {
+        console.log('[DEBUG] All categories selected, not sending categories param');
+    }
+
+    // Append advanced filter parameters if they have values
+    if (window.advFilterCriteria.adv_agency) {
+        queryUrl += `&adv_agency=${encodeURIComponent(window.advFilterCriteria.adv_agency)}`;
+    }
+    if (window.advFilterCriteria.adv_start_date) {
+        queryUrl += `&adv_start_date=${encodeURIComponent(window.advFilterCriteria.adv_start_date)}`;
+    }
+    if (window.advFilterCriteria.adv_end_date) {
+        queryUrl += `&adv_end_date=${encodeURIComponent(window.advFilterCriteria.adv_end_date)}`;
+    }
+    if (window.advFilterCriteria.adv_category) {
+        queryUrl += `&adv_category=${encodeURIComponent(window.advFilterCriteria.adv_category)}`;
+    }
+    if (window.advFilterCriteria.adv_person) {
+        queryUrl += `&adv_person=${encodeURIComponent(window.advFilterCriteria.adv_person)}`;
+    }
+    if (window.advFilterCriteria.adv_cash_in) {
+        queryUrl += `&adv_cash_in=${encodeURIComponent(window.advFilterCriteria.adv_cash_in)}`;
+    }
+    if (window.advFilterCriteria.adv_cash_out) {
+        queryUrl += `&adv_cash_out=${encodeURIComponent(window.advFilterCriteria.adv_cash_out)}`;
+    }
+    if (window.advFilterCriteria.adv_description) {
+        queryUrl += `&adv_description=${encodeURIComponent(window.advFilterCriteria.adv_description)}`;
+    }
+    if (window.advFilterCriteria.adv_quantity) {
+        queryUrl += `&adv_quantity=${encodeURIComponent(window.advFilterCriteria.adv_quantity)}`;
+    }
+    if (window.advFilterCriteria.adv_unit_price) {
+        queryUrl += `&adv_unit_price=${encodeURIComponent(window.advFilterCriteria.adv_unit_price)}`;
+    }
+    if (window.advFilterCriteria.adv_remarks) {
+        queryUrl += `&adv_remarks=${encodeURIComponent(window.advFilterCriteria.adv_remarks)}`;
+    }
+
+    console.log('[DEBUG] Final queryUrl:', queryUrl);
+
+    fetch(queryUrl)
+        .then(res => res.json())
+        .then(data => {
+            console.log('[DEBUG] API response records count:', (data.records || []).length);
+            // Store all records for pagination
+            allExpensesRecords = data.records || [];
+            // Reset to first page when loading new data
+            currentPage = 1;
+            renderPaginatedExpenses();
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading expenses:', err);
+            document.getElementById('expenses-rows').innerHTML = `<tr><td colspan="12" style="text-align: center; color:#cf222e; padding:20px;">Error loading data: ${esc(err.message)}</td></tr>`;
+        });
+}
+
+// Load summary KPIs
+function loadSummary() {
+    const allAgencyCheckboxes = document.querySelectorAll('.agency-checkbox');
+    const selectedAgencies = getSelectedAgencies();
+    const startDate = document.getElementById('filter_start_date').value;
+    const endDate = document.getElementById('filter_end_date').value;
+    
+    let queryUrl = `/api/admin/agency-expenses-summary?start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`;
+    
+    // Append agencies parameter if user selected a SUBSET of agencies
+    if (selectedAgencies.length < allAgencyCheckboxes.length) {
+        queryUrl += `&agencies=${encodeURIComponent(selectedAgencies.join(','))}`;
+    }
+    
+    fetch(queryUrl)
+        .then(res => res.json())
+        .then(data => {
+            const rawBalance = parseFloat(data.available_balance) || 0;
+            
+            // If balance is 0 or negative (no money left), clamp cleanly to 0
+            const displayBalance = rawBalance > 0 
+                ? rawBalance.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs' 
+                : '0 Afs';
+
+            document.getElementById('kpi-total-expenses').textContent = (parseFloat(data.total_expenses) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+            document.getElementById('kpi-total-cash-out').textContent = (parseFloat(data.total_cash_out) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+            document.getElementById('kpi-available-balance').textContent = displayBalance;
+            document.getElementById('kpi-reimbursement-owed').textContent = (parseFloat(data.reimbursement_owed) || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+        })
+        .catch(err => {
+            console.error('[ERROR] Error loading summary:', err);
+        });
+}
+
+// Render expenses table
+function renderExpensesTable(records, allRecords = null) {
+    const rowsContainer = document.getElementById('expenses-rows');
+    let html = '';
+    
+    // Calculate totals from all records (not just current page)
+    const recordsForTotals = allRecords || records;
+    let totalCashIn = 0;
+    let totalCashOut = 0;
+    
+    if (recordsForTotals && recordsForTotals.length > 0) {
+        recordsForTotals.forEach(row => {
+            totalCashIn += parseFloat(row.cash_in) || 0;
+            totalCashOut += parseFloat(row.cash_out) || 0;
+        });
+    }
+    
+    if (!records || records.length === 0) {
+        html = `
+            <tr>
+                <td colspan="12" style="text-align: center; color: var(--text-muted); padding: 30px 20px; background-color: var(--bg-color);">
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;">
+                        <span style="font-size: 32px;">🔍</span>
+                        <p style="font-size: 14px; font-weight: 600; color: var(--text-main); margin: 0;">
+                            هیچ تراکنشی یافت نشد
+                        </p>
+                        <p style="font-size: 12px; color: var(--text-muted); margin: 0;">
+                            No transactions found. Adjust filters.
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        records.forEach((row, index) => {
+            const categoryBadge = getCategoryBadge(row.category);
+            
+            html += `
+                <tr style="border-bottom: 1px solid #eaeef2;">
+                    <td style="padding: 8px; text-align: center; font-weight: 600; color: var(--text-main);">${esc(index + 1)}</td>
+                    <td style="padding: 8px; text-align: center; font-weight: 600; color: #0969da;">${esc(row.agency_name || row.agency_username || '-')}</td>
+                    <td style="padding: 8px; text-align: center;">${esc(row.transaction_date || '-')}</td>
+                    <td style="padding: 8px; text-align: right;">${esc(categoryBadge)}</td>
+                    <td style="padding: 8px; text-align: right;">${esc(row.description || '-')}</td>
+                    <td style="padding: 8px; text-align: right;">${esc(row.person_involved || '-')}</td>
+                    <td style="padding: 8px; text-align: center;">${esc(row.quantity || 1)}</td>
+                    <td style="padding: 8px; text-align: center;">${esc((row.unit_price || 0).toLocaleString())}</td>
+                    <td style="padding: 8px; text-align: center; font-weight: 600;">${esc((row.total_price || 0).toLocaleString())}</td>
+                    <td style="padding: 8px; text-align: center; font-weight: 700; color: #1a7f37;">${esc((row.cash_in || 0).toLocaleString())}</td>
+                    <td style="padding: 8px; text-align: center; font-weight: 700; color: #cf222e;">${esc((row.cash_out || 0).toLocaleString())}</td>
+                    <td style="padding: 8px; text-align: right; color: #57606a;">${esc(row.remarks || '-')}</td>
+                </tr>
+            `;
+        });
+    }
+    
+    rowsContainer.innerHTML = html;
+    
+    // Update footer totals from all records
+    document.getElementById('total-cash-in-cell').textContent = totalCashIn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+    document.getElementById('total-cash-out-cell').textContent = totalCashOut.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' Afs';
+}
+
+// Get category badge styling
+function getCategoryBadge(category) {
+    return category || '-';
+}
+
+// Reset filters
+function resetFilters() {
+    // 1. Reset all agency checkboxes to checked
+    const agencyCheckboxes = document.querySelectorAll('.agency-checkbox');
+    agencyCheckboxes.forEach(cb => cb.checked = true);
+    document.getElementById('agency_btn_label').textContent = 'همه نمایندگی‌ها (All Agencies)';
+    
+    // 2. Reset all category checkboxes to checked
+    const categoryCheckboxes = document.querySelectorAll('.category-checkbox');
+    categoryCheckboxes.forEach(cb => cb.checked = true);
+    document.getElementById('category_btn_label').textContent = 'همه دسته‌بندی‌ها (All Categories)';
+    
+    // 3. Clear main datepickers
+    document.getElementById('filter_start_date').value = '';
+    document.getElementById('filter_end_date').value = '';
+    
+    // 4. Clear advanced modal inputs
+    if (document.getElementById('adv_agency')) document.getElementById('adv_agency').value = '';
+    if (document.getElementById('adv_start_date')) document.getElementById('adv_start_date').value = '';
+    if (document.getElementById('adv_end_date')) document.getElementById('adv_end_date').value = '';
+    if (document.getElementById('adv_category')) document.getElementById('adv_category').value = '';
+    if (document.getElementById('adv_person')) document.getElementById('adv_person').value = '';
+    if (document.getElementById('adv_cash_in')) document.getElementById('adv_cash_in').value = '';
+    if (document.getElementById('adv_cash_out')) document.getElementById('adv_cash_out').value = '';
+    if (document.getElementById('adv_description')) document.getElementById('adv_description').value = '';
+    if (document.getElementById('adv_quantity')) document.getElementById('adv_quantity').value = '';
+    if (document.getElementById('adv_unit_price')) document.getElementById('adv_unit_price').value = '';
+    if (document.getElementById('adv_remarks')) document.getElementById('adv_remarks').value = '';
+    
+    // 5. Wipe active advanced filter criteria object
+    window.advFilterCriteria = {};
+    
+    // 6. Reload clean data
+    loadExpenses();
+    loadSummary();
+}
+
+// Load initial data
+loadAgenciesList();
+</script>
+
+<%- include('partials/footer') %>

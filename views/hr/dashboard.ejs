@@ -1,0 +1,391 @@
+<%- include('../partials/header') %>
+
+<style>
+.hr-dash{max-width:1400px;margin:0 auto;padding:0 0 24px}
+.hr-hero{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);border-radius:14px;padding:28px 32px;margin-bottom:20px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.hr-hero-left{flex:1;min-width:0}
+.hr-hero-title{font-size:24px;font-weight:800;margin:0 0 4px}
+.hr-hero-sub{font-size:14px;opacity:.85;margin:0}
+.hr-hero-actions{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.hr-hero-actions .btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.hr-hero-actions .btn:hover{background:rgba(255,255,255,.3)}
+.hr-hero-actions .btn svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hr-period{background:var(--card-bg);border:1px solid var(--border-color);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
+.hr-period-label{font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;display:block}
+.hr-period-field{display:flex;flex-direction:column;gap:0;min-width:0}
+.hr-period-field select,.hr-period-field input{height:36px;padding:0 12px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text-main);min-width:130px;transition:border-color .15s}
+.hr-period-field select:focus,.hr-period-field input:focus{border-color:var(--accent-blue);outline:none}
+.hr-period-apply{height:36px;padding:0 18px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:var(--status-success);color:#fff;transition:opacity .15s;display:inline-flex;align-items:center;gap:6px}
+.hr-period-apply:hover{opacity:.9}
+.hr-daily{display:none}.hr-monthly{display:none}.hr-yearly{display:none}
+.hr-kpi-primary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:16px}
+.hr-kpi-secondary{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:20px}
+.hr-kpi{background:var(--card-bg);border:1px solid var(--border-color);border-radius:10px;padding:16px;position:relative;overflow:hidden;transition:transform .15s,box-shadow .15s}
+.hr-kpi:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.hr-kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.hr-kpi-blue::before{background:var(--accent-blue)}
+.hr-kpi-green::before{background:var(--status-success)}
+.hr-kpi-orange::before{background:var(--safety-orange)}
+.hr-kpi-red::before{background:var(--status-error)}
+.hr-kpi-icon{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;margin-bottom:6px}
+.hr-kpi-blue .hr-kpi-icon{color:var(--accent-blue)}
+.hr-kpi-green .hr-kpi-icon{color:var(--status-success)}
+.hr-kpi-orange .hr-kpi-icon{color:var(--safety-orange)}
+.hr-kpi-red .hr-kpi-icon{color:var(--status-error)}
+.hr-kpi-val{font-size:26px;font-weight:800;color:var(--text-main);line-height:1;margin-bottom:4px}
+.hr-kpi-primary .hr-kpi-val{font-size:30px}
+.hr-kpi-lbl{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);font-weight:600}
+.hr-kpi-sub{font-size:10px;color:var(--text-muted);margin-top:3px}
+.hr-section{background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:20px 24px;margin-bottom:20px}
+.hr-sec-head{font-size:15px;font-weight:700;color:var(--text-main);margin:0 0 16px;padding-bottom:10px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:8px}
+.hr-sec-head svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.hr-dept-bar{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-color)}
+.hr-dept-bar:last-child{border-bottom:none}
+.hr-dept-name{font-size:13px;color:var(--text-main);font-weight:500;min-width:100px;flex-shrink:0}
+.hr-dept-track{flex:1;height:8px;background:var(--bg-color);border-radius:4px;overflow:hidden}
+.hr-dept-fill{height:100%;border-radius:4px;background:var(--primary);transition:width .3s}
+.hr-dept-count{font-size:13px;font-weight:700;color:var(--text-main);min-width:30px;text-align:right}
+.hr-leave-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.hr-leave-card{background:var(--bg-color);border:1px solid var(--border-color);border-radius:10px;padding:16px;text-align:center}
+.hr-leave-val{font-size:28px;font-weight:800;line-height:1;margin-bottom:4px}
+.hr-leave-lbl{font-size:12px;color:var(--text-muted);font-weight:600}
+.hr-leave-green .hr-leave-val{color:var(--status-success)}
+.hr-leave-red .hr-leave-val{color:var(--status-error)}
+.hr-leave-orange .hr-leave-val{color:var(--safety-orange)}
+.hr-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-color)}
+.hr-row:last-child{border-bottom:none}
+.hr-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;overflow:hidden}
+.hr-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit}
+.hr-row-info{flex:1;min-width:0}
+.hr-row-name{font-size:13px;font-weight:600;color:var(--text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hr-row-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.hr-row-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.hr-badge-present{background:rgba(26,127,55,.1);color:var(--status-success)}
+.hr-badge-absent{background:rgba(207,34,46,.1);color:var(--status-error)}
+.hr-badge-late{background:rgba(230,126,34,.1);color:var(--safety-orange)}
+.hr-badge-pending{background:rgba(230,126,34,.1);color:var(--safety-orange)}
+.hr-badge-approved{background:rgba(26,127,55,.1);color:var(--status-success)}
+.hr-badge-rejected{background:rgba(207,34,46,.1);color:var(--status-error)}
+.hr-badge-default{background:var(--bg-color);color:var(--text-muted)}
+.hr-viewall{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--primary);font-weight:600;text-decoration:none;margin-top:12px}
+.hr-viewall:hover{text-decoration:underline}
+.hr-empty{font-size:13px;color:var(--text-muted);text-align:center;padding:16px 0}
+.hr-modules{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.hr-mod{background:var(--card-bg);border:1px solid var(--border-color);border-radius:10px;padding:16px;text-decoration:none;display:flex;flex-direction:column;gap:8px;transition:transform .15s,border-color .15s,box-shadow .15s}
+.hr-mod:hover{transform:translateY(-2px);border-color:var(--accent-blue);box-shadow:0 4px 12px rgba(0,0,0,.06)}
+.hr-mod-icon{width:28px;height:28px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;color:var(--text-muted)}
+.hr-mod:hover .hr-mod-icon{color:var(--accent-blue)}
+.hr-mod-title{font-size:13px;font-weight:700;color:var(--text-main)}
+.hr-mod-desc{font-size:11px;color:var(--text-muted)}
+.hr-actions{display:flex;flex-wrap:wrap;gap:10px}
+.hr-act{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;font-size:13px;font-weight:600;border-radius:8px;border:1px solid var(--border-color);background:var(--card-bg);color:var(--text-main);text-decoration:none;transition:all .15s}
+.hr-act:hover{background:var(--bg-color);border-color:var(--text-muted)}
+.hr-act svg{width:15px;height:15px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.hr-act-primary{background:var(--status-success);border-color:var(--status-success);color:#fff}
+.hr-act-primary:hover{background:#2c974b;border-color:#2c974b}
+.hr-act-important{background:var(--accent-blue);border-color:var(--accent-blue);color:#fff}
+.hr-act-important:hover{background:#0866c6;border-color:#0866c6}
+@media(max-width:1100px){.hr-kpi-secondary{grid-template-columns:repeat(3,1fr)}.hr-modules{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:768px){.hr-kpi-primary{grid-template-columns:repeat(2,1fr)}.hr-kpi-secondary{grid-template-columns:repeat(2,1fr)}.hr-leave-grid{grid-template-columns:1fr}.hr-hero{flex-direction:column;align-items:flex-start}.hr-hero-actions{width:100%}.hr-hero-actions .btn{flex:1;justify-content:center}.hr-modules{grid-template-columns:repeat(2,1fr)}.hr-period{flex-direction:column;align-items:stretch}.hr-period-field select,.hr-period-field input{min-width:0;width:100%}}
+@media(max-width:480px){.hr-kpi-primary,.hr-kpi-secondary{grid-template-columns:repeat(2,1fr)}.hr-modules{grid-template-columns:1fr}.hr-actions{flex-direction:column}.hr-act{justify-content:center}}
+</style>
+
+<div class="hr-dash">
+  <div class="hr-hero">
+    <div class="hr-hero-left">
+      <h1 class="hr-hero-title"><%= t('hr.dashboard.title') %></h1>
+      <p class="hr-hero-sub"><%= t('hr.dashboard.description') %></p>
+    </div>
+    <div class="hr-hero-actions">
+      <a href="/admin/hr/employees/add" class="btn"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><%= t('hr.dashboard.add_employee_action') %></a>
+    </div>
+  </div>
+
+  <div class="hr-period">
+    <form method="GET" action="/admin/hr" id="hr-period-form" style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap;width:100%">
+      <div class="hr-period-field">
+        <span class="hr-period-label"><%= t('hr.dashboard.period_label') %></span>
+        <select name="periodType" id="hr-pt" onchange="hrPTChange()">
+          <option value="daily" <%= periodType==='daily'?'selected':'' %>><%= t('admin.period_daily') %></option>
+          <option value="monthly" <%= periodType==='monthly'?'selected':'' %>><%= t('admin.period_monthly') %></option>
+          <option value="yearly" <%= periodType==='yearly'?'selected':'' %>><%= t('admin.period_yearly') %></option>
+        </select>
+      </div>
+      <div class="hr-period-field hr-daily" id="hr-d1" style="display:<%= periodType==='daily'?'flex':'none' %>">
+        <span class="hr-period-label">From</span>
+        <input type="text" name="startDate" value="<%= selectedStartDate %>" placeholder="1405/01/01">
+      </div>
+      <div class="hr-period-field hr-daily" id="hr-d2" style="display:<%= periodType==='daily'?'flex':'none' %>">
+        <span class="hr-period-label">To</span>
+        <input type="text" name="endDate" value="<%= selectedEndDate %>" placeholder="1405/12/30">
+      </div>
+      <div class="hr-period-field hr-monthly" id="hr-m1" style="display:<%= periodType==='monthly'?'flex':'none' %>">
+        <span class="hr-period-label"><%= t('admin.month') %></span>
+        <select name="month">
+          <option value="1" <%= selectedMonth===1?'selected':'' %>>01 - Hamal</option>
+          <option value="2" <%= selectedMonth===2?'selected':'' %>>02 - Sawr</option>
+          <option value="3" <%= selectedMonth===3?'selected':'' %>>03 - Jawza</option>
+          <option value="4" <%= selectedMonth===4?'selected':'' %>>04 - Saratan</option>
+          <option value="5" <%= selectedMonth===5?'selected':'' %>>05 - Asad</option>
+          <option value="6" <%= selectedMonth===6?'selected':'' %>>06 - Sonbola</option>
+          <option value="7" <%= selectedMonth===7?'selected':'' %>>07 - Mizan</option>
+          <option value="8" <%= selectedMonth===8?'selected':'' %>>08 - Aqrab</option>
+          <option value="9" <%= selectedMonth===9?'selected':'' %>>09 - Qaws</option>
+          <option value="10" <%= selectedMonth===10?'selected':'' %>>10 - Jadi</option>
+          <option value="11" <%= selectedMonth===11?'selected':'' %>>11 - Dalw</option>
+          <option value="12" <%= selectedMonth===12?'selected':'' %>>12 - Hoot</option>
+        </select>
+      </div>
+      <div class="hr-period-field hr-monthly" id="hr-m2" style="display:<%= periodType==='monthly'?'flex':'none' %>">
+        <span class="hr-period-label"><%= t('admin.year') %></span>
+        <select name="year"><% availableYears.forEach(function(y){ %><option value="<%= y %>" <%= y===selectedYear?'selected':'' %>><%= y %></option><% }); %></select>
+      </div>
+      <div class="hr-period-field hr-yearly" id="hr-y1" style="display:<%= periodType==='yearly'?'flex':'none' %>">
+        <span class="hr-period-label"><%= t('admin.year') %></span>
+        <select name="year"><% availableYears.forEach(function(y){ %><option value="<%= y %>" <%= y===selectedYear?'selected':'' %>><%= y %></option><% }); %></select>
+      </div>
+      <div class="hr-period-field"><span class="hr-period-label">&nbsp;</span><button type="submit" class="hr-period-apply">Apply</button></div>
+    </form>
+  </div>
+  <script>
+  function hrPTChange(){var v=document.getElementById('hr-pt').value;document.getElementById('hr-d1').style.display=v==='daily'?'flex':'none';document.getElementById('hr-d2').style.display=v==='daily'?'flex':'none';document.getElementById('hr-m1').style.display=v==='monthly'?'flex':'none';document.getElementById('hr-m2').style.display=v==='monthly'?'flex':'none';document.getElementById('hr-y1').style.display=v==='yearly'?'flex':'none'}
+  </script>
+
+  <div class="hr-kpi-primary">
+    <div class="hr-kpi hr-kpi-blue">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <div class="hr-kpi-val"><%= total_employees %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.total_employees') %></div>
+    </div>
+    <div class="hr-kpi hr-kpi-green">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+      <div class="hr-kpi-val"><%= active_employees %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.active_employees') %></div>
+    </div>
+    <div class="hr-kpi hr-kpi-orange">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <div class="hr-kpi-val"><%= pending_leave %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.pending_leave') %></div>
+      <% if (pending_leave > 0) { %><div class="hr-kpi-sub">Needs attention</div><% } %>
+    </div>
+    <div class="hr-kpi hr-kpi-red">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>
+      <div class="hr-kpi-val"><%= total_employees - active_employees %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.employees.former') %></div>
+    </div>
+  </div>
+
+  <div class="hr-kpi-secondary">
+    <div class="hr-kpi hr-kpi-green">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      <div class="hr-kpi-val"><%= present_in_period %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.present_in_period') %></div>
+    </div>
+    <div class="hr-kpi hr-kpi-red">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+      <div class="hr-kpi-val"><%= absent_in_period %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.absent_in_period') %></div>
+    </div>
+    <div class="hr-kpi hr-kpi-red">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <div class="hr-kpi-val"><%= unpaid_payroll %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.unpaid_payroll') %></div>
+    </div>
+    <div class="hr-kpi hr-kpi-orange">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <div class="hr-kpi-val"><%= active_advances %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.active_advances') %></div>
+    </div>
+    <div class="hr-kpi hr-kpi-blue">
+      <svg class="hr-kpi-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <div class="hr-kpi-val"><%= pending_overtime %></div>
+      <div class="hr-kpi-lbl"><%= t('hr.dashboard.pending_overtime') %></div>
+      <% if (pending_overtime > 0) { %><div class="hr-kpi-sub">Pending review</div><% } %>
+    </div>
+  </div>
+
+  <div class="hr-section">
+    <h2 class="hr-sec-head">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <%= t('hr.dashboard.department_distribution') %>
+    </h2>
+    <% if (departmentDistribution && departmentDistribution.length > 0) { %>
+      <% var maxDept = Math.max.apply(null, departmentDistribution.map(function(d){ return d.employee_count || 0; })); %>
+      <% departmentDistribution.forEach(function(dept) { %>
+        <% var pct = maxDept > 0 ? Math.round(((dept.employee_count || 0) / maxDept) * 100) : 0; %>
+        <div class="hr-dept-bar">
+          <span class="hr-dept-name"><%= dept.department_name || '-' %></span>
+          <div class="hr-dept-track"><div class="hr-dept-fill" style="width:<%= pct %>%"></div></div>
+          <span class="hr-dept-count"><%= dept.employee_count || 0 %></span>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="hr-empty"><%= t('hr.dashboard.no_department_data') %></div>
+    <% } %>
+  </div>
+
+  <div class="hr-section">
+    <h2 class="hr-sec-head">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <%= t('hr.dashboard.leave_overview') %>
+    </h2>
+    <div class="hr-leave-grid">
+      <div class="hr-leave-card hr-leave-green">
+        <div class="hr-leave-val"><%= approved_leave %></div>
+        <div class="hr-leave-lbl"><%= t('hr.dashboard.approved_leave') %></div>
+      </div>
+      <div class="hr-leave-card hr-leave-red">
+        <div class="hr-leave-val"><%= rejected_leave %></div>
+        <div class="hr-leave-lbl"><%= t('hr.dashboard.rejected_leave') %></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hr-section">
+    <h2 class="hr-sec-head">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <%= t('hr.dashboard.recent_attendance') %>
+    </h2>
+    <% if (recentAttendance && recentAttendance.length > 0) { %>
+      <% recentAttendance.forEach(function(att) { %>
+        <div class="hr-row">
+          <div class="hr-avatar"><% if (att.photo_path) { %><img src="/<%= att.photo_path %>" alt="<%= att.full_name %>"><% } else { %><%= att.full_name ? att.full_name.charAt(0).toUpperCase() : '?' %><% } %></div>
+          <div class="hr-row-info">
+            <div class="hr-row-name"><%= att.full_name || '-' %></div>
+            <div class="hr-row-meta"><%= att.attendance_date || '-' %></div>
+          </div>
+          <span class="hr-row-badge <%= att.status === 'Present' ? 'hr-badge-present' : att.status === 'Absent' ? 'hr-badge-absent' : att.status === 'Late' ? 'hr-badge-late' : 'hr-badge-default' %>"><%= att.status || '-' %></span>
+        </div>
+      <% }); %>
+      <a href="/admin/hr/attendance" class="hr-viewall"><%= t('hr.employees.view_all') %> &rarr;</a>
+    <% } else { %>
+      <div class="hr-empty"><%= t('hr.dashboard.no_attendance_data') %></div>
+    <% } %>
+  </div>
+
+  <div class="hr-section">
+    <h2 class="hr-sec-head">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <%= t('hr.dashboard.recent_leave_requests') %>
+    </h2>
+    <% if (recentLeave && recentLeave.length > 0) { %>
+      <% recentLeave.forEach(function(leave) { %>
+        <div class="hr-row">
+          <div class="hr-avatar"><% if (leave.photo_path) { %><img src="/<%= leave.photo_path %>" alt="<%= leave.full_name %>"><% } else { %><%= leave.full_name ? leave.full_name.charAt(0).toUpperCase() : '?' %><% } %></div>
+          <div class="hr-row-info">
+            <div class="hr-row-name"><%= leave.full_name || '-' %></div>
+            <div class="hr-row-meta"><%= leave.leave_type || '-' %> &middot; <%= leave.start_date || '-' %> - <%= leave.end_date || '-' %></div>
+          </div>
+          <span class="hr-row-badge <%= leave.status === 'Approved' ? 'hr-badge-approved' : leave.status === 'Rejected' ? 'hr-badge-rejected' : 'hr-badge-pending' %>"><%= leave.status || '-' %></span>
+        </div>
+      <% }); %>
+      <a href="/admin/hr/leave" class="hr-viewall"><%= t('hr.employees.view_all') %> &rarr;</a>
+    <% } else { %>
+      <div class="hr-empty"><%= t('hr.dashboard.no_leave_data') %></div>
+    <% } %>
+  </div>
+
+  <div class="hr-section">
+    <h2 class="hr-sec-head">
+      <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      <%= t('hr.dashboard.recent_activity') %>
+    </h2>
+    <% if (recentActivity && recentActivity.length > 0) { %>
+      <% recentActivity.forEach(function(act) { %>
+        <div class="hr-row">
+          <div class="hr-avatar"><% if (act.photo_path) { %><img src="/<%= act.photo_path %>" alt="<%= act.full_name %>"><% } else { %><%= act.full_name ? act.full_name.charAt(0).toUpperCase() : '?' %><% } %></div>
+          <div class="hr-row-info">
+            <div class="hr-row-name"><%= act.full_name || '-' %></div>
+            <div class="hr-row-meta"><%= t('hr.dashboard.activity_' + act.activity_type) || act.activity_type %> &middot; <%= act.timestamp || '-' %></div>
+          </div>
+        </div>
+      <% }); %>
+    <% } else { %>
+      <div class="hr-empty"><%= t('hr.dashboard.no_activity_data') %></div>
+    <% } %>
+  </div>
+
+  <h2 class="hr-sec-head" style="background:transparent;border:none;padding:0;margin-bottom:12px">
+    <svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+    <%= t('hr.dashboard.modules') %>
+  </h2>
+  <div class="hr-modules">
+    <a href="/admin/hr/employees" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.employees.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.employees.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/departments" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.departments.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.departments.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/payroll" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.payroll.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.payroll.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/attendance" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.attendance.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.attendance.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/leave" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.leave.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.leave.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/overtime" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/><path d="M12 2v4"/><path d="M12 18v4"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.overtime.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.overtime.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/advances" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.advances.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.advances.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/documents" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.documents.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.documents.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/disciplinary" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.disciplinary.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.disciplinary.title_desc') %></p>
+    </a>
+    <a href="/admin/hr/performance" class="hr-mod">
+      <svg class="hr-mod-icon" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <h3 class="hr-mod-title"><%= t('hr.performance.title') %></h3>
+      <p class="hr-mod-desc"><%= t('hr.performance.title_desc') %></p>
+    </a>
+  </div>
+
+  <h2 class="hr-sec-head" style="background:transparent;border:none;padding:0;margin-bottom:12px">
+    <svg viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+    <%= t('hr.dashboard.quick_actions') %>
+  </h2>
+  <div class="hr-actions">
+    <a href="/admin/hr/employees/add" class="hr-act hr-act-primary">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <%= t('hr.dashboard.add_employee_action') %>
+    </a>
+    <a href="/admin/hr/payroll" class="hr-act hr-act-important">
+      <svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      <%= t('hr.payroll.title') %>
+    </a>
+    <a href="/admin/hr/attendance" class="hr-act">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <%= t('hr.dashboard.attendance_action') %>
+    </a>
+    <a href="/admin/hr/overtime" class="hr-act">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <%= t('hr.dashboard.overtime_action') %>
+    </a>
+    <a href="/admin/hr/leave" class="hr-act">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <%= t('hr.dashboard.manage_leave_action') %>
+    </a>
+  </div>
+</div>

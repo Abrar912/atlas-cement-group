@@ -1,0 +1,586 @@
+<%- include('../partials/header') %>
+
+<style>
+.prof-hero{background:linear-gradient(135deg,var(--primary) 0%,var(--primary-dark) 100%);padding:32px;border-radius:14px;margin-bottom:24px;color:#fff}
+.prof-hero-inner{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.prof-avatar{width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.15);border:3px solid rgba(255,255,255,.3);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:800;color:#fff;flex-shrink:0;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.prof-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.prof-avatar-initials{width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.prof-hero-info{flex:1;min-width:0}
+.prof-hero-name{font-size:24px;font-weight:800;margin-bottom:4px}
+.prof-hero-meta{font-size:14px;opacity:.9;margin-bottom:10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.prof-hero-meta-sep{opacity:.5}
+.prof-hero-meta-id{font-family:monospace}
+.prof-hero-badges{display:flex;gap:8px;flex-wrap:wrap}
+.prof-hero-badge{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(255,255,255,.18)}
+.prof-hero-badge-active{background:rgba(34,197,94,.3)}
+.prof-hero-badge-former{background:rgba(107,114,128,.3)}
+.prof-hero-badge-leave{background:rgba(249,115,22,.3)}
+.prof-hero-actions{display:flex;gap:10px;flex-shrink:0}
+.prof-hero-actions .btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;text-decoration:none;transition:all .15s}
+.prof-hero-actions .btn:hover{background:rgba(255,255,255,.3)}
+.prof-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.prof-stat{background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:18px 14px;text-align:center;transition:transform .15s,box-shadow .15s;position:relative;overflow:hidden}
+.prof-stat:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.prof-stat::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.prof-stat-salary::before{background:var(--primary)}
+.prof-stat-hire::before{background:var(--accent-blue)}
+.prof-stat-att::before{background:var(--status-success)}
+.prof-stat-leave::before{background:var(--status-warning)}
+.prof-stat-icon{width:20px;height:20px;margin:0 auto 4px;display:block;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;opacity:.8}
+.prof-stat-value{font-size:24px;font-weight:800;line-height:1.1;color:var(--text-main)}
+.prof-stat-value-sm{font-size:18px}
+.prof-stat-label{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-top:4px;font-weight:600}
+.prof-stat-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.prof-stat-salary .prof-stat-value{color:var(--primary)}
+.prof-stat-hire .prof-stat-value{color:var(--accent-blue)}
+.prof-stat-att .prof-stat-value{color:var(--status-success)}
+.prof-stat-leave .prof-stat-value{color:var(--status-warning)}
+[data-theme="dark"] .prof-stat-salary .prof-stat-value{color:var(--primary)}
+[data-theme="dark"] .prof-stat-hire .prof-stat-value{color:var(--accent-blue)}
+[data-theme="dark"] .prof-stat-att .prof-stat-value{color:#3fb950}
+[data-theme="dark"] .prof-stat-leave .prof-stat-value{color:#fb923c}
+.prof-nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:24px}
+.prof-nav-link{padding:10px 12px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px;text-align:center;font-size:12px;font-weight:600;color:var(--text-main);text-decoration:none;transition:all .15s}
+.prof-nav-link:hover{border-color:var(--primary);color:var(--primary)}
+.prof-nav-link.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.prof-section{background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:24px;margin-bottom:20px}
+.prof-section-title{font-size:16px;font-weight:700;color:var(--text-main);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:8px}
+.prof-section-title svg{width:18px;height:18px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.prof-overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.prof-overview-card{background:var(--card-bg);border:1px solid var(--border-color);border-radius:12px;padding:20px;margin-bottom:0}
+.prof-overview-card-title{font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:14px;display:flex;align-items:center;gap:6px;padding-bottom:8px;border-bottom:1px solid var(--border-color)}
+.prof-overview-card-title::before{content:'';width:3px;height:14px;border-radius:2px;background:var(--primary);flex-shrink:0}
+.prof-info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.prof-info-item{display:flex;flex-direction:column}
+.prof-info-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;margin-bottom:2px}
+.prof-info-value{font-size:13px;color:var(--text-main);font-weight:500}
+.prof-info-value-mono{font-family:monospace}
+.prof-salary-hero{display:flex;align-items:center;gap:24px;padding:24px;background:var(--bg-color);border:1px solid var(--border-color);border-radius:12px;margin-bottom:16px;flex-wrap:wrap}
+.prof-salary-amount{font-size:36px;font-weight:800;color:var(--primary);line-height:1}
+.prof-salary-currency{font-size:14px;font-weight:600;color:var(--text-muted);margin-top:4px}
+.prof-salary-details{flex:1;min-width:200px}
+.prof-salary-detail-row{display:flex;justify-content:space-between;padding:6px 0;font-size:13px;border-bottom:1px solid var(--border-color)}
+.prof-salary-detail-row:last-child{border-bottom:none}
+.prof-salary-detail-label{color:var(--text-muted)}
+.prof-salary-detail-value{color:var(--text-main);font-weight:600}
+.prof-salary-detail-value-total{font-size:15px}
+.prof-salary-empty{text-align:center;padding:32px;color:var(--text-muted);font-size:14px}
+.prof-salary-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}
+.prof-salary-table th{text-align:left;padding:10px 12px;background:var(--bg-color);color:var(--text-main);font-weight:600;border-bottom:2px solid var(--border-color);font-size:12px;text-transform:uppercase;letter-spacing:.3px}
+.prof-salary-table td{padding:10px 12px;border-bottom:1px solid var(--border-color);color:var(--text-main)}
+.prof-salary-table tr:hover td{background:var(--table-row-hover)}
+.prof-salary-table .salary-active{color:var(--status-success);font-weight:700}
+.prof-salary-table .salary-past{color:var(--text-muted)}
+.prof-salary-history-heading{font-size:14px;font-weight:700;color:var(--text-main);margin-top:8px;margin-bottom:10px}
+.prof-module-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.prof-module-card{background:var(--bg-color);border:1px solid var(--border-color);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px;transition:transform .15s,border-color .15s;text-decoration:none;color:var(--text-main)}
+.prof-module-card:hover{transform:translateY(-2px);border-color:var(--primary)}
+.prof-module-name{font-size:13px;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:6px}
+.prof-module-name svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.prof-module-count{font-size:22px;font-weight:800;color:var(--primary)}
+.prof-module-link{font-size:11px;color:var(--primary);font-weight:600;margin-top:auto}
+.prof-leave-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.prof-leave-card{background:var(--bg-color);border:1px solid var(--border-color);border-radius:8px;padding:12px}
+.prof-leave-type{font-size:13px;font-weight:700;color:var(--text-main);margin-bottom:6px}
+.prof-leave-bar{height:6px;border-radius:3px;background:var(--border-color);margin-bottom:6px;overflow:hidden}
+.prof-leave-bar-fill{height:100%;border-radius:3px;background:var(--status-success)}
+.prof-leave-detail{font-size:11px;color:var(--text-muted);display:flex;justify-content:space-between}
+.prof-leave-detail-mt{margin-top:2px}
+.prof-recent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.prof-recent-card{background:var(--bg-color);border:1px solid var(--border-color);border-radius:10px;padding:14px;display:flex;flex-direction:column}
+.prof-recent-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.prof-recent-card-title{font-size:12px;font-weight:700;color:var(--text-main);display:flex;align-items:center;gap:5px}
+.prof-recent-card-title svg{width:14px;height:14px;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;fill:none;flex-shrink:0}
+.prof-recent-card-link{font-size:11px;color:var(--primary);font-weight:600;text-decoration:none;white-space:nowrap}
+.prof-recent-card-link:hover{text-decoration:underline}
+.prof-record-item{padding:7px 10px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;margin-bottom:4px;font-size:12px;display:flex;justify-content:space-between;align-items:center;gap:6px}
+.prof-record-item:last-child{margin-bottom:0}
+.prof-record-main{flex:1;min-width:0}
+.prof-record-title{color:var(--text-main);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prof-record-title-ltr{direction:ltr}
+.prof-record-meta{color:var(--text-muted);font-size:11px;margin-top:1px}
+.prof-record-empty{font-size:12px;color:var(--text-muted);padding:10px 0;text-align:center}
+.prof-view-all{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--primary);font-weight:600;text-decoration:none;margin-top:10px}
+.prof-view-all:hover{text-decoration:underline}
+[dir="rtl"] .prof-overview-card-title::before{margin-left:0;margin-right:0}
+[dir="rtl"] .prof-hero-actions{flex-direction:row}
+@media(max-width:1100px){.prof-overview-grid{grid-template-columns:repeat(2,1fr)}.prof-recent-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:900px){.prof-stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){.prof-hero-inner{flex-direction:column;align-items:flex-start}.prof-stats{grid-template-columns:repeat(2,1fr);gap:10px}.prof-stat{padding:14px 10px}.prof-stat-value{font-size:20px}.prof-nav{grid-template-columns:repeat(3,1fr);gap:8px}.prof-nav-link{padding:8px 6px;font-size:11px}.prof-salary-hero{flex-direction:column;align-items:flex-start}.prof-salary-amount{font-size:28px}.prof-overview-grid{grid-template-columns:1fr}.prof-recent-grid{grid-template-columns:1fr}.prof-module-grid{grid-template-columns:1fr}.prof-leave-grid{grid-template-columns:1fr}.prof-info-grid{grid-template-columns:1fr}}
+</style>
+
+<%
+var currentSalary = null;
+if (salaryHistory && salaryHistory.length > 0) {
+    currentSalary = salaryHistory.find(function(s) { return !s.effective_to; }) || salaryHistory[0];
+}
+var totalSalary = currentSalary ? (currentSalary.basic_salary || 0) + (currentSalary.allowances || 0) : 0;
+var attCount = attendanceRecords ? attendanceRecords.length : 0;
+var leaveReqCount = leaveRequests ? leaveRequests.length : 0;
+var payCount = payrollRecords ? payrollRecords.length : 0;
+var otCount = overtimeRecords ? overtimeRecords.length : 0;
+var advCount = advances ? advances.length : 0;
+var dedCount = deductions ? deductions.length : 0;
+var docCount = documents ? documents.length : 0;
+var perfCount = performanceReviews ? performanceReviews.length : 0;
+var discCount = disciplinaryRecords ? disciplinaryRecords.length : 0;
+var avatarColors = ['#3b82f6','#8b5cf6','#ec4899','#f97316','#10b981','#06b6d4','#f59e0b','#ef4444'];
+var hash = 0;
+var empName = employee.full_name || '';
+for (var i = 0; i < empName.length; i++) { hash = empName.charCodeAt(i) + ((hash << 5) - hash); }
+var avatarBg = avatarColors[Math.abs(hash) % avatarColors.length];
+%>
+
+<div class="prof-hero">
+  <div class="prof-hero-inner">
+    <div class="prof-avatar">
+      <% if (employee.photo_path) { %>
+        <img src="/<%= employee.photo_path %>" alt="<%= employee.full_name %>">
+      <% } else { %>
+        <div class="prof-avatar-initials" style="background:<%= avatarBg %>"><%= empName.charAt(0).toUpperCase() %></div>
+      <% } %>
+    </div>
+    <div class="prof-hero-info">
+      <div class="prof-hero-name"><%= employee.full_name %></div>
+      <div class="prof-hero-meta">
+        <span><%= employee.position %></span>
+        <span class="prof-hero-meta-sep">&bull;</span>
+        <span><%= employee.department_name || '-' %></span>
+        <span class="prof-hero-meta-sep">&bull;</span>
+        <span class="prof-hero-meta-id"><%= employee.employee_id || 'N/A' %></span>
+        <% if (employee.work_location) { %>
+          <span class="prof-hero-meta-sep">&bull;</span>
+          <span><%= employee.work_location %></span>
+        <% } %>
+      </div>
+      <div class="prof-hero-badges">
+        <span class="prof-hero-badge <%= employee.employment_status === 'Active' ? 'prof-hero-badge-active' : employee.employment_status === 'Former' ? 'prof-hero-badge-former' : 'prof-hero-badge-leave' %>">
+          <%= employee.employment_status === 'Active' ? t('hr.employees.active') : employee.employment_status === 'Former' ? t('hr.employees.former') : employee.employment_status === 'On Leave' ? t('hr.employees.on_leave') : employee.employment_status %>
+        </span>
+        <% if (employee.contract_type) { %>
+          <span class="prof-hero-badge"><%= employee.contract_type %></span>
+        <% } %>
+      </div>
+    </div>
+    <div class="prof-hero-actions">
+      <a href="/admin/hr/employees/<%= employee.id %>/edit" class="btn"><%= t('hr.employees.edit') %></a>
+      <a href="/admin/hr/employees" class="btn"><%= t('hr.employees.back_to_list') %></a>
+    </div>
+  </div>
+</div>
+
+<div class="prof-stats">
+  <div class="prof-stat prof-stat-salary">
+    <svg class="prof-stat-icon" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    <div class="prof-stat-value"><%= currentSalary ? totalSalary.toLocaleString() : '-' %></div>
+    <div class="prof-stat-label"><%= t('hr.employees.salary') %> (<%= t('hr.employees.afn_currency') %>)</div>
+    <% if (currentSalary && currentSalary.effective_from) { %>
+      <div class="prof-stat-sub"><%= t('hr.employees.effective_from') %>: <%= currentSalary.effective_from %></div>
+    <% } %>
+  </div>
+  <div class="prof-stat prof-stat-hire">
+    <svg class="prof-stat-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <div class="prof-stat-value prof-stat-value-sm"><%= employee.hire_date || '-' %></div>
+    <div class="prof-stat-label"><%= t('hr.employees.hire_date') %></div>
+  </div>
+  <div class="prof-stat prof-stat-att">
+    <svg class="prof-stat-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    <div class="prof-stat-value"><%= attCount %></div>
+    <div class="prof-stat-label"><%= t('hr.attendance.title') %></div>
+    <div class="prof-stat-sub"><%= t('hr.employees.records') %></div>
+  </div>
+  <div class="prof-stat prof-stat-leave">
+    <svg class="prof-stat-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <div class="prof-stat-value"><%= leaveReqCount %></div>
+    <div class="prof-stat-label"><%= t('hr.leave.title') %></div>
+    <div class="prof-stat-sub"><%= t('hr.employees.requests') %></div>
+  </div>
+</div>
+
+<div class="prof-nav">
+  <a href="#" class="prof-nav-link active"><%= t('hr.employees.overview') %></a>
+  <a href="/admin/hr/attendance?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.attendance') %></a>
+  <a href="/admin/hr/leave?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.leave') %></a>
+  <a href="/admin/hr/leave-balances?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('hr.employees.leave_balances') %></a>
+  <a href="/admin/hr/payroll?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.payroll') %></a>
+  <a href="/admin/hr/employees/<%= employee.id %>/salary-history" class="prof-nav-link"><%= t('hr.employees.salary_history') %></a>
+  <a href="/admin/hr/overtime?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.overtime') %></a>
+  <a href="/admin/hr/advances?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.advances') %></a>
+  <a href="/admin/hr/payroll?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('hr.correction.payments_link') %></a>
+  <a href="/admin/hr/deductions?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.deductions') %></a>
+  <a href="/admin/hr/documents?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.documents') %></a>
+  <a href="/admin/hr/performance?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.performance') %></a>
+  <a href="/admin/hr/disciplinary?employee_id=<%= employee.id %>" class="prof-nav-link"><%= t('layout.disciplinary') %></a>
+</div>
+
+<div class="prof-overview-grid">
+  <div class="prof-overview-card">
+    <div class="prof-overview-card-title"><%= t('hr.employees.personal_info') %></div>
+    <div class="prof-info-grid">
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.full_name') %></div><div class="prof-info-value"><%= employee.full_name %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.father_name') %></div><div class="prof-info-value"><%= employee.father_name || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.date_of_birth') %></div><div class="prof-info-value"><%= employee.date_of_birth || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.gender') %></div><div class="prof-info-value"><%= employee.gender || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.phone') %></div><div class="prof-info-value"><%= employee.phone || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.address') %></div><div class="prof-info-value"><%= employee.address || '-' %></div></div>
+    </div>
+  </div>
+  <div class="prof-overview-card">
+    <div class="prof-overview-card-title"><%= t('hr.employees.employment_info') %></div>
+    <div class="prof-info-grid">
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.employee_id') %></div><div class="prof-info-value prof-info-value-mono"><%= employee.employee_id || 'N/A' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.position') %></div><div class="prof-info-value"><%= employee.position %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.department') %></div><div class="prof-info-value"><%= employee.department_name || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.hire_date') %></div><div class="prof-info-value"><%= employee.hire_date || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.employment_status') %></div><div class="prof-info-value"><%= employee.employment_status || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.supervisor') %></div><div class="prof-info-value"><%= employee.supervisor_name || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.work_location') %></div><div class="prof-info-value"><%= employee.work_location || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.contract_type') %></div><div class="prof-info-value"><%= employee.contract_type || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.payment_method') %></div><div class="prof-info-value"><%= employee.payment_method || '-' %></div></div>
+    </div>
+  </div>
+  <div class="prof-overview-card">
+    <div class="prof-overview-card-title"><%= t('hr.employees.emergency_contact') %></div>
+    <div class="prof-info-grid">
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.emergency_contact_name') %></div><div class="prof-info-value"><%= employee.emergency_contact_name || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.emergency_contact_phone') %></div><div class="prof-info-value"><%= employee.emergency_contact_phone || '-' %></div></div>
+      <div class="prof-info-item"><div class="prof-info-label"><%= t('hr.employees.emergency_contact_relationship') %></div><div class="prof-info-value"><%= employee.emergency_contact_relationship || '-' %></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="prof-section">
+  <div class="prof-section-title">
+    <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+    <%= t('hr.employees.salary') %>
+  </div>
+  <% if (currentSalary) { %>
+    <div class="prof-salary-hero">
+      <div>
+        <div class="prof-salary-amount"><%= totalSalary.toLocaleString() %></div>
+        <div class="prof-salary-currency"><%= t('hr.employees.afn_currency') %></div>
+      </div>
+      <div class="prof-salary-details">
+        <div class="prof-salary-detail-row">
+          <span class="prof-salary-detail-label"><%= t('hr.employees.basic_salary_label') %></span>
+          <span class="prof-salary-detail-value"><%= (currentSalary.basic_salary || 0).toLocaleString() %> <%= t('hr.employees.afn_currency') %></span>
+        </div>
+        <div class="prof-salary-detail-row">
+          <span class="prof-salary-detail-label"><%= t('hr.employees.allowances_label') %></span>
+          <span class="prof-salary-detail-value"><%= (currentSalary.allowances || 0).toLocaleString() %> <%= t('hr.employees.afn_currency') %></span>
+        </div>
+        <div class="prof-salary-detail-row">
+          <span class="prof-salary-detail-label"><%= t('hr.employees.total_amount') %></span>
+          <span class="prof-salary-detail-value prof-salary-detail-value-total"><%= totalSalary.toLocaleString() %> <%= t('hr.employees.afn_currency') %></span>
+        </div>
+        <div class="prof-salary-detail-row">
+          <span class="prof-salary-detail-label"><%= t('hr.employees.effective_from') %></span>
+          <span class="prof-salary-detail-value"><%= currentSalary.effective_from %></span>
+        </div>
+      </div>
+    </div>
+  <% } else { %>
+    <div class="prof-salary-empty"><%= t('hr.employees.no_salary_history_found') %></div>
+  <% } %>
+  <% if (salaryHistory && salaryHistory.length > 1) { %>
+    <div class="prof-salary-history-heading"><%= t('hr.employees.salary_history') %></div>
+    <div class="table-responsive">
+      <table class="prof-salary-table">
+        <thead>
+          <tr>
+            <th><%= t('hr.employees.effective_from') %></th>
+            <th><%= t('hr.employees.effective_to') %></th>
+            <th><%= t('hr.employees.basic_salary_label') %></th>
+            <th><%= t('hr.employees.allowances_label') %></th>
+            <th><%= t('hr.employees.total_amount') %></th>
+            <% if (salaryHistory.some(function(s){ return s.notes; })) { %>
+              <th><%= t('hr.employees.salary_history_notes') %></th>
+            <% } %>
+          </tr>
+        </thead>
+        <tbody>
+          <% salaryHistory.forEach(function(s) { %>
+            <tr>
+              <td><%= s.effective_from %></td>
+              <td class="<%= !s.effective_to ? 'salary-active' : 'salary-past' %>"><%= s.effective_to || t('hr.employees.present') %></td>
+              <td><%= (s.basic_salary || 0).toLocaleString() %> <%= t('hr.employees.afn_currency') %></td>
+              <td><%= (s.allowances || 0).toLocaleString() %> <%= t('hr.employees.afn_currency') %></td>
+              <td><strong><%= ((s.basic_salary || 0) + (s.allowances || 0)).toLocaleString() %> <%= t('hr.employees.afn_currency') %></strong></td>
+              <% if (salaryHistory.some(function(sa){ return sa.notes; })) { %>
+                <td><%= s.notes || '-' %></td>
+              <% } %>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+  <a href="/admin/hr/employees/<%= employee.id %>/salary-history" class="prof-view-all"><%= t('hr.employees.view_all') %> &rarr;</a>
+</div>
+
+<div class="prof-section">
+  <div class="prof-section-title">
+    <svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    <%= t('hr.employees.hr_modules') %>
+  </div>
+  <div class="prof-module-grid">
+    <a href="/admin/hr/attendance?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><%= t('layout.attendance') %></div>
+      <div class="prof-module-count"><%= attCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/leave?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><%= t('layout.leave') %></div>
+      <div class="prof-module-count"><%= leaveReqCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.requests') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/payroll?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><%= t('layout.payroll') %></div>
+      <div class="prof-module-count"><%= payCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/overtime?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><%= t('layout.overtime') %></div>
+      <div class="prof-module-count"><%= otCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/advances?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><%= t('layout.advances') %></div>
+      <div class="prof-module-count"><%= advCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/deductions?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg><%= t('layout.deductions') %></div>
+      <div class="prof-module-count"><%= dedCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/documents?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><%= t('layout.documents') %></div>
+      <div class="prof-module-count"><%= docCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/performance?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><%= t('layout.performance') %></div>
+      <div class="prof-module-count"><%= perfCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+    <a href="/admin/hr/disciplinary?employee_id=<%= employee.id %>" class="prof-module-card">
+      <div class="prof-module-name"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><%= t('layout.disciplinary') %></div>
+      <div class="prof-module-count"><%= discCount %></div>
+      <div class="prof-module-link"><%= t('hr.employees.records') %> &rarr;</div>
+    </a>
+  </div>
+</div>
+
+<% if (leaveBalances && leaveBalances.length > 0) { %>
+<div class="prof-section">
+  <div class="prof-section-title">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <%= t('hr.employees.leave_balances') %>
+  </div>
+  <div class="prof-leave-grid">
+    <% leaveBalances.forEach(function(balance) { %>
+      <% var allocated = balance.allocated_days || 0; var used = balance.used_days || 0; var remain = allocated - used; var pct = allocated > 0 ? Math.round((used / allocated) * 100) : 0; %>
+      <div class="prof-leave-card">
+        <div class="prof-leave-type"><%= balance.leave_type || '-' %></div>
+        <div class="prof-leave-bar"><div class="prof-leave-bar-fill" style="width:<%= Math.min(pct, 100) %>%"></div></div>
+        <div class="prof-leave-detail">
+          <span><%= t('hr.employees.used') %>: <%= used %></span>
+          <span><%= t('hr.employees.remaining') %>: <%= remain %></span>
+        </div>
+        <div class="prof-leave-detail prof-leave-detail-mt">
+          <span><%= t('hr.employees.allocated') %>: <%= allocated %></span>
+          <span><%= pct %>%</span>
+        </div>
+      </div>
+    <% }); %>
+  </div>
+  <a href="/admin/hr/leave-balances?employee_id=<%= employee.id %>" class="prof-view-all"><%= t('hr.employees.view_all') %> &rarr;</a>
+</div>
+<% } %>
+
+<div class="prof-section">
+  <div class="prof-section-title">
+    <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    <%= t('hr.employees.recent_hr_records') %>
+  </div>
+  <div class="prof-recent-grid">
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><%= t('hr.attendance.title') %></div>
+        <a href="/admin/hr/attendance?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (attendanceRecords && attendanceRecords.length > 0) { %>
+        <% attendanceRecords.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.attendance_date || '-' %></div>
+              <div class="prof-record-meta"><%= r.check_in || '-' %> - <%= r.check_out || '-' %> | <%= r.status || '-' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_attendance_records') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><%= t('layout.leave') %></div>
+        <a href="/admin/hr/leave?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (leaveRequests && leaveRequests.length > 0) { %>
+        <% leaveRequests.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.leave_type_name || '-' %></div>
+              <div class="prof-record-meta"><%= r.start_date || '-' %> - <%= r.end_date || '-' %> | <%= r.status || '-' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_leave_requests') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg><%= t('layout.overtime') %></div>
+        <a href="/admin/hr/overtime?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (overtimeRecords && overtimeRecords.length > 0) { %>
+        <% overtimeRecords.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.overtime_date || '-' %></div>
+              <div class="prof-record-meta"><%= r.hours || 0 %> <%= t('hr.employees.hours_abbr') %> | <%= r.status || '-' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_overtime_records') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg><%= t('layout.advances') %></div>
+        <a href="/admin/hr/advances?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (advances && advances.length > 0) { %>
+        <% advances.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.date || '-' %></div>
+              <div class="prof-record-meta"><%= (r.amount || 0).toLocaleString() %> <%= t('hr.employees.afn_currency') %> | <%= r.status || '-' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_advances') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg><%= t('layout.deductions') %></div>
+        <a href="/admin/hr/deductions?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (deductions && deductions.length > 0) { %>
+        <% deductions.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.deduction_date || '-' %></div>
+              <div class="prof-record-meta"><%= r.deduction_type || '-' %> | <%= (r.amount || 0).toLocaleString() %> <%= t('hr.employees.afn_currency') %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_deductions') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><%= t('layout.documents') %></div>
+        <a href="/admin/hr/documents?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (documents && documents.length > 0) { %>
+        <% documents.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.document_type_name || '-' %></div>
+              <div class="prof-record-meta">
+                <% if (r.file_path) { %>
+                  <a href="/admin/hr/employees/<%= r.employee_id %>/documents/<%= r.id %>/view" target="_blank"><%= t('hr.documents.view_pdf') || 'View PDF' %></a>
+                <% } else { %>
+                  <%= t('hr.documents.no_file') || 'No file' %>
+                <% } %>
+              </div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_documents') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><%= t('layout.performance') %></div>
+        <a href="/admin/hr/performance?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (performanceReviews && performanceReviews.length > 0) { %>
+        <% performanceReviews.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.review_date || '-' %></div>
+              <div class="prof-record-meta"><%= t('hr.employees.rating') %>: <%= r.overall_rating || '-' %>/5 | <%= r.reviewer_role || '-' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_performance_reviews') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg><%= t('layout.disciplinary') %></div>
+        <a href="/admin/hr/disciplinary?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (disciplinaryRecords && disciplinaryRecords.length > 0) { %>
+        <% disciplinaryRecords.slice(0, 3).forEach(function(r) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title"><%= r.record_date || '-' %></div>
+              <div class="prof-record-meta"><%= r.type || '-' %> | <%= r.action_taken || '-' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.employees.no_disciplinary_records') %></div>
+      <% } %>
+    </div>
+
+    <div class="prof-recent-card">
+      <div class="prof-recent-card-header">
+        <div class="prof-recent-card-title"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg><%= t('layout.payroll') %></div>
+        <a href="/admin/hr/payroll?employee_id=<%= employee.id %>" class="prof-recent-card-link"><%= t('hr.employees.view_all') %> &rarr;</a>
+      </div>
+      <% if (payrollRecords && payrollRecords.length > 0) { %>
+        <% payrollRecords.slice(0, 3).forEach(function(p) { %>
+          <div class="prof-record-item">
+            <div class="prof-record-main">
+              <div class="prof-record-title prof-record-title-ltr"><%= p.payroll_period || '-' %></div>
+              <div class="prof-record-meta"><%= t('hr.payroll.net_salary') %>: <strong><%= (p.net_salary || 0).toLocaleString() %> <%= t('hr.employees.afn_currency') %></strong> | <%= p.payment_status || '-' %></div>
+            </div>
+          </div>
+        <% }); %>
+      <% } else { %>
+        <div class="prof-record-empty"><%= t('hr.payroll.no_payroll_history') %></div>
+      <% } %>
+    </div>
+  </div>
+</div>

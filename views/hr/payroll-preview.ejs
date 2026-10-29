@@ -1,0 +1,457 @@
+<%- include('../partials/header') %>
+
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 24px;">👁️ <%= t('hr.payroll.preview_title') %></h2>
+        <a href="/admin/hr/payroll/generate" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">
+            ← <%= t('hr.payroll.back_to_generate') %>
+        </a>
+        <a href="/admin/hr/payroll" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">
+            <%= t('hr.payroll.back_to_payroll') %>
+        </a>
+        <a href="/admin/hr/payroll/add-salary" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">
+            <%= t('hr.payroll.add_salary_button') %>
+        </a>
+        <a href="/admin/hr/payroll/periods/open" class="btn" style="background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-main);">
+            <%= t('hr.payroll_period.open_link') %>
+        </a>
+    </div>
+    
+    <div class="card" style="background-color: rgba(212, 167, 44, 0.15); border: 1px solid var(--safety-orange); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 10px; font-size: 16px; color: var(--safety-orange);">ℹ️ <%= t('hr.payroll.preview_info') %></h3>
+        <p style="margin: 0; color: var(--safety-orange);">
+            <%= t('hr.payroll.preview_description') %>
+        </p>
+    </div>
+    
+    <div class="card" style="background-color: var(--bg-color); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text-main);"><%= t('hr.payroll.preview_parameters') %></h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div>
+                <strong><%= t('hr.payroll.payroll_period') %>:</strong>
+                <span dir="ltr"><%= payroll_period %></span>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.earning_period') %>:</strong>
+                <span dir="ltr"><%= periodStart %> <%= t('hr.payroll.to') %> <%= periodEnd %></span>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.period_days') %>:</strong>
+                <%= periodEndDays %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.include_overtime') %>:</strong>
+                <%= include_overtime ? t('forms.yes') : t('forms.no') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.include_deductions') %>:</strong>
+                <%= include_deductions ? t('forms.yes') : t('forms.no') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.include_advances') %>:</strong>
+                <%= include_advances ? t('forms.yes') : t('forms.no') %>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card" style="background-color: var(--bg-color); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px; color: var(--text-main);"><%= t('hr.payroll.preview_totals') %></h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+            <div>
+                <strong><%= t('hr.payroll.eligible_employees') %>:</strong>
+                <%= totals.eligibleCount %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.blocked_employees') %>:</strong>
+                <span style="color: var(--status-error);"><%= totals.blockedCount %></span>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.already_generated') %>:</strong>
+                <span style="color: var(--text-secondary);"><%= totals.alreadyGeneratedCount %></span>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_basic_salary') %>:</strong>
+                <%= totals.totalBasicSalary.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_allowances') %>:</strong>
+                <%= totals.totalAllowances.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_overtime') %>:</strong>
+                <%= totals.totalOvertime.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_advance_repayment') %>:</strong>
+                <%= totals.totalAdvanceDeduction.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.attendance_deduction') %>:</strong>
+                <%= (totals.totalAttendanceDeduction || 0).toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_other_deductions') %>:</strong>
+                <%= totals.totalOtherDeductions.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_gross_salary') %>:</strong>
+                <%= totals.totalGrossSalary.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_deductions') %>:</strong>
+                <%= totals.totalDeductions.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_net_salary') %>:</strong>
+                <span style="color: <%= totals.totalNetSalary < 0 ? 'var(--status-error)' : 'var(--status-success)' %>; font-weight: 700;">
+                    <%= totals.totalNetSalary.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+                </span>
+            </div>
+            <div>
+                <strong><%= t('hr.payroll.total_arrears') %>:</strong>
+                <span style="color: <%= totals.totalArrears < 0 ? 'var(--status-error)' : 'var(--status-warning)' %>; font-weight: 700;">
+                    <%= totals.totalArrears.toLocaleString() %> <%= t('hr.dashboard.afghani') %>
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <form action="/admin/hr/payroll/create-selected" method="POST">
+            <input type="hidden" name="payroll_period" value="<%= payroll_period %>">
+            <input type="hidden" name="include_overtime" value="<%= include_overtime ? 'true' : 'false' %>">
+            <input type="hidden" name="include_deductions" value="<%= include_deductions ? 'true' : 'false' %>">
+            <input type="hidden" name="include_advances" value="<%= include_advances ? 'true' : 'false' %>">
+            <table>
+            <thead>
+                <tr>
+                    <th><%= t('hr.payroll.select') %></th>
+                    <th><%= t('hr.employees.full_name') %></th>
+                    <th><%= t('hr.employees.father_name') %></th>
+                    <th><%= t('hr.employees.employee_id') %></th>
+                    <th><%= t('hr.employees.position') %></th>
+                    <th><%= t('hr.employees.department') %></th>
+                    <th><%= t('hr.employees.hire_date') %></th>
+                    <th><%= t('hr.employees.contract_type') %></th>
+                    <th><%= t('hr.employees.payment_method') %></th>
+                    <th><%= t('hr.payroll.eligible_days') %></th>
+                    <th><%= t('hr.payroll.basic_salary') %></th>
+                    <th><%= t('hr.payroll.allowances') %></th>
+                    <th><%= t('hr.payroll.overtime_amount') %></th>
+                    <th><%= t('hr.payroll.advance_repayment') %></th>
+                    <th><%= t('hr.payroll.attendance_deduction') %></th>
+                    <th><%= t('hr.payroll.deductions') %></th>
+                    <th><%= t('hr.payroll.gross_salary') %></th>
+                    <th><%= t('hr.payroll.total_deductions') %></th>
+                    <th><%= t('hr.payroll.net_salary') %></th>
+                    <th><%= t('hr.payroll.arrears') %></th>
+                    <th><%= t('hr.payroll.status') %></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (previewResults && previewResults.length > 0) { %>
+                    <% previewResults.forEach(function(result) { %>
+                        <% const emp = result.employee; %>
+                        <% const calc = result.calculation; %>
+                        <% const arrears = result.arrears; %>
+                        <% const isBlocked = result.blocked; %>
+                        <% const isAlreadyGenerated = result.alreadyGenerated; %>
+                        <% const hasArrears = arrears && arrears.records && arrears.records.length > 0; %>
+                        
+                        <tr style="<%= isBlocked ? 'background-color: rgba(231, 76, 60, 0.1);' : (isAlreadyGenerated ? 'background-color: rgba(149, 165, 166, 0.1);' : '') %>">
+                            <td style="text-align: center;">
+                                <% if (isBlocked || isAlreadyGenerated) { %>
+                                    <input type="checkbox" disabled>
+                                <% } else { %>
+                                    <input type="checkbox" name="selected_employees" value="<%= emp.id %>">
+                                <% } %>
+                            </td>
+                            <td><strong><%= emp.full_name %></strong></td>
+                            <td><%= emp.father_name || '—' %></td>
+                            <td><code><%= emp.employee_id || 'N/A' %></code></td>
+                            <td><%= emp.position %></td>
+                            <td><%= emp.department_name || '—' %></td>
+                            <td dir="ltr"><%= emp.hire_date %></td>
+                            <td><%= emp.contract_type || '—' %></td>
+                            <td><%= emp.payment_method || '—' %></td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.eligibleDays %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.basicSalary.toLocaleString() %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.allowances.toLocaleString() %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.overtimeAmount.toLocaleString() %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.advanceDeduction.toLocaleString() %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <span style="color: <%= (calc.attendanceDeduction || 0) > 0 ? 'var(--status-error)' : 'var(--text-main)' %>;">
+                                        <%= (calc.attendanceDeduction || 0).toLocaleString() %>
+                                    </span>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.otherDeductions.toLocaleString() %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.grossSalary.toLocaleString() %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <%= calc.totalDeductions.toLocaleString() %>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    —
+                                <% } else if (calc) { %>
+                                    <span style="color: <%= calc.netSalary < 0 ? 'var(--status-error)' : 'var(--text-main)' %>; font-weight: 700;">
+                                        <%= calc.netSalary.toLocaleString() %>
+                                    </span>
+                                <% } else { %>
+                                    —
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (hasArrears) { %>
+                                    <span style="color: <%= arrears.total < 0 ? 'var(--status-error)' : 'var(--status-warning)' %>; font-weight: 600;">
+                                        <%= arrears.total.toLocaleString() %>
+                                    </span>
+                                <% } else { %>
+                                    0
+                                <% } %>
+                            </td>
+                            <td>
+                                <% if (isAlreadyGenerated) { %>
+                                    <span style="color: var(--text-secondary); font-weight: 600;"><%= t('hr.payroll.already_generated') %></span>
+                                <% } else if (isBlocked) { %>
+                                    <span style="color: var(--status-error); font-weight: 600;">
+                                        <%= t('hr.payroll.blocked') %>
+                                    </span>
+                                    <% if (result.blockReason) { %>
+                                        <br><small style="color: var(--status-error);"><%= result.blockReason %></small>
+                                    <% } %>
+                                <% } else { %>
+                                    <span style="color: var(--status-success); font-weight: 600;"><%= t('hr.payroll.eligible') %></span>
+                                    <% if (result.warnings && result.warnings.length > 0) { %>
+                                        <br><small style="color: var(--safety-orange);"><%= result.warnings.join(', ') %></small>
+                                    <% } %>
+                                <% } %>
+                            </td>
+                        </tr>
+                        
+                        <% if (hasArrears) { %>
+                            <tr style="background-color: rgba(231, 76, 60, 0.05);">
+                                <td colspan="18" style="padding: 10px;">
+                                    <strong style="color: var(--status-error);"><%= t('hr.payroll.previous_unpaid_salary') %></strong>
+                                    <div style="margin-top: 10px; padding: 8px; background-color: rgba(212, 167, 44, 0.1); border: 1px solid var(--safety-orange); border-radius: 4px;">
+                                        <small style="color: var(--safety-orange);">
+                                            <%= t('hr.payroll.select_arrears_note') %>
+                                        </small>
+                                    </div>
+                                    <table style="width: 100%; margin-top: 10px; font-size: 12px;">
+                                        <thead>
+                                            <tr style="background-color: var(--bg-color);">
+                                                <th style="padding: 6px; text-align: center; border: 1px solid var(--border-color);"><%= t('hr.payroll.select') %></th>
+                                                <th style="padding: 6px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.period') %></th>
+                                                <th style="padding: 6px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.net_salary') %></th>
+                                                <th style="padding: 6px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.status') %></th>
+                                                <th style="padding: 6px; text-align: right; border: 1px solid var(--border-color);"><%= t('hr.payroll.days_overdue') %></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% arrears.records.forEach(function(record) { %>
+                                                <tr>
+                                                    <td style="padding: 6px; border: 1px solid var(--border-color); text-align: center;">
+                                                        <input type="checkbox" 
+                                                               class="arrears-checkbox" 
+                                                               data-employee-id="<%= emp.id %>" 
+                                                               data-arrears-id="<%= record.id %>" 
+                                                               data-arrears-amount="<%= record.net_salary %>"
+                                                               onchange="updateArrearsTotal(this)">
+                                                    </td>
+                                                    <td style="padding: 6px; border: 1px solid var(--border-color);"><%= record.payroll_period %></td>
+                                                    <td style="padding: 6px; border: 1px solid var(--border-color); color: <%= record.net_salary < 0 ? 'var(--status-error)' : 'var(--text-main)' %>; font-weight: 600;">
+                                                        <%= record.net_salary.toLocaleString() %>
+                                                    </td>
+                                                    <td style="padding: 6px; border: 1px solid var(--border-color); color: var(--status-error); font-weight: 600;">
+                                                        <%= t('hr.payroll.unpaid') %>
+                                                    </td>
+                                                    <td style="padding: 6px; border: 1px solid var(--border-color);">
+                                                        <%= record.daysOverdue !== null ? record.daysOverdue : '—' %>
+                                                    </td>
+                                                </tr>
+                                            <% }); %>
+                                        </tbody>
+                                    </table>
+                                    <div style="margin-top: 10px; display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <strong><%= t('hr.payroll.selected_arrears') %>:</strong>
+                                            <span id="selected-arrears-<%= emp.id %>" style="color: var(--safety-orange); font-weight: 700;">0</span>
+                                            <%= t('hr.dashboard.afghani') %>
+                                        </div>
+                                        <div>
+                                            <strong><%= t('hr.payroll.payroll_including_arrears') %>:</strong>
+                                            <span id="total-with-arrears-<%= emp.id %>" style="color: var(--primary); font-weight: 700;">
+                                                <%= calc ? calc.netSalary.toLocaleString() : '0' %>
+                                            </span>
+                                            <%= t('hr.dashboard.afghani') %>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% } %>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="18" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <%= t('hr.payroll.no_employees_to_preview') %>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+    
+    <div style="margin-top: 20px; padding: 15px; background-color: rgba(52, 152, 219, 0.1); border: 1px solid var(--primary); border-radius: 8px;">
+        <p style="margin: 0; color: var(--primary);">
+            <strong>ℹ️ <%= t('hr.payroll.preview_note') %></strong> <%= t('hr.payroll.preview_note_text') %>
+        </p>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: right;">
+        <button type="submit" class="btn" style="background-color: var(--primary); color: white; padding: 12px 24px; font-size: 16px;">
+            <%= t('hr.payroll.create_selected_payroll') %>
+        </button>
+    </div>
+</form>
+
+<script>
+function updateArrearsTotal(checkbox) {
+    const employeeId = checkbox.dataset.employeeId;
+    const arrearsAmount = parseFloat(checkbox.dataset.arrearsAmount);
+    const allCheckboxes = document.querySelectorAll(`.arrears-checkbox[data-employee-id="${employeeId}"]`);
+    
+    let selectedTotal = 0;
+    allCheckboxes.forEach(cb => {
+        if (cb.checked) {
+            selectedTotal += parseFloat(cb.dataset.arrearsAmount);
+        }
+    });
+    
+    const selectedSpan = document.getElementById(`selected-arrears-${employeeId}`);
+    const totalSpan = document.getElementById(`total-with-arrears-${employeeId}`);
+    
+    if (selectedSpan) {
+        selectedSpan.textContent = selectedTotal.toLocaleString();
+    }
+    
+    if (totalSpan) {
+        const row = checkbox.closest('tr').parentElement.previousElementSibling;
+        const netSalaryCell = row.querySelector('td:nth-child(18)');
+        if (netSalaryCell) {
+            const netSalaryText = netSalaryCell.textContent.replace(/,/g, '');
+            const netSalary = parseFloat(netSalaryText) || 0;
+            const totalWithArrears = netSalary + selectedTotal;
+            totalSpan.textContent = totalWithArrears.toLocaleString();
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize totals on page load
+    const allCheckboxes = document.querySelectorAll('.arrears-checkbox');
+    const employeeTotals = {};
+    
+    allCheckboxes.forEach(checkbox => {
+        const employeeId = checkbox.dataset.employeeId;
+        if (!employeeTotals[employeeId]) {
+            employeeTotals[employeeId] = 0;
+        }
+    });
+    
+    // Add hidden input for selected arrears on form submission
+    const form = document.querySelector('form[action="/admin/hr/payroll/create-selected"]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const selectedArrearsMap = {};
+            
+            document.querySelectorAll('.arrears-checkbox:checked').forEach(checkbox => {
+                const employeeId = checkbox.dataset.employeeId;
+                const arrearsId = checkbox.dataset.arrearsId;
+                
+                if (!selectedArrearsMap[employeeId]) {
+                    selectedArrearsMap[employeeId] = [];
+                }
+                selectedArrearsMap[employeeId].push(arrearsId);
+            });
+            
+            // Create hidden inputs for each employee's selected arrears
+            Object.keys(selectedArrearsMap).forEach(employeeId => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = `selected_arrears_${employeeId}`;
+                hiddenInput.value = JSON.stringify(selectedArrearsMap[employeeId]);
+                form.appendChild(hiddenInput);
+            });
+        });
+    }
+});
+</script>
+</div>

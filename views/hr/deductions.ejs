@@ -1,0 +1,114 @@
+<%- include('../partials/header') %>
+
+<div class="card">
+    <% if (contextEmployee) { %>
+        <div style="background: var(--primary); color: white; padding: 16px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: rgba(255, 255, 255, 0.2); display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; overflow: hidden;">
+                    <% if (contextEmployee.photo_path) { %><img src="/<%= contextEmployee.photo_path %>" alt="<%= contextEmployee.full_name %>" style="width:100%;height:100%;object-fit:cover;border-radius:inherit"><% } else { %><%= contextEmployee.full_name.charAt(0).toUpperCase() %><% } %>
+                </div>
+                <div>
+                    <div style="font-size: 14px; opacity: 0.9;"><%= t('hr.employees.full_name') %></div>
+                    <div style="font-size: 16px; font-weight: 600;"><%= contextEmployee.full_name %></div>
+                    <div style="font-size: 12px; opacity: 0.8; font-family: monospace;"><%= contextEmployee.employee_id || 'N/A' %></div>
+                </div>
+            </div>
+            <a href="/admin/hr/employees/<%= contextEmployee.id %>" style="background: rgba(255, 255, 255, 0.2); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px;">
+                ← <%= t('hr.employees.back_to_list') %>
+            </a>
+        </div>
+    <% } %>
+    
+    <h2 style="margin-bottom: 20px; font-size: 24px;">➖ <%= t('hr.deductions.title') %></h2>
+    
+    <!-- Add Deduction Form -->
+    <div class="card" style="background-color: var(--bg-color); margin-bottom: 20px;">
+        <h3 style="margin-bottom: 15px; font-size: 16px;"><%= t('hr.deductions.add_new_deduction') %></h3>
+        <form method="POST" action="/admin/hr/deductions">
+            <% if (contextEmployee) { %>
+                <input type="hidden" name="context_employee_id" value="<%= contextEmployee.id %>">
+            <% } %>
+            <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label for="employee_id"><%= t('hr.deductions.employee') %> *</label>
+                    <select name="employee_id" class="form-control" required id="employee_id">
+                        <option value=""><%= t('hr.leave.select_employee') %></option>
+                        <% if (employees && employees.length > 0) { %>
+                            <% employees.forEach(function(emp) { %>
+                                <option value="<%= emp.id %>" <%= contextEmployee && contextEmployee.id == emp.id ? 'selected' : '' %>><%= emp.full_name %></option>
+                            <% }); %>
+                        <% } %>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="deduction_type"><%= t('hr.deductions.type') %> *</label>
+                    <select name="deduction_type" class="form-control" required id="deduction_type">
+                        <option value=""><%= t('hr.leave.select_type') %></option>
+                        <option value="Late Attendance"><%= t('hr.deductions.late_attendance') %></option>
+                        <option value="Absence"><%= t('hr.deductions.absence') %></option>
+                        <option value="Damage"><%= t('hr.deductions.damage') %></option>
+                        <option value="Loss"><%= t('hr.deductions.loss') %></option>
+                        <option value="Other"><%= t('hr.deductions.other') %></option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="amount"><%= t('hr.deductions.amount') %> (<%= t('hr.dashboard.afghani') %>) *</label>
+                    <input type="number" name="amount" class="form-control" required min="1" id="amount">
+                </div>
+                
+                <div class="form-group">
+                    <label for="deduction_date"><%= t('hr.deductions.deduction_date') %> *</label>
+                    <input type="text" name="deduction_date" class="form-control" required data-datepicker="jalali" placeholder="<%= t('hr.deductions.date_placeholder') %>" dir="ltr" id="deduction_date">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="reason"><%= t('hr.deductions.reason') %></label>
+                <textarea name="reason" class="form-control" rows="2" placeholder="<%= t('hr.deductions.reason_placeholder') %>" dir="rtl" id="reason"></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary"><%= t('hr.deductions.add_deduction') %></button>
+        </form>
+    </div>
+    
+    <!-- Deductions List -->
+    <h3 style="margin-bottom: 15px; font-size: 18px;"><%= t('hr.deductions.deductions_history') %></h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th><%= t('hr.deductions.employee') %></th>
+                    <th><%= t('hr.employees.employee_id') %></th>
+                    <th><%= t('hr.employees.position') %></th>
+                    <th><%= t('hr.deductions.type') %></th>
+                    <th><%= t('hr.deductions.amount') %></th>
+                    <th><%= t('hr.deductions.deduction_date') %></th>
+                    <th><%= t('hr.deductions.reason') %></th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (deductions && deductions.length > 0) { %>
+                    <% deductions.forEach(function(deduction) { %>
+                        <tr>
+                            <td><strong><%= deduction.full_name %></strong></td>
+                            <td><code><%= deduction.employee_id || 'N/A' %></code></td>
+                            <td><%= deduction.position %></td>
+                            <td><%= deduction.deduction_type %></td>
+                            <td><strong><%= deduction.amount.toLocaleString() %> افغانی</strong></td>
+                            <td><%= deduction.deduction_date %></td>
+                            <td><%= deduction.reason || '-' %></td>
+                        </tr>
+                    <% }); %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            <%= t('hr.deductions.no_records_found') %>
+                        </td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
