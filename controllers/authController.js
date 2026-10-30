@@ -75,6 +75,8 @@ function login(req, res) {
     } else {
         const message = req.session.message;
         req.session.message = null;
+        // Make CSRF token available in the login template
+        res.locals.csrfToken = req.session.csrfToken || '';
         res.render('login', { message });
     }
 }
