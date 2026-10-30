@@ -324,13 +324,28 @@ app.use(notFoundHandler);
 // M5: global error handler — full details logged server-side only; clients get
 // a generic message (no stack/message leakage). JSON for APIs, text for pages.
 // eslint-disable-next-line no-unused-vars
+// Global error handler
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-    console.error('[ERROR]', new Date().toISOString(), req.method, safeUrl(req), '\n', (err && err.stack) || err);
+    console.error(
+        '[ERROR]',
+        new Date().toISOString(),
+        req.method,
+        safeUrl(req),
+        '\n',
+        (err && err.stack) || err
+    );
+
     if (res.headersSent) {
-return res.end();
-if ((req.path || '').startsWith('/api/')) {
-        return res.status(500).json({ error: 'Internal server error' });
+        return res.end();
     }
+
+    if ((req.path || '').startsWith('/api/')) {
+        return res.status(500).json({
+            error: 'Internal server error'
+        });
+    }
+
     return res.status(500).send('Internal server error');
 });
 
